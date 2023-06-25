@@ -1,24 +1,15 @@
 const express = require('express');
 const faker = require('faker');
-
+const ProductsService = require('../services/products.service');
 const router = express.Router();
+
+const productsService = new ProductsService();
 
 /* The difference between reading req.query and req.params is that queries are OPTIONAL and can be non-existen. Params will always exist */
 router.get('/', (req, res) => {
-  const { size } = req.query;
-  const limit = size || 10;
+  const products = productsService.get();
 
-  const products = [];
-  for (let index = 0; index <= limit; index++) {
-    products.push({
-      id: faker.datatype.uuid(),
-      name: faker.commerce.product(),
-      price: parseInt(faker.commerce.price(), 10),
-      image: faker.image.imageUrl(),
-    });
-  }
-
-  res.json(products);
+  res.status(201).json(products);
 });
 
 /* This route only exists to show that we put first every route that it's fixed, and after that we put the rest

@@ -3,9 +3,13 @@ const express = require('express');
 const app = express();
 const faker = require('faker');
 
+/* The difference between reading req.query and req.params is that queries are OPTIONAL and can be non-existen. Params will always exist */
 app.get('/products', (req, res) => {
+  const { size } = req.query;
+  const limit = size || 10;
+
   const products = [];
-  for (let index = 0; index < 100; index++) {
+  for (let index = 0; index <= limit; index++) {
     products.push({
       id: index,
       name: faker.commerce.product(),

@@ -11,7 +11,7 @@ router.get('/', (req, res) => {
   const products = [];
   for (let index = 0; index <= limit; index++) {
     products.push({
-      id: index,
+      id: faker.datatype.uuid(),
       name: faker.commerce.product(),
       price: parseInt(faker.commerce.price(), 10),
       image: faker.image.imageUrl(),
@@ -35,7 +35,7 @@ router.get('/:id', (req, res) => {
   const products = [];
   for (let index = 0; index < 100; index++) {
     products.push({
-      id: index,
+      id: faker.datatype.uuid(),
       name: faker.commerce.product(),
       price: parseInt(faker.commerce.price(), 10),
       image: faker.image.imageUrl(),

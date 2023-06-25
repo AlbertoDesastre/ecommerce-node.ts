@@ -9,7 +9,9 @@ class ProductService {
   get() {
     return this.products;
   }
-  getOne() {}
+  getOneById({ id }) {
+    return this.products.filter((product) => product.id === id);
+  }
   getByName() {}
   create() {}
   generate() {

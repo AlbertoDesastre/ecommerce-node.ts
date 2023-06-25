@@ -1,5 +1,5 @@
 const express = require('express');
-const faker = require('faker');
+
 const ProductsService = require('../services/products.service');
 const router = express.Router();
 
@@ -22,20 +22,15 @@ router.get('/filter', (req, res) => {
 router.get('/:id', (req, res) => {
   const { id } = req.params;
 
-  // I create random products everytime and then I pick up only the one who it's equal to the parameter
-  const products = [];
-  for (let index = 0; index < 100; index++) {
-    products.push({
-      id: faker.datatype.uuid(),
-      name: faker.commerce.product(),
-      price: parseInt(faker.commerce.price(), 10),
-      image: faker.image.imageUrl(),
-    });
+  const searchedProduct = productsService.getOneById({ id });
+
+  if (searchedProduct.length === 0) {
+    return res.status(404).json({ message: 'No product meets the criteriah' });
+  } else {
+    return res
+      .status(201)
+      .json({ message: 'This product is available', product: searchedProduct });
   }
-
-  const searchedProduct = products.filter((product) => product.id == id);
-
-  res.json(searchedProduct);
 });
 
 module.exports = router;

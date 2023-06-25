@@ -21,6 +21,13 @@ app.get('/products', (req, res) => {
   res.json(products);
 });
 
+/* This route only exists to show that we put first every route that it's fixed, and after that we put the rest
+of dinamycally built routes. "products/filter" and "products/:id" are extremely similar, but if we called the one
+with "id" first, "filter" route would never be reached */
+app.get('/products/filter', (req, res) => {
+  res.send("I'm a filter");
+});
+
 app.get('/products/:id', (req, res) => {
   const { id } = req.params;
 

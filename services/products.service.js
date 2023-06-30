@@ -1,13 +1,22 @@
 const faker = require('faker');
+const handleConnection = require('../store/mysql');
 
 class ProductService {
   constructor() {
-    this.products = [];
-    this.generate();
+    this.connection = handleConnection();
   }
 
-  get() {
-    return this.products;
+  async get() {
+    let products;
+    console.log(this.connection);
+    await this.connection.query('SELECT * FROM products', (err, data) => {
+      if (err) {
+        console.error('Error ocurred when getting products', err.mesage);
+      } else {
+        products = data;
+        return products;
+      }
+    });
   }
   getOneById({ id }) {
     return this.products.filter((product) => product.id === id);

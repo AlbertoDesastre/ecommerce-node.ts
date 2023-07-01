@@ -6,9 +6,10 @@ const router = express.Router();
 const productsService = new ProductsService();
 
 /* The difference between reading req.query and req.params is that queries are OPTIONAL and can be non-existen. Params will always exist */
-router.get('/', (req, res) => {
-  const products = productsService.get();
+router.get('/', async (req, res) => {
+  const products = await productsService.get();
 
+  console.log(products);
   res.status(201).json(products);
 });
 

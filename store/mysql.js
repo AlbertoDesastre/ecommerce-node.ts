@@ -30,6 +30,8 @@ function handleConnection() {
       throw err;
     }
   });
+
+  return connection;
 }
 
 /* handleConnection(); */

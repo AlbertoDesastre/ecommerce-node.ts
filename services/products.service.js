@@ -6,23 +6,28 @@ class ProductService {
     this.connection = handleConnection();
   }
 
-  /* This functions it's not returning any products really. What's happening it's that connection.query takes time to retrieve data,
-  and I'm not waiting for that operation to be finished. The only thing I'm doing an "await", but that doesn't wait for the operation
-  to be processed, so it basically gets called when it's unfinished and I always receive undefined.*/
-  async get() {
-    await this.connection.query('SELECT * FROM products', (err, data) => {
-      if (err) {
-        console.error('Error ocurred when getting products', err.mesage);
-      } else {
-        const products = data.map((objetFromQuery) => ({ ...objetFromQuery }));
+  async list() {
+    return new Promise((resolve, reject) => {
+      this.connection.query('SELECT * FROM products', (err, data) => {
+        if (err) {
+          console.error('Error ocurred when getting products', err.mesage);
+          reject(err);
+        } else {
+          /* I have to do a map because in reality what's coming from the query are objects called "RowDataPocket", and I want to access the objects
+          on the array without calling that attribute */
+          const products = data.map((objetFromQuery) => ({
+            ...objetFromQuery,
+          }));
 
-        return products;
-      }
+          /* console.log('ESTA ES LA DATA -->', products); */
+          resolve(products);
+        }
+      });
     });
   }
 
   /*  */
-  getOneById({ id }) {
+  get({ id }) {
     return this.products.filter((product) => product.id === id);
   }
   getByName({ name }) {

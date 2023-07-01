@@ -5,12 +5,16 @@ const router = express.Router();
 
 const productsService = new ProductsService();
 
-/* The difference between reading req.query and req.params is that queries are OPTIONAL and can be non-existen. Params will always exist */
-router.get('/', async (req, res) => {
-  const products = await productsService.get();
-
-  console.log(products);
-  res.status(201).json(products);
+router.get('/', (req, res) => {
+  /* I consume promises this way instead of the "async/await" approach to follow a common practice */
+  productsService
+    .list()
+    .then((products) => {
+      return res.status(201).json(products);
+    })
+    .catch((err) => {
+      return res.status(500).json(err);
+    });
 });
 
 /* This route only exists to show that we put first every route that it's fixed, and after that we put the rest

@@ -1,6 +1,7 @@
 const express = require('express');
 
 const ProductsService = require('../services/products.service');
+const { success } = require('../network');
 const router = express.Router();
 
 const productsService = new ProductsService();
@@ -10,7 +11,7 @@ router.get('/', (req, res) => {
   productsService
     .list()
     .then((products) => {
-      return res.status(201).json(products);
+      return success({ req, res, data: products, status: 201 });
     })
     .catch((err) => {
       return res.status(500).json(err);

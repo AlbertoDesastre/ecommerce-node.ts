@@ -55,6 +55,30 @@ class ProductService {
     });
   }
 
+  createMany(products) {
+    console.log('array de productos en crudo --> ', products);
+
+    const valuesOfProducts = products.map((product) => [
+      ...Object.values(product),
+    ]);
+
+    console.log('valores de los productos', products);
+
+    return new Promise((resolve, reject) => {
+      this.connection.query(
+        'INSERT INTO products (category_id, name, description, price, quantity, image) VALUES ?',
+        [valuesOfProducts],
+        (err, data) => {
+          if (err) {
+            console.error(err.message);
+            return reject(err);
+          }
+          resolve(data);
+        }
+      );
+    });
+  }
+
   /*
   create(product) {
     console.log(product);

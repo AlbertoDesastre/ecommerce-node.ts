@@ -68,4 +68,30 @@ router.post('/', (req, res) => {
     });
 });
 
+router.post('/createMany', (req, res) => {
+  if (!req.body) {
+    return error({
+      req,
+      res,
+      message: "You didn't provide a body",
+      status: 400,
+    });
+  }
+
+  productsService
+    .createMany(req.body)
+    .then((result) => {
+      return success({
+        req,
+        res,
+        message: 'All products created',
+        data: result,
+        status: 201,
+      });
+    })
+    .catch((err) => {
+      return error({ res, message: err, status: 500 });
+    });
+});
+
 module.exports = router;

@@ -1,6 +1,7 @@
 const express = require('express');
 
 const ProductsService = require('../services/products.service');
+const { success, error } = require('../network');
 const router = express.Router();
 
 const productsService = new ProductsService();
@@ -10,7 +11,7 @@ router.get('/', (req, res) => {
   productsService
     .list()
     .then((products) => {
-      return res.status(201).json(products);
+      return success({ req, res, data: products, status: 201 });
     })
     .catch((err) => {
       return res.status(500).json(err);
@@ -39,6 +40,32 @@ router.get('/:id', (req, res) => {
       .status(201)
       .json({ message: 'This product is available', product: searchedProduct });
   }
+});
+
+router.post('/', (req, res) => {
+  if (!req.body) {
+    return error({
+      req,
+      res,
+      message: "You didn't provide a body",
+      status: 400,
+    });
+  }
+
+  productsService
+    .create(req.body)
+    .then((result) => {
+      return success({
+        req,
+        res,
+        message: 'Product created',
+        data: result,
+        status: 201,
+      });
+    })
+    .catch((err) => {
+      return error({ res, message: err, status: 500 });
+    });
 });
 
 module.exports = router;

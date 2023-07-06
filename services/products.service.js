@@ -1,35 +1,14 @@
 const faker = require('faker');
-const handleConnection = require('../store/mysql');
+const mysqlStore = require('../store/mysql');
 
 class ProductService {
   constructor() {
-    this.connection = handleConnection();
+    /*  this.connection = handleConnection(); */
   }
-
-  async list() {
-    return new Promise((resolve, reject) => {
-      this.connection.query('SELECT * FROM products', (err, data) => {
-        if (err) {
-          console.error('Error ocurred when getting products', err.mesage);
-          reject(err);
-        } else {
-          /* I have to do a map because in reality what's coming from the query are objects called "RowDataPocket", and I want to access the objects
-          on the array without calling that attribute */
-          const products = data.map((objetFromQuery) => ({
-            ...objetFromQuery,
-          }));
-
-          /* console.log('ESTA ES LA DATA -->', products); */
-          resolve(products);
-        }
-      });
-    });
-  }
-
-  /*  */
   get({ id }) {
     return this.products.filter((product) => product.id === id);
   }
+
   getByName({ name }) {
     const nameInLowerCase = name.toLowerCase();
 
@@ -37,9 +16,17 @@ class ProductService {
       (product) => product.name.toLowerCase() === nameInLowerCase
     );
   }
-  create(product) {
-    console.log(product);
 
+  async list() {
+    const products = await mysqlStore.list('products');
+    products.map((objetFromQuery) => ({
+      ...objetFromQuery,
+    }));
+
+    return products;
+  }
+
+  async create(product) {
     return new Promise((resolve, reject) => {
       this.connection.query(
         'INSERT INTO products SET ?',
@@ -55,28 +42,14 @@ class ProductService {
     });
   }
 
-  createMany(products) {
-    console.log('array de productos en crudo --> ', products);
-
-    const valuesOfProducts = products.map((product) => [
+  async createMany(productsInArrayOfJsons) {
+    const data = productsInArrayOfJsons.map((product) => [
       ...Object.values(product),
     ]);
 
-    console.log('valores de los productos', products);
+    const products = await mysqlStore.create('products', data);
 
-    return new Promise((resolve, reject) => {
-      this.connection.query(
-        'INSERT INTO products (category_id, name, description, price, quantity, image) VALUES ?',
-        [valuesOfProducts],
-        (err, data) => {
-          if (err) {
-            console.error(err.message);
-            return reject(err);
-          }
-          resolve(data);
-        }
-      );
-    });
+    return products;
   }
 
   /*

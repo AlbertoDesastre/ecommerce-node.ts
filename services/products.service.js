@@ -26,7 +26,7 @@ class ProductService {
     return products;
   }
 
-  create(product) {
+  async create(product) {
     return new Promise((resolve, reject) => {
       this.connection.query(
         'INSERT INTO products SET ?',
@@ -42,28 +42,14 @@ class ProductService {
     });
   }
 
-  createMany(products) {
-    console.log('array de productos en crudo --> ', products);
-
-    const valuesOfProducts = products.map((product) => [
+  async createMany(productsInArrayOfJsons) {
+    const data = productsInArrayOfJsons.map((product) => [
       ...Object.values(product),
     ]);
 
-    console.log('valores de los productos', products);
+    const products = await mysqlStore.create('products', data);
 
-    return new Promise((resolve, reject) => {
-      this.connection.query(
-        'INSERT INTO products (category_id, name, description, price, quantity, image) VALUES ?',
-        [valuesOfProducts],
-        (err, data) => {
-          if (err) {
-            console.error(err.message);
-            return reject(err);
-          }
-          resolve(data);
-        }
-      );
-    });
+    return products;
   }
 
   /*

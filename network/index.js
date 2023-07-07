@@ -5,7 +5,7 @@ function success({ res, message, data, status }) {
 
   console.log(statusMessage);
 
-  return res.status(status).send({
+  return res.status(statusCode).send({
     error: false,
     status: statusCode,
     message: statusMessage,
@@ -18,11 +18,14 @@ function error({ res, message, status }) {
   const statusCode = status || 500;
   const statusMessage = message || 'Internal server error';
 
-  return res.status(status).send({
+  console.log(message);
+  /*   console.log(statusMessage); */
+
+  return res.status(statusCode).send({
     error: true,
     status: statusCode,
-    message: statusMessage,
+    body: statusMessage,
   });
 }
 
-module.exports = { success, error };
+module.exports = { response: success, error };

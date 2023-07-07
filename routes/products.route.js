@@ -2,6 +2,7 @@ const express = require('express');
 
 const ProductsService = require('../services/products.service');
 const { success, error } = require('../network');
+const ecommerceError = require('../utils/ecommerceError');
 const router = express.Router();
 
 const productsService = new ProductsService();
@@ -43,9 +44,8 @@ router.get('/:id', (req, res) => {
 });
 
 router.post('/', (req, res) => {
-  if (!req.body) {
+  if (Object.keys(req.body).length === 0) {
     return error({
-      req,
       res,
       message: "You didn't provide a body",
       status: 400,
@@ -68,7 +68,7 @@ router.post('/', (req, res) => {
     });
 });
 
-router.post('/createMany', (req, res) => {
+router.post('/', (req, res) => {
   if (!req.body) {
     return error({
       req,
@@ -79,7 +79,7 @@ router.post('/createMany', (req, res) => {
   }
 
   productsService
-    .createMany(req.body)
+    .create(req.body)
     .then((result) => {
       return success({
         req,
@@ -90,7 +90,7 @@ router.post('/createMany', (req, res) => {
       });
     })
     .catch((err) => {
-      return error({ res, message: err, status: 500 });
+      return ecommerceError({ error: err, code: 401 });
     });
 });
 

@@ -14,7 +14,7 @@ function success({ res, message, data, status }) {
 }
 
 /* The same follows for this */
-function error({ res, message, status }) {
+function errors({ res, message, status }) {
   const statusCode = status || 500;
   const statusMessage = message || 'Internal server error';
 
@@ -28,4 +28,4 @@ function error({ res, message, status }) {
   });
 }
 
-module.exports = { response: success, error };
+module.exports = { success, errors };

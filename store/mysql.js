@@ -36,6 +36,21 @@ function handleConnection() {
 
 handleConnection();
 
+function get({ table, id }) {
+  return new Promise((resolve, reject) => {
+    connection.query(`SELECT * FROM ${table} WHERE id = ${id}`, (err, data) => {
+      if (err) return reject(err);
+
+      /* I have to do this map because the data I receive from MYSQL are encapsuled in objects called "RawDataPocket" and I want the JSONs without names */
+      data.map((objetFromQuery) => ({
+        ...objetFromQuery,
+      }));
+
+      resolve(data);
+    });
+  });
+}
+
 function list(table) {
   return new Promise((resolve, reject) => {
     connection.query(`SELECT * FROM ${table}`, (err, data) => {
@@ -102,4 +117,4 @@ In summary, it is required to always send a array as a container when sending mu
 
 /* handleConnection(); */
 
-module.exports = { list, create };
+module.exports = { get, list, create };

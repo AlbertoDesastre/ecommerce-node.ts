@@ -1,7 +1,7 @@
 const express = require('express');
 
 const ProductsService = require('../services/products.service');
-const { success, error } = require('../network');
+const { success, errors } = require('../network');
 const ecommerceError = require('../utils/ecommerceError');
 const router = express.Router();
 
@@ -30,22 +30,32 @@ router.get('/getBy', (req, res) => {
 });
 
 router.get('/:id', (req, res) => {
+  /* REMINDER! What comes from params it's always a string */
   const { id } = req.params;
 
-  const searchedProduct = productsService.getOneById({ id });
-
-  if (searchedProduct.length === 0) {
-    return res.status(404).json({ message: 'No product meets the criteriah' });
-  } else {
-    return res
-      .status(201)
-      .json({ message: 'This product is available', product: searchedProduct });
-  }
+  /* data expected to be received = array */
+  productsService
+    .get({ id })
+    .then((result) => {
+      if (result.length === 0) {
+        return errors({ res, message: 'No product was found', status: 401 });
+      } else {
+        return success({
+          res,
+          message: 'This product is available',
+          data: result,
+          status: 201,
+        });
+      }
+    })
+    .catch((err) => {
+      return ecommerceError({ error: err, code: 500 });
+    });
 });
 
 router.post('/', (req, res) => {
   if (Object.keys(req.body).length === 0) {
-    return error({
+    return errors({
       res,
       message: "You didn't provide a body",
       status: 400,
@@ -58,19 +68,19 @@ router.post('/', (req, res) => {
       return success({
         req,
         res,
-        message: 'Product created',
+        message: 'Product/s created',
         data: result,
         status: 201,
       });
     })
     .catch((err) => {
-      return error({ res, message: err, status: 500 });
+      return errors({ res, message: err, status: 500 });
     });
 });
 
 router.post('/', (req, res) => {
   if (!req.body) {
-    return error({
+    return errors({
       req,
       res,
       message: "You didn't provide a body",

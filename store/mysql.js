@@ -51,11 +51,9 @@ function list(table) {
   });
 }
 
-/* Important, the "arrayOfData" must be an array with the VALUES of the JSON coming from the request */
+/* Important, the "arrayOfData" must be an array with the VALUES of the JSON coming from the request, for example: [[value1,value2], [value1,value2]] */
 function create(table, arrayOfData) {
-  console.log(arrayOfData);
   return new Promise((resolve, reject) => {
-    console.log(arrayOfData);
     connection.query(
       `INSERT INTO ${table} (category_id, name, description, price, quantity, image) VALUES ?`,
       [arrayOfData],

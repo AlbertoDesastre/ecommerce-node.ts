@@ -1,4 +1,3 @@
-const faker = require('faker');
 const mysqlStore = require('../store/mysql');
 /* const { error } = require('../network'); */
 
@@ -6,20 +5,59 @@ class ProductService {
   constructor() {
     /*  this.connection = handleConnection(); */
   }
-  get({ id }) {
-    return this.products.filter((product) => product.id === id);
+  async getOne({ id }) {
+    return await mysqlStore.getOne({ table: 'products', id });
   }
 
-  getByName({ name }) {
-    const nameInLowerCase = name.toLowerCase();
+  async filterBy({ name, price, color }) {
+    /* This function constructs the conditions and filters arrays based on the provided values. Each filter is added to the respective array.
+    The conditions array holds the SQL conditions for filtering, and the filters array holds the corresponding filter values.
+    The filters are modified appropriately (e.g., adding '%' to perform a partial string match or converting the price to an integer).
+    The function then calls the filterBy function of mysqlStore with the table name, conditions, and filters as arguments. */
+    try {
+      let conditions = [];
+      let filters = [];
 
-    return this.products.filter(
-      (product) => product.name.toLowerCase() === nameInLowerCase
-    );
+      if (name) {
+        conditions.push('name LIKE ? ');
+        filters.push(`%${name}%`);
+      }
+      if (price) {
+        conditions.push('price <= ? ');
+        filters.push(parseInt(price));
+      }
+      if (color) {
+        conditions.push('color LIKE ? ');
+        filters.push(`%${color}%`);
+      }
+      /* For example, in case of the consumer searching for all 3 filters, the "conditions" would look like: [ '%ca%', 800, '%black%' ]
+      Notice that string are already including "%%" to make the later SQL query work with "LIKE"  */
+
+      if (conditions.length > 0) {
+        conditions = conditions.join(' AND ');
+        /* For every filter, an "AND" it's included automatically to concatenate more than one filter if necessary.
+        For example, if we had all 3 filters the "conditions" will look like this string: "name LIKE ?  AND price <= ?  AND color LIKE ?"   */
+      }
+
+      /* console.log('filters -->', filters);
+      console.log('conditions -->', conditions); */
+
+      return await mysqlStore.filterBy({
+        table: 'products',
+        conditions,
+        filters,
+      });
+    } catch (error) {
+      console.error(error);
+    }
   }
 
-  async list() {
-    const products = await mysqlStore.list('products');
+  async list({ limit = 15, offset = 0 }) {
+    const products = await mysqlStore.list({
+      table: 'products',
+      limit,
+      offset,
+    });
     products.map((objetFromQuery) => ({
       ...objetFromQuery,
     }));
@@ -32,14 +70,16 @@ class ProductService {
       ...Object.values(product),
     ]);
 
+    /* Pending to be corrected. In reality it's not returning products but a message from mysql */
     const products = await mysqlStore.create('products', data);
 
     return products;
   }
 
   /*
+  **OLD VERSION OF 'create' THAT DIDN'T WORK, AN EXPLANATION OF WHY**
+
   create(product) {
-    console.log(product);
 
     return new Promise((resolve, reject) => {
       this.connection.query(
@@ -66,20 +106,27 @@ class ProductService {
   By making this modification, the create function will now work as intended, inserting the product into the database.
   */
 
-  generate() {
-    const limit = 100;
+  async update({ product }) {
+    const productId = product.id;
 
-    for (let index = 0; index <= limit; index++) {
-      this.products.push({
-        id: faker.datatype.uuid(),
-        name: faker.commerce.product(),
-        price: parseInt(faker.commerce.price(), 10),
-        image: faker.image.imageUrl(),
-      });
-    }
+    const data = await mysqlStore.update({
+      table: 'products',
+      item: product,
+      id: productId,
+    });
+
+    return data;
   }
-  update() {}
-  delete() {}
+
+  async deactivateProduct({ id }) {
+    const result = await mysqlStore.toggleItemStatus({
+      table: 'products',
+      boolean: 'FALSE',
+      id,
+    });
+
+    return result;
+  }
 }
 
 module.exports = ProductService;

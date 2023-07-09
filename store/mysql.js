@@ -36,12 +36,52 @@ function handleConnection() {
 
 handleConnection();
 
-function list(table) {
+function getOne({ table, id }) {
   return new Promise((resolve, reject) => {
-    connection.query(`SELECT * FROM ${table}`, (err, data) => {
+    connection.query(`SELECT * FROM ${table} WHERE id = ${id}`, (err, data) => {
       if (err) return reject(err);
 
       /* I have to do this map because the data I receive from MYSQL are encapsuled in objects called "RawDataPocket" and I want the JSONs without names */
+      data.map((objetFromQuery) => ({
+        ...objetFromQuery,
+      }));
+
+      resolve(data);
+    });
+  });
+}
+
+function list({ table, limit, offset }) {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      `SELECT * FROM ${table} LIMIT ${limit} OFFSET ${offset}`,
+      (err, data) => {
+        if (err) return reject(err);
+
+        /* I have to do this map because the data I receive from MYSQL are encapsuled in objects called "RawDataPocket" and I want the JSONs without names */
+        data.map((objetFromQuery) => ({
+          ...objetFromQuery,
+        }));
+
+        resolve(data);
+      }
+    );
+  });
+}
+
+/* table = string , conditions = string , filters = array with searched values
+For example:
+table = 'products';
+conditions = 'name LIKE ?  AND price <= ?  AND color LIKE ?';
+filters = [ '%ca%', 800, '%black%' ];
+*/
+function filterBy({ table, conditions, filters }) {
+  const query = `SELECT * FROM ${table} WHERE ` + conditions;
+
+  return new Promise((resolve, reject) => {
+    connection.query(query, [...filters], (err, data) => {
+      if (err) return reject(err);
+
       data.map((objetFromQuery) => ({
         ...objetFromQuery,
       }));
@@ -100,6 +140,51 @@ In summary, it is required to always send a array as a container when sending mu
 */
 }
 
+function update({ table, item, id }) {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      `UPDATE ${table} SET ? WHERE id = ?`,
+      [item, id],
+      (err, data) => {
+        if (err) return reject(err);
+
+        resolve(data);
+      }
+    );
+  });
+}
+
+function toggleItemStatus({ table, boolean, id }) {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      `UPDATE ${table} SET active = ${boolean} WHERE id = ${id}`,
+      (err, data) => {
+        if (err) return reject(err);
+
+        resolve(data);
+      }
+    );
+  });
+}
+
+function eliminate({ table, id }) {
+  return new Promise((resolve, reject) => {
+    connection.query(`DELETE FROM ${table} WHERE id = ${id}`, (err, data) => {
+      if (err) return reject(err);
+
+      resolve(data);
+    });
+  });
+}
+
 /* handleConnection(); */
 
-module.exports = { list, create };
+module.exports = {
+  getOne,
+  list,
+  filterBy,
+  create,
+  update,
+  toggleItemStatus,
+  eliminate,
+};

@@ -1,16 +1,21 @@
 const express = require('express');
 
 const ProductsService = require('../services/products.service');
-const { success, error } = require('../network');
+const { success, errors } = require('../network');
 const ecommerceError = require('../utils/ecommerceError');
 const router = express.Router();
 
 const productsService = new ProductsService();
 
 router.get('/', (req, res) => {
-  /* I consume promises this way instead of the "async/await" approach to follow a common practice */
+  /*
+  limit = number of maximum rows the DB should bring
+  offset = where should the data start loading. For example, if offset is set to 10, it will start bring data from 10 and onwards
+  */
+  const { limit, offset } = req.query;
+
   productsService
-    .list()
+    .list({ limit, offset })
     .then((products) => {
       return success({ req, res, data: products, status: 201 });
     })
@@ -19,33 +24,59 @@ router.get('/', (req, res) => {
     });
 });
 
-/* This route only exists to show that we put first every route that it's fixed, and after that we put the rest
-of dinamycally built routes. "products/filter" and "products/:id" are extremely similar, but if we called the one
-with "id" first, "filter" route would never be reached */
-router.get('/getBy', (req, res) => {
-  const { name } = req.query;
+router.get('/filter', (req, res) => {
+  /* REMINDER! What comes from params it's always a string */
+  const { name, price, color } = req.query;
 
-  const productsWithSameName = productsService.getByName({ name });
-  res.status(201).json({ products: productsWithSameName });
+  /*   console.log(req.query); */
+
+  productsService
+    .filterBy({ name, price, color })
+    .then((result) => {
+      if (result.length === 0) {
+        return errors({ res, message: 'No product was found', status: 401 });
+      } else {
+        return success({
+          res,
+          message: 'Product/s available...',
+          data: result,
+          status: 201,
+        });
+      }
+    })
+    .catch((err) => {
+      return ecommerceError({ error: err, code: 500 });
+    });
 });
 
+/* always put routes that requires dynamic data at the end, or the routs with fixed words won't be accesible */
 router.get('/:id', (req, res) => {
+  /* REMINDER! What comes from params it's always a string */
   const { id } = req.params;
 
-  const searchedProduct = productsService.getOneById({ id });
-
-  if (searchedProduct.length === 0) {
-    return res.status(404).json({ message: 'No product meets the criteriah' });
-  } else {
-    return res
-      .status(201)
-      .json({ message: 'This product is available', product: searchedProduct });
-  }
+  /* data expected to be received = array */
+  productsService
+    .getOne({ id })
+    .then((result) => {
+      if (result.length === 0) {
+        return errors({ res, message: 'No product was found', status: 401 });
+      } else {
+        return success({
+          res,
+          message: 'This product is available',
+          data: result,
+          status: 201,
+        });
+      }
+    })
+    .catch((err) => {
+      return ecommerceError({ error: err, code: 500 });
+    });
 });
 
 router.post('/', (req, res) => {
   if (Object.keys(req.body).length === 0) {
-    return error({
+    return errors({
       res,
       message: "You didn't provide a body",
       status: 400,
@@ -58,20 +89,19 @@ router.post('/', (req, res) => {
       return success({
         req,
         res,
-        message: 'Product created',
-        data: result,
+        message: 'All product/s created',
+        data: result.message,
         status: 201,
       });
     })
     .catch((err) => {
-      return error({ res, message: err, status: 500 });
+      return errors({ res, message: err, status: 500 });
     });
 });
 
-router.post('/', (req, res) => {
-  if (!req.body) {
-    return error({
-      req,
+router.put('/', (req, res) => {
+  if (Object.keys(req.body).length === 0) {
+    return errors({
       res,
       message: "You didn't provide a body",
       status: 400,
@@ -79,18 +109,37 @@ router.post('/', (req, res) => {
   }
 
   productsService
-    .create(req.body)
+    .update({ product: req.body })
     .then((result) => {
       return success({
         req,
         res,
-        message: 'All products created',
-        data: result,
+        message: 'The product was updated',
+        data: result.message,
         status: 201,
       });
     })
     .catch((err) => {
-      return ecommerceError({ error: err, code: 401 });
+      return errors({ res, message: err, status: 500 });
+    });
+});
+
+router.delete('/:id', (req, res) => {
+  const { id } = req.params;
+
+  productsService
+    .deactivateProduct({ id })
+    .then((result) => {
+      return success({
+        req,
+        res,
+        message: 'Product deactivated',
+        data: result.message,
+        status: 201,
+      });
+    })
+    .catch((err) => {
+      return errors({ res, message: err, status: 500 });
     });
 });
 

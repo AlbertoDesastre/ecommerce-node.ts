@@ -31,12 +31,10 @@ router.get('/getBy', (req, res) => {
 });
 
 router.get('/filter', (req, res) => {
-  console.log('HOLAAAAAAAAA');
   /* REMINDER! What comes from params it's always a string */
   const { name, price, color } = req.query;
 
-  console.log(req.query);
-  /* data expected to be received = array */
+  /*   console.log(req.query); */
 
   productsService
     .filterBy({ name, price, color })
@@ -46,7 +44,7 @@ router.get('/filter', (req, res) => {
       } else {
         return success({
           res,
-          message: 'This product is available',
+          message: 'Product/s available...',
           data: result,
           status: 201,
         });

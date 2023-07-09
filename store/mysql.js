@@ -66,21 +66,16 @@ function list(table) {
   });
 }
 
+/* table = string , conditions = string , filters = array with searched values
+For example:
+table = 'products';
+conditions = 'name LIKE ?  AND price <= ?  AND color LIKE ?';
+filters = [ '%ca%', 800, '%black%' ];
+*/
 function filterBy({ table, conditions, filters }) {
   const query = `SELECT * FROM ${table} WHERE ` + conditions;
 
   return new Promise((resolve, reject) => {
-    console.log(
-      connection.query(query, [...filters], (err, data) => {
-        if (err) return reject(err);
-
-        data.map((objetFromQuery) => ({
-          ...objetFromQuery,
-        }));
-
-        resolve(data);
-      })
-    );
     connection.query(query, [...filters], (err, data) => {
       if (err) return reject(err);
 

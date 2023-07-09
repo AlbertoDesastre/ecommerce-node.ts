@@ -10,6 +10,10 @@ class ProductService {
   }
 
   async filterBy({ name, price, color }) {
+    /* This function constructs the conditions and filters arrays based on the provided values. Each filter is added to the respective array.
+    The conditions array holds the SQL conditions for filtering, and the filters array holds the corresponding filter values.
+    The filters are modified appropriately (e.g., adding '%' to perform a partial string match or converting the price to an integer).
+    The function then calls the filterBy function of mysqlStore with the table name, conditions, and filters as arguments. */
     try {
       let conditions = [];
       let filters = [];
@@ -26,12 +30,17 @@ class ProductService {
         conditions.push('color LIKE ? ');
         filters.push(`%${color}%`);
       }
+      /* For example, in case of the consumer searching for all 3 filters, the "conditions" would look like: [ '%ca%', 800, '%black%' ]
+      Notice that string are already including "%%" to make the later SQL query work with "LIKE"  */
 
       if (conditions.length > 0) {
-        console.log('These are your conditions before joining ', conditions);
         conditions = conditions.join(' AND ');
-        console.log('These are your conditions: ', conditions);
+        /* For every filter, an "AND" it's included automatically to concatenate more than one filter if necessary.
+        For example, if we had all 3 filters the "conditions" will look like this string: "name LIKE ?  AND price <= ?  AND color LIKE ?"   */
       }
+
+      /* console.log('filters -->', filters);
+      console.log('conditions -->', conditions); */
 
       return await mysqlStore.filterBy({
         table: 'products',

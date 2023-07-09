@@ -51,18 +51,21 @@ function getOne({ table, id }) {
   });
 }
 
-function list(table) {
+function list({ table, limit, offset }) {
   return new Promise((resolve, reject) => {
-    connection.query(`SELECT * FROM ${table}`, (err, data) => {
-      if (err) return reject(err);
+    connection.query(
+      `SELECT * FROM ${table} LIMIT ${limit} OFFSET ${offset}`,
+      (err, data) => {
+        if (err) return reject(err);
 
-      /* I have to do this map because the data I receive from MYSQL are encapsuled in objects called "RawDataPocket" and I want the JSONs without names */
-      data.map((objetFromQuery) => ({
-        ...objetFromQuery,
-      }));
+        /* I have to do this map because the data I receive from MYSQL are encapsuled in objects called "RawDataPocket" and I want the JSONs without names */
+        data.map((objetFromQuery) => ({
+          ...objetFromQuery,
+        }));
 
-      resolve(data);
-    });
+        resolve(data);
+      }
+    );
   });
 }
 

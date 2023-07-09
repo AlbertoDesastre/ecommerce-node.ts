@@ -52,8 +52,12 @@ class ProductService {
     }
   }
 
-  async list() {
-    const products = await mysqlStore.list('products');
+  async list({ limit = 15, offset = 0 }) {
+    const products = await mysqlStore.list({
+      table: 'products',
+      limit,
+      offset,
+    });
     products.map((objetFromQuery) => ({
       ...objetFromQuery,
     }));

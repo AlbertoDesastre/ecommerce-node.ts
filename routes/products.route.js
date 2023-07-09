@@ -8,26 +8,20 @@ const router = express.Router();
 const productsService = new ProductsService();
 
 router.get('/', (req, res) => {
-  /* I consume promises this way instead of the "async/await" approach to follow a common practice */
+  /*
+  limit = number of maximum rows the DB should bring
+  offset = where should the data start loading. For example, if offset is set to 10, it will start bring data from 10 and onwards
+  */
+  const { limit, offset } = req.query;
+
   productsService
-    .list()
+    .list({ limit, offset })
     .then((products) => {
       return success({ req, res, data: products, status: 201 });
     })
     .catch((err) => {
       return res.status(500).json(err);
     });
-});
-
-/* This route only exists to show that we put first every route that it's fixed, and after that we put the rest
-of dinamycally built routes. "products/filter" and "products/:id" are extremely similar, but if we called the one
-with "id" first, "filter" route would never be reached */
-
-router.get('/getBy', (req, res) => {
-  const { name } = req.query;
-
-  const productsWithSameName = productsService.getByName({ name });
-  res.status(201).json({ products: productsWithSameName });
 });
 
 router.get('/filter', (req, res) => {
@@ -95,8 +89,8 @@ router.post('/', (req, res) => {
       return success({
         req,
         res,
-        message: 'Product/s created',
-        data: result,
+        message: 'All product/s created',
+        data: result.message,
         status: 201,
       });
     })

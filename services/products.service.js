@@ -70,14 +70,16 @@ class ProductService {
       ...Object.values(product),
     ]);
 
+    /* Pending to be corrected. In reality it's not returning products but a message from mysql */
     const products = await mysqlStore.create('products', data);
 
     return products;
   }
 
   /*
+  **OLD VERSION OF 'create' THAT DIDN'T WORK, AN EXPLANATION OF WHY**
+
   create(product) {
-    console.log(product);
 
     return new Promise((resolve, reject) => {
       this.connection.query(
@@ -104,19 +106,17 @@ class ProductService {
   By making this modification, the create function will now work as intended, inserting the product into the database.
   */
 
-  /*  generate() {
-    const limit = 100;
+  async update({ product }) {
+    const productId = product.id;
 
-    for (let index = 0; index <= limit; index++) {
-      this.products.push({
-        id: faker.datatype.uuid(),
-        name: faker.commerce.product(),
-        price: parseInt(faker.commerce.price(), 10),
-        image: faker.image.imageUrl(),
-      });
-    }
-  } */
-  update() {}
+    const data = await mysqlStore.update({
+      table: 'products',
+      item: product,
+      id: productId,
+    });
+
+    return data;
+  }
 
   async deactivateProduct({ id }) {
     const result = await mysqlStore.toggleItemStatus({

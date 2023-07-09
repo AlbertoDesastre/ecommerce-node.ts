@@ -99,6 +99,31 @@ router.post('/', (req, res) => {
     });
 });
 
+router.put('/', (req, res) => {
+  if (Object.keys(req.body).length === 0) {
+    return errors({
+      res,
+      message: "You didn't provide a body",
+      status: 400,
+    });
+  }
+
+  productsService
+    .update({ product: req.body })
+    .then((result) => {
+      return success({
+        req,
+        res,
+        message: 'The product was updated',
+        data: result.message,
+        status: 201,
+      });
+    })
+    .catch((err) => {
+      return errors({ res, message: err, status: 500 });
+    });
+});
+
 router.delete('/:id', (req, res) => {
   const { id } = req.params;
 

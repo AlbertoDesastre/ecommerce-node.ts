@@ -140,6 +140,20 @@ In summary, it is required to always send a array as a container when sending mu
 */
 }
 
+function update({ table, item, id }) {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      `UPDATE ${table} SET ? WHERE id = ?`,
+      [item, id],
+      (err, data) => {
+        if (err) return reject(err);
+
+        resolve(data);
+      }
+    );
+  });
+}
+
 function toggleItemStatus({ table, boolean, id }) {
   return new Promise((resolve, reject) => {
     connection.query(
@@ -170,6 +184,7 @@ module.exports = {
   list,
   filterBy,
   create,
+  update,
   toggleItemStatus,
   eliminate,
 };

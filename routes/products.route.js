@@ -55,6 +55,7 @@ router.get('/filter', (req, res) => {
     });
 });
 
+/* always put routes that requires dynamic data at the end, or the routs with fixed words won't be accesible */
 router.get('/:id', (req, res) => {
   /* REMINDER! What comes from params it's always a string */
   const { id } = req.params;
@@ -127,6 +128,25 @@ router.post('/', (req, res) => {
     })
     .catch((err) => {
       return ecommerceError({ error: err, code: 401 });
+    });
+});
+
+router.delete('/:id', (req, res) => {
+  const { id } = req.params;
+
+  productsService
+    .deactivateProduct({ id })
+    .then((result) => {
+      return success({
+        req,
+        res,
+        message: 'Product deactivated',
+        data: result.message,
+        status: 201,
+      });
+    })
+    .catch((err) => {
+      return errors({ res, message: err, status: 500 });
     });
 });
 

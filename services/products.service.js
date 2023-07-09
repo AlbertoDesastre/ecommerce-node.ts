@@ -113,7 +113,16 @@ class ProductService {
     }
   } */
   update() {}
-  delete() {}
+
+  async deactivateProduct({ id }) {
+    const result = await mysqlStore.toggleItemStatus({
+      table: 'products',
+      boolean: 'FALSE',
+      id,
+    });
+
+    return result;
+  }
 }
 
 module.exports = ProductService;

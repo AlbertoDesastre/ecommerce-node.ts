@@ -62,7 +62,7 @@ router.get('/:id', (req, res) => {
 
   /* data expected to be received = array */
   productsService
-    .get({ id })
+    .getOne({ id })
     .then((result) => {
       if (result.length === 0) {
         return errors({ res, message: 'No product was found', status: 401 });
@@ -102,32 +102,6 @@ router.post('/', (req, res) => {
     })
     .catch((err) => {
       return errors({ res, message: err, status: 500 });
-    });
-});
-
-router.post('/', (req, res) => {
-  if (!req.body) {
-    return errors({
-      req,
-      res,
-      message: "You didn't provide a body",
-      status: 400,
-    });
-  }
-
-  productsService
-    .create(req.body)
-    .then((result) => {
-      return success({
-        req,
-        res,
-        message: 'All products created',
-        data: result,
-        status: 201,
-      });
-    })
-    .catch((err) => {
-      return ecommerceError({ error: err, code: 401 });
     });
 });
 

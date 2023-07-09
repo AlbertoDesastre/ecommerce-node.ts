@@ -5,8 +5,8 @@ class ProductService {
   constructor() {
     /*  this.connection = handleConnection(); */
   }
-  async get({ id }) {
-    return await mysqlStore.get({ table: 'products', id });
+  async getOne({ id }) {
+    return await mysqlStore.getOne({ table: 'products', id });
   }
 
   async filterBy({ name, price, color }) {

@@ -36,7 +36,7 @@ function handleConnection() {
 
 handleConnection();
 
-function get({ table, id }) {
+function getOne({ table, id }) {
   return new Promise((resolve, reject) => {
     connection.query(`SELECT * FROM ${table} WHERE id = ${id}`, (err, data) => {
       if (err) return reject(err);
@@ -162,4 +162,11 @@ function eliminate({ table, id }) {
 
 /* handleConnection(); */
 
-module.exports = { get, list, filterBy, create, toggleItemStatus, eliminate };
+module.exports = {
+  getOne,
+  list,
+  filterBy,
+  create,
+  toggleItemStatus,
+  eliminate,
+};

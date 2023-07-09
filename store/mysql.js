@@ -66,6 +66,33 @@ function list(table) {
   });
 }
 
+function filterBy({ table, conditions, filters }) {
+  const query = `SELECT * FROM ${table} WHERE ` + conditions;
+
+  return new Promise((resolve, reject) => {
+    console.log(
+      connection.query(query, [...filters], (err, data) => {
+        if (err) return reject(err);
+
+        data.map((objetFromQuery) => ({
+          ...objetFromQuery,
+        }));
+
+        resolve(data);
+      })
+    );
+    connection.query(query, [...filters], (err, data) => {
+      if (err) return reject(err);
+
+      data.map((objetFromQuery) => ({
+        ...objetFromQuery,
+      }));
+
+      resolve(data);
+    });
+  });
+}
+
 /* Important, the "arrayOfData" must be an array with the VALUES of the JSON coming from the request, for example: [[value1,value2], [value1,value2]] */
 function create(table, arrayOfData) {
   return new Promise((resolve, reject) => {
@@ -117,4 +144,4 @@ In summary, it is required to always send a array as a container when sending mu
 
 /* handleConnection(); */
 
-module.exports = { get, list, create };
+module.exports = { get, list, filterBy, create };

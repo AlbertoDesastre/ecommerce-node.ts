@@ -1,4 +1,3 @@
-const faker = require('faker');
 const mysqlStore = require('../store/mysql');
 /* const { error } = require('../network'); */
 
@@ -10,12 +9,38 @@ class ProductService {
     return await mysqlStore.get({ table: 'products', id });
   }
 
-  getByName({ name }) {
-    const nameInLowerCase = name.toLowerCase();
+  async filterBy({ name, price, color }) {
+    try {
+      let conditions = [];
+      let filters = [];
 
-    return this.products.filter(
-      (product) => product.name.toLowerCase() === nameInLowerCase
-    );
+      if (name) {
+        conditions.push('name LIKE ? ');
+        filters.push(`%${name}%`);
+      }
+      if (price) {
+        conditions.push('price <= ? ');
+        filters.push(parseInt(price));
+      }
+      if (color) {
+        conditions.push('color LIKE ? ');
+        filters.push(`%${color}%`);
+      }
+
+      if (conditions.length > 0) {
+        console.log('These are your conditions before joining ', conditions);
+        conditions = conditions.join(' AND ');
+        console.log('These are your conditions: ', conditions);
+      }
+
+      return await mysqlStore.filterBy({
+        table: 'products',
+        conditions,
+        filters,
+      });
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   async list() {
@@ -66,7 +91,7 @@ class ProductService {
   By making this modification, the create function will now work as intended, inserting the product into the database.
   */
 
-  generate() {
+  /*  generate() {
     const limit = 100;
 
     for (let index = 0; index <= limit; index++) {
@@ -77,7 +102,7 @@ class ProductService {
         image: faker.image.imageUrl(),
       });
     }
-  }
+  } */
   update() {}
   delete() {}
 }

@@ -1,4 +1,4 @@
-const mysqlStore = require('../store/mysql');
+import * as mysqlStore from "../store/mysql";
 /* const { error } = require('../network'); */
 
 class ProductService {
@@ -6,7 +6,7 @@ class ProductService {
     /*  this.connection = handleConnection(); */
   }
   async getOne({ id }) {
-    return await mysqlStore.getOne({ table: 'products', id });
+    return await mysqlStore.getOne({ table: "products", id });
   }
 
   async filterBy({ name, price, color }) {
@@ -15,26 +15,27 @@ class ProductService {
     The filters are modified appropriately (e.g., adding '%' to perform a partial string match or converting the price to an integer).
     The function then calls the filterBy function of mysqlStore with the table name, conditions, and filters as arguments. */
     try {
-      let conditions = [];
+      /* fix this */
+      let conditions: any = [];
       let filters = [];
 
       if (name) {
-        conditions.push('name LIKE ? ');
+        conditions.push("name LIKE ? ");
         filters.push(`%${name}%`);
       }
       if (price) {
-        conditions.push('price <= ? ');
+        conditions.push("price <= ? ");
         filters.push(parseInt(price));
       }
       if (color) {
-        conditions.push('color LIKE ? ');
+        conditions.push("color LIKE ? ");
         filters.push(`%${color}%`);
       }
       /* For example, in case of the consumer searching for all 3 filters, the "conditions" would look like: [ '%ca%', 800, '%black%' ]
       Notice that string are already including "%%" to make the later SQL query work with "LIKE"  */
 
       if (conditions.length > 0) {
-        conditions = conditions.join(' AND ');
+        conditions = conditions.join(" AND ");
         /* For every filter, an "AND" it's included automatically to concatenate more than one filter if necessary.
         For example, if we had all 3 filters the "conditions" will look like this string: "name LIKE ?  AND price <= ?  AND color LIKE ?"   */
       }
@@ -43,7 +44,7 @@ class ProductService {
       console.log('conditions -->', conditions); */
 
       return await mysqlStore.filterBy({
-        table: 'products',
+        table: "products",
         conditions,
         filters,
       });
@@ -52,9 +53,11 @@ class ProductService {
     }
   }
 
-  async list({ limit = 15, offset = 0 }) {
-    const products = await mysqlStore.list({
-      table: 'products',
+  /* Before this params were numbers. They were changed so TS doesn't complain */
+  async list({ limit = "15", offset = "0" }) {
+    /* fix thiss */
+    const products: any = await mysqlStore.list({
+      table: "products",
       limit,
       offset,
     });
@@ -71,7 +74,7 @@ class ProductService {
     ]);
 
     /* Pending to be corrected. In reality it's not returning products but a message from mysql */
-    const products = await mysqlStore.create('products', data);
+    const products = await mysqlStore.create("products", data);
 
     return products;
   }
@@ -110,7 +113,7 @@ class ProductService {
     const productId = product.id;
 
     const data = await mysqlStore.update({
-      table: 'products',
+      table: "products",
       item: product,
       id: productId,
     });
@@ -120,8 +123,8 @@ class ProductService {
 
   async deactivateProduct({ id }) {
     const result = await mysqlStore.toggleItemStatus({
-      table: 'products',
-      boolean: 'FALSE',
+      table: "products",
+      boolean: "FALSE",
       id,
     });
 
@@ -129,4 +132,5 @@ class ProductService {
   }
 }
 
-module.exports = ProductService;
+export { ProductService };
+/* module.exports = ProductService; */

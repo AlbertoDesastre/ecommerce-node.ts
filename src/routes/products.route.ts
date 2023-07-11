@@ -1,23 +1,30 @@
-const express = require("express");
+import express from "express";
+import { ProductService } from "../services/products.service";
+import { success, errors } from "../network";
 
-const ProductsService = require("../services/products.service");
-const { success, errors } = require("../network");
-const ecommerceError = require("../utils/ecommerceError");
 const router = express.Router();
 
-const productsService = new ProductsService();
+const productsService = new ProductService();
 
 router.get("/", (req, res) => {
   /*
   limit = number of maximum rows the DB should bring
   offset = where should the data start loading. For example, if offset is set to 10, it will start bring data from 10 and onwards
   */
-  const { limit, offset } = req.query;
+  /*  const { limit, offset} = req.query; */
+
+  const limit: any = req.query.limit;
+  const offset: any = req.query.offset;
 
   productsService
     .list({ limit, offset })
     .then((products) => {
-      return success({ req, res, data: products, status: 201 });
+      return success({
+        res,
+        message: "This is the list of products",
+        data: products,
+        status: 201,
+      });
     })
     .catch((err) => {
       return res.status(500).json(err);
@@ -32,7 +39,7 @@ router.get("/filter", (req, res) => {
 
   productsService
     .filterBy({ name, price, color })
-    .then((result) => {
+    .then((result: any) => {
       if (result.length === 0) {
         return errors({ res, message: "No product was found", status: 401 });
       } else {
@@ -45,7 +52,7 @@ router.get("/filter", (req, res) => {
       }
     })
     .catch((err) => {
-      return ecommerceError({ error: err, code: 500 });
+      return errors({ res, message: err, status: 500 });
     });
 });
 
@@ -57,7 +64,7 @@ router.get("/:id", (req, res) => {
   /* data expected to be received = array */
   productsService
     .getOne({ id })
-    .then((result) => {
+    .then((result: any) => {
       if (result.length === 0) {
         return errors({ res, message: "No product was found", status: 401 });
       } else {
@@ -70,7 +77,7 @@ router.get("/:id", (req, res) => {
       }
     })
     .catch((err) => {
-      return ecommerceError({ error: err, code: 500 });
+      return errors({ res, message: err, status: 500 });
     });
 });
 
@@ -85,9 +92,8 @@ router.post("/", (req, res) => {
 
   productsService
     .create(req.body)
-    .then((result) => {
+    .then((result: any) => {
       return success({
-        req,
         res,
         message: "All product/s created",
         data: result.message,
@@ -110,9 +116,8 @@ router.put("/", (req, res) => {
 
   productsService
     .update({ product: req.body })
-    .then((result) => {
+    .then((result: any) => {
       return success({
-        req,
         res,
         message: "The product was updated",
         data: result.message,
@@ -129,9 +134,8 @@ router.delete("/:id", (req, res) => {
 
   productsService
     .deactivateProduct({ id })
-    .then((result) => {
+    .then((result: any) => {
       return success({
-        req,
         res,
         message: "Product deactivated",
         data: result.message,
@@ -143,4 +147,4 @@ router.delete("/:id", (req, res) => {
     });
 });
 
-module.exports = router;
+export { router };

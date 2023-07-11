@@ -1,5 +1,5 @@
-require('dotenv').config();
-const mysql = require('mysql');
+require("dotenv").config();
+const mysql = require("mysql");
 
 const dbconf = {
   host: process.env.DB_HOST,
@@ -15,16 +15,16 @@ function handleConnection() {
 
   connection.connect((err) => {
     if (err) {
-      console.error('[db erro]', err.message);
+      console.error("[db erro]", err.message);
       setTimeout(handleConnection, 2000);
     } else {
-      console.log('DB Connected :)');
+      console.log("DB Connected :)");
     }
   });
 
-  connection.on('error', (err) => {
-    console.error('db errr', err);
-    if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+  connection.on("error", (err) => {
+    console.error("db errr", err);
+    if (err.code === "PROTOCOL_CONNECTION_LOST") {
       handleConnection();
     } else {
       throw err;
@@ -179,12 +179,4 @@ function eliminate({ table, id }) {
 
 /* handleConnection(); */
 
-module.exports = {
-  getOne,
-  list,
-  filterBy,
-  create,
-  update,
-  toggleItemStatus,
-  eliminate,
-};
+export { getOne, list, filterBy, create, update, toggleItemStatus, eliminate };

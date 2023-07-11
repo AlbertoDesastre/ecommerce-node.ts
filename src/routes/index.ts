@@ -1,7 +1,7 @@
-const productsRouter = require("./products.route");
+import { router as productsRouter } from "./products.route";
 
 function routerApi(app) {
   app.use("/products", productsRouter);
 }
 
-module.exports = routerApi;
+export { routerApi };

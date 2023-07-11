@@ -1,8 +1,8 @@
 {
   "include": ["src/**/*"],
   "compilerOptions": {
-    "target": "es2016",
-    "module": "commonjs",
+    "target": "ES2018",
+    "module": "CommonJS",
     /*
      This error was solved just by putting -->  "outDir": "./dist"
 

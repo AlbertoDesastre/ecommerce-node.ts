@@ -1,8 +1,10 @@
-require("dotenv").config();
+import "dotenv/config";
+
 import express from "express";
 const app = express();
 
-const routerApi = require("./routes");
+/* Fix this */
+import { routerApi } from "./routes/index";
 
 app.use(express.json());
 

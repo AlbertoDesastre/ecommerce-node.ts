@@ -1,7 +1,7 @@
 /* This function it's created to send a generic response message/body + not write the same thing on every route */
 function success({ res, message, data, status }) {
   const statusCode = status || 200;
-  const statusMessage = message || 'All OK';
+  const statusMessage = message || "All OK";
 
   console.log(statusMessage);
 
@@ -16,7 +16,7 @@ function success({ res, message, data, status }) {
 /* The same follows for this */
 function errors({ res, message, status }) {
   const statusCode = status || 500;
-  const statusMessage = message || 'Internal server error';
+  const statusMessage = message || "Internal server error";
 
   console.log(message);
   /*   console.log(statusMessage); */
@@ -28,4 +28,6 @@ function errors({ res, message, status }) {
   });
 }
 
-module.exports = { success, errors };
+export { success, errors };
+
+/* module.exports = { success, errors }; */

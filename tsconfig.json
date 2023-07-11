@@ -3,7 +3,14 @@
   "compilerOptions": {
     "target": "es2016",
     "module": "commonjs",
-    "outDir": "dist",
+    /*
+     This error was solved just by putting -->  "outDir": "./dist"
+
+     No inputs were found in config file
+     'c:/.../.../.../my_documents/myroject/tsconfig.json'.
+     Specified 'include' paths were ['src/**] and 'exclude' paths were '[]'.ts
+    */
+    "outDir": "./dist",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
 

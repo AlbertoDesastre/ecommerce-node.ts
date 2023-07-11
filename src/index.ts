@@ -1,8 +1,8 @@
-require('dotenv').config();
-const express = require('express');
+require("dotenv").config();
+const express = require("express");
 const app = express();
 
-const routerApi = require('./routes');
+const routerApi = require("./routes");
 
 app.use(express.json());
 
@@ -13,10 +13,10 @@ that I specified, where I have all the sub-routes like "filter", "?limit=10", ":
 In summary it's: Express get's injected > Choose endpoints called > Picks sub-url*/
 routerApi(app);
 
-app.get('/goodbye', (req, res) => {
-  res.send('Sayonara baby');
+app.get("/goodbye", (req: any, res: any) => {
+  res.send("Sayonara baby");
 });
 
 app.listen(process.env.PORT, () => {
-  console.log('Listening at port: ', process.env.PORT);
+  console.log("Listening at port: ", process.env.PORT);
 });

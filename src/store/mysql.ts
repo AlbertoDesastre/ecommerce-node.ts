@@ -1,5 +1,5 @@
 require("dotenv").config();
-const mysql = require("mysql");
+import mysql from "mysql";
 
 const dbconf = {
   host: process.env.DB_HOST,
@@ -8,14 +8,18 @@ const dbconf = {
   database: process.env.DB_NAME,
 };
 
-let connection;
+let connection: mysql.Connection;
 
 function handleConnection() {
   connection = mysql.createConnection(dbconf);
-
-  connection.connect((err) => {
+  /* When accessing err object in the code provided, you will find the following important properties/methods:
+      err.code: The error code associated with the MySQL error.
+      err.errno: The error number associated with the MySQL error.
+      err.sqlMessage: The error message returned by MySQL.
+      err.sqlState: The SQL state code associated with the MySQL error. */
+  connection.connect((err: mysql.MysqlError) => {
     if (err) {
-      console.error("[db erro]", err.message);
+      console.error("[db error]", err.message);
       setTimeout(handleConnection, 2000);
     } else {
       console.log("DB Connected :)");
@@ -23,7 +27,7 @@ function handleConnection() {
   });
 
   connection.on("error", (err) => {
-    console.error("db errr", err);
+    console.error("db error", err);
     if (err.code === "PROTOCOL_CONNECTION_LOST") {
       handleConnection();
     } else {
@@ -167,9 +171,9 @@ function toggleItemStatus({ table, boolean, id }) {
   });
 }
 
-function eliminate({ table, id }) {
+function eliminate({ tableee, id }) {
   return new Promise((resolve, reject) => {
-    connection.query(`DELETE FROM ${table} WHERE id = ${id}`, (err, data) => {
+    connection.query(`DELETE FROM ${tableee} WHERE id = ${id}`, (err, data) => {
       if (err) return reject(err);
 
       resolve(data);

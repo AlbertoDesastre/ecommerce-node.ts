@@ -1,4 +1,4 @@
-import * as mysqlStore from "../store/mysql";
+import * as mysqlStore from "../../store/mysql";
 /* const { error } = require('../network'); */
 
 class ProductService {

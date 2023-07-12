@@ -1,6 +1,6 @@
 import "dotenv/config";
 import express from "express";
-import { routerApi } from "./routes/index";
+import { routerApi } from "./components/index";
 
 const app = express();
 

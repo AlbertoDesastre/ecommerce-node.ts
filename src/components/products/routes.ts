@@ -1,6 +1,6 @@
 import express from "express";
-import { ProductService } from "../services/products.service";
-import { success, errors } from "../network";
+import { ProductService } from "./services";
+import { success, errors } from "../../network";
 
 const router = express.Router();
 

@@ -1,34 +1,15 @@
 import express from "express";
 import { ProductService } from "./services";
+import { ProductController } from "./controllers";
 import { success, errors } from "../../network";
 
 const router = express.Router();
 
 const productsService = new ProductService();
+const productController = new ProductController();
 
 router.get("/", (req, res) => {
-  /*
-  limit = number of maximum rows the DB should bring
-  offset = where should the data start loading. For example, if offset is set to 10, it will start bring data from 10 and onwards
-  */
-  /*  const { limit, offset} = req.query; */
-
-  const limit: any = req.query.limit;
-  const offset: any = req.query.offset;
-
-  productsService
-    .list({ limit, offset })
-    .then((products) => {
-      return success({
-        res,
-        message: "This is the list of products",
-        data: products,
-        status: 201,
-      });
-    })
-    .catch((err) => {
-      return res.status(500).json(err);
-    });
+  productController.list(req, res);
 });
 
 router.get("/filter", (req, res) => {

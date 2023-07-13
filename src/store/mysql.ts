@@ -1,5 +1,6 @@
 require("dotenv").config();
-import mysql from "mysql";
+import mysql, { MysqlError } from "mysql";
+import { Product } from "../components/products/models";
 
 const dbconf = {
   host: process.env.DB_HOST,
@@ -55,7 +56,7 @@ function getOne({ table, id }) {
   });
 }
 
-function list({ table, limit, offset }) {
+function list({ table, limit, offset }): Promise<Product[] | MysqlError> {
   return new Promise((resolve, reject) => {
     connection.query(
       `SELECT * FROM ${table} LIMIT ${limit} OFFSET ${offset}`,
@@ -63,11 +64,11 @@ function list({ table, limit, offset }) {
         if (err) return reject(err);
 
         /* I have to do this map because the data I receive from MYSQL are encapsuled in objects called "RawDataPocket" and I want the JSONs without names */
-        data.map((objetFromQuery) => ({
+        const products = data.map((objetFromQuery) => ({
           ...objetFromQuery,
         }));
 
-        resolve(data);
+        resolve(products);
       }
     );
   });

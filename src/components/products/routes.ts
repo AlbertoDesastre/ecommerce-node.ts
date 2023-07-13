@@ -6,7 +6,7 @@ const router = express.Router();
 
 const productController = new ProductController();
 
-router.get("/", (req: Request, res: Response) => {
+router.get("/", (req, res) => {
   productController.list(req, res);
 });
 

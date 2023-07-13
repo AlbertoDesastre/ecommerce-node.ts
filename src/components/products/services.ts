@@ -1,21 +1,23 @@
+import { MysqlError } from "mysql";
 import * as mysqlStore from "../../store/mysql";
+import { FilterParams, Product } from "./models";
 /* const { error } = require('../network'); */
 
 class ProductService {
   constructor() {
     /*  this.connection = handleConnection(); */
   }
-  async getOne({ id }) {
+  async getOne(id: string) {
     return await mysqlStore.getOne({ table: "products", id });
   }
 
-  async filterBy({ name, price, color }) {
+  async filterBy({ name, price, color }: FilterParams) {
     /* This function constructs the conditions and filters arrays based on the provided values. Each filter is added to the respective array.
     The conditions array holds the SQL conditions for filtering, and the filters array holds the corresponding filter values.
     The filters are modified appropriately (e.g., adding '%' to perform a partial string match or converting the price to an integer).
     The function then calls the filterBy function of mysqlStore with the table name, conditions, and filters as arguments. */
     try {
-      /* fix this */
+      /* FIX*/
       let conditions: any = [];
       let filters = [];
 
@@ -56,14 +58,11 @@ class ProductService {
   /* Before this params were numbers. They were changed so TS doesn't complain */
   async list({ limit = "15", offset = "0" }) {
     /* fix thiss */
-    const products: any = await mysqlStore.list({
+    const products = await mysqlStore.list({
       table: "products",
       limit,
       offset,
     });
-    products.map((objetFromQuery) => ({
-      ...objetFromQuery,
-    }));
 
     return products;
   }

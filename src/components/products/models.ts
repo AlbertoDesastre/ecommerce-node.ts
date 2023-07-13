@@ -1,4 +1,4 @@
-interface FilterParams {
+interface FilterQueries {
   name?: string;
   price?: string;
   color?: string;
@@ -17,4 +17,4 @@ interface Product {
   created_at: string;
 }
 
-export { FilterParams, Product };
+export { FilterQueries, Product };

@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { ProductService } from "./services";
 import { success, errors } from "../../network";
-import { FilterParams } from "./models";
+import { FilterParams, FilterQueries } from "./models";
 
 /* As a general concept, controllers and in charge of managing the entry and the exit of the routes.
 Controller analyze the request: if it's correct, if the body fills the rules, there are no weird things, etc...
@@ -13,12 +13,10 @@ class ProductController {
   constructor() {
     this.productService = new ProductService();
   }
-
+  // DONE
   list(req: Request, res: Response) {
-    /*
-  limit = number of maximum rows the DB should bring
-  offset = where should the data start loading. For example, if offset is set to 10, it will start bring data from 10 and onwards
-  */
+    /* limit = number of maximum rows the DB should bring
+       offset = where should the data start loading. For example, if offset is set to 10, it will start bring data from 10 and onwards */
 
     const { limit, offset } = req.query as { limit: string; offset: string };
 
@@ -46,7 +44,7 @@ class ProductController {
 
   filterBy(req: Request, res: Response) {
     /* REMINDER! What comes from params it's always a string */
-    const { name, price, color } = req.query as FilterParams;
+    const { name, price, color } = req.query as FilterQueries;
 
     this.productService
       .filterBy({ name, price, color })

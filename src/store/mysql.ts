@@ -1,6 +1,7 @@
 require("dotenv").config();
 import mysql, { MysqlError } from "mysql";
 import { Product } from "../components/products/models";
+import { FilterByParams, ListParams } from "./models";
 
 const dbconf = {
   host: process.env.DB_HOST,
@@ -56,7 +57,11 @@ function getOne({ table, id }) {
   });
 }
 
-function list({ table, limit, offset }): Promise<Product[] | MysqlError> {
+function list({
+  table,
+  limit,
+  offset,
+}: ListParams): Promise<Product[] | MysqlError> {
   return new Promise((resolve, reject) => {
     connection.query(
       `SELECT * FROM ${table} LIMIT ${limit} OFFSET ${offset}`,
@@ -64,7 +69,7 @@ function list({ table, limit, offset }): Promise<Product[] | MysqlError> {
         if (err) return reject(err);
 
         /* I have to do this map because the data I receive from MYSQL are encapsuled in objects called "RawDataPocket" and I want the JSONs without names */
-        const products = data.map((objetFromQuery) => ({
+        const products = data.map((objetFromQuery: Object) => ({
           ...objetFromQuery,
         }));
 
@@ -80,14 +85,14 @@ table = 'products';
 conditions = 'name LIKE ?  AND price <= ?  AND color LIKE ?';
 filters = [ '%ca%', 800, '%black%' ];
 */
-function filterBy({ table, conditions, filters }) {
+function filterBy({ table, conditions, filters }: FilterByParams) {
   const query = `SELECT * FROM ${table} WHERE ` + conditions;
 
   return new Promise((resolve, reject) => {
     connection.query(query, [...filters], (err, data) => {
       if (err) return reject(err);
 
-      data.map((objetFromQuery) => ({
+      data.map((objetFromQuery: Object) => ({
         ...objetFromQuery,
       }));
 

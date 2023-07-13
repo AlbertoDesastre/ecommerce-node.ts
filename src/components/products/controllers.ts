@@ -1,3 +1,4 @@
+import { Request, Response } from "express";
 import { ProductService } from "./services";
 import { success, errors } from "../../network";
 
@@ -12,15 +13,20 @@ class ProductController {
     this.productService = new ProductService();
   }
 
-  list(req, res) {
+  list(req: Request, res: Response) {
     /*
   limit = number of maximum rows the DB should bring
   offset = where should the data start loading. For example, if offset is set to 10, it will start bring data from 10 and onwards
   */
-    /*  const { limit, offset} = req.query; */
 
-    const limit: any = req.query.limit;
-    const offset: any = req.query.offset;
+    const { limit, offset } = req.query as { limit: string; offset: string };
+
+    if (!limit || !offset)
+      return errors({
+        res,
+        message: "No pagination or offset was provided",
+        status: 400,
+      });
 
     this.productService
       .list({ limit, offset })

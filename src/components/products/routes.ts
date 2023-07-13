@@ -1,3 +1,4 @@
+import type { Request, Response } from "express";
 import express from "express";
 import { ProductController } from "./controllers";
 
@@ -5,7 +6,7 @@ const router = express.Router();
 
 const productController = new ProductController();
 
-router.get("/", (req, res) => {
+router.get("/", (req: Request, res: Response) => {
   productController.list(req, res);
 });
 

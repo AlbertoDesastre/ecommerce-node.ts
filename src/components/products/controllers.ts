@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import { ProductService } from "./services";
 import { success, errors } from "../../network";
-import { FilterQueries } from "./interfaces";
+import { FilterQueries, Product } from "./interfaces";
+import { MysqlError } from "mysql";
 
 /* As a general concept, controllers and in charge of managing the entry and the exit of the routes.
 Controller analyze the request: if it's correct, if the body fills the rules, there are no weird things, etc...
@@ -13,7 +14,7 @@ class ProductController {
   constructor() {
     this.productService = new ProductService();
   }
-  // DONE
+
   list(req: Request, res: Response) {
     /* limit = number of maximum rows the DB should bring
        offset = where should the data start loading. For example, if offset is set to 10, it will start bring data from 10 and onwards */
@@ -33,7 +34,7 @@ class ProductController {
         return success({
           res,
           message: "This is the list of products",
-          data: products,
+          data: products as Product[],
           status: 201,
         });
       })
@@ -43,26 +44,30 @@ class ProductController {
   }
 
   filterBy(req: Request, res: Response) {
-    /* REMINDER! What comes from params it's always a string */
     const { name, price, color } = req.query as FilterQueries;
 
     this.productService
       .filterBy({ name, price, color })
-      /* FIX */
-      .then((result: any) => {
-        if (result.length === 0) {
-          return errors({ res, message: "No product was found", status: 401 });
-        } else {
-          return success({
-            res,
-            message: "Product/s available...",
-            data: result,
-            status: 201,
-          });
+      .then((result) => {
+        if (Array.isArray(result)) {
+          if (result.length === 0) {
+            return errors({
+              res,
+              message: "No product was found",
+              status: 401,
+            });
+          } else {
+            return success({
+              res,
+              message: "Product/s available...",
+              data: result,
+              status: 201,
+            });
+          }
         }
       })
-      .catch((err) => {
-        return errors({ res, message: err, status: 500 });
+      .catch((err: MysqlError) => {
+        return errors({ res, message: err.message, status: 500 });
       });
   }
 
@@ -74,15 +79,21 @@ class ProductController {
     this.productService
       .getOne(id)
       .then((result) => {
-        if (result.length === 0) {
-          return errors({ res, message: "No product was found", status: 401 });
-        } else {
-          return success({
-            res,
-            message: "This product is available",
-            data: result,
-            status: 201,
-          });
+        if (Array.isArray(result)) {
+          if (result.length === 0) {
+            return errors({
+              res,
+              message: "No product was found",
+              status: 401,
+            });
+          } else {
+            return success({
+              res,
+              message: "This product is available",
+              data: result,
+              status: 201,
+            });
+          }
         }
       })
       .catch((err) => {
@@ -91,7 +102,9 @@ class ProductController {
   }
 
   create(req: Request, res: Response) {
-    if (Object.keys(req.body).length === 0) {
+    const arrayOfProducts: Product[] = req.body;
+
+    if (Object.keys(arrayOfProducts).length === 0) {
       return errors({
         res,
         message: "You didn't provide a body",
@@ -101,8 +114,8 @@ class ProductController {
 
     /* Aquí debería tipar que el req.body contiene un array de objetos específicos */
     this.productService
-      .create(req.body)
-      .then((result: any) => {
+      .create(arrayOfProducts)
+      .then((result) => {
         return success({
           res,
           message: "All product/s created",
@@ -116,7 +129,9 @@ class ProductController {
   }
 
   update(req: Request, res: Response) {
-    if (Object.keys(req.body).length === 0) {
+    const product: Product = req.body;
+
+    if (Object.keys(product).length === 0) {
       return errors({
         res,
         message: "You didn't provide a body",
@@ -125,8 +140,8 @@ class ProductController {
     }
     /* Aquí debería tipar que el req.body contiene un objeto específico*/
     this.productService
-      .update({ product: req.body })
-      .then((result: any) => {
+      .update({ product })
+      .then((result) => {
         return success({
           res,
           message: "The product was updated",
@@ -144,7 +159,7 @@ class ProductController {
 
     this.productService
       .deactivateProduct({ id })
-      .then((result: any) => {
+      .then((result) => {
         return success({
           res,
           message: "Product deactivated",

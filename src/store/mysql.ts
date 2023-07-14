@@ -6,6 +6,7 @@ import {
   FilterByParams,
   GetOneParams,
   ListParams,
+  MysqlQueryResult,
   ToggleItemStatus,
   UpdateParams,
 } from "./interfaces";
@@ -49,7 +50,6 @@ function handleConnection() {
 
 handleConnection();
 
-//DONE
 function getOne({ table, id }: GetOneParams): Promise<Object[] | MysqlError> {
   return new Promise((resolve, reject) => {
     connection.query(`SELECT * FROM ${table} WHERE id = ${id}`, (err, data) => {
@@ -64,7 +64,7 @@ function getOne({ table, id }: GetOneParams): Promise<Object[] | MysqlError> {
     });
   });
 }
-//DONE
+
 function list({
   table,
   limit,
@@ -93,7 +93,6 @@ table = 'products';
 conditions = 'name LIKE ?  AND price <= ?  AND color LIKE ?';
 filters = [ '%ca%', 800, '%black%' ];
 */
-/* DONE */
 function filterBy({
   table,
   conditions,
@@ -114,17 +113,15 @@ function filterBy({
   });
 }
 
-/* Important, the "arrayOfData" must be an array with the VALUES of the JSON coming from the request, for example: [[value1,value2], [value1,value2]] */
-//DONE
 function create({
   table,
   arrayOfData,
-}: CreateParams): Promise<Object[] | MysqlError> {
+}: CreateParams): Promise<MysqlQueryResult | MysqlError> {
   return new Promise((resolve, reject) => {
     connection.query(
       `INSERT INTO ${table} (category_id, name, description, price, quantity, image) VALUES ?`,
       [arrayOfData],
-      (err, data) => {
+      (err, data: MysqlQueryResult) => {
         if (err) return reject(err);
 
         resolve(data);
@@ -167,17 +164,16 @@ In summary, it is required to always send a array as a container when sending mu
 */
 }
 
-/* The returned string will look like "(Rows matched: 1  Changed: 1  Warnings: 0" */
 function update({
   table,
   item,
   id,
-}: UpdateParams): Promise<String | MysqlError> {
+}: UpdateParams): Promise<MysqlQueryResult | MysqlError> {
   return new Promise((resolve, reject) => {
     connection.query(
       `UPDATE ${table} SET ? WHERE id = ?`,
       [item, id],
-      (err, data) => {
+      (err, data: MysqlQueryResult) => {
         if (err) return reject(err);
 
         resolve(data);
@@ -186,17 +182,15 @@ function update({
   });
 }
 
-/* The returned string will look like "(Rows matched: 1  Changed: 1  Warnings: 0" */
-// DONE
 function toggleItemStatus({
   table,
   boolean,
   id,
-}: ToggleItemStatus): Promise<String | MysqlError> {
+}: ToggleItemStatus): Promise<MysqlQueryResult | MysqlError> {
   return new Promise((resolve, reject) => {
     connection.query(
       `UPDATE ${table} SET active = ${boolean} WHERE id = ${id}`,
-      (err, data) => {
+      (err: MysqlError, data: MysqlQueryResult) => {
         if (err) return reject(err);
 
         resolve(data);
@@ -213,6 +207,11 @@ function eliminate({
   return new Promise((resolve, reject) => {
     connection.query(`DELETE FROM ${table} WHERE id = ${id}`, (err, data) => {
       if (err) return reject(err);
+
+      console.log(
+        "You have pending to check if 'data' it's a string or a MysqlQueryResult !! Check it out look at this -->",
+        data
+      );
 
       resolve(data);
     });

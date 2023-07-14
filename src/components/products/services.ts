@@ -1,20 +1,22 @@
 import { MysqlError } from "mysql";
 import * as mysqlStore from "../../store/mysql";
 import { FilterQueries, Product } from "./interfaces";
+import { ecommerceError } from "../../utils/ecommerceError";
+import { error } from "console";
 /* const { error } = require('../network'); */
 
 class ProductService {
   constructor() {
     /*  this.connection = handleConnection(); */
   }
-  // DONE
+
   async list({ limit = "15", offset = "0" }) {
     /* fix thiss */
-    const products = await mysqlStore.list({
+    const products = (await mysqlStore.list({
       table: "products",
       limit,
       offset,
-    });
+    })) as Product[] | MysqlError;
 
     return products;
   }
@@ -50,14 +52,13 @@ class ProductService {
           For example, if we had all 3 filters the "conditions" will look like this string: "name LIKE ?  AND price <= ?  AND color LIKE ?"   */
     }
 
-    /* console.log('filters -->', filters);
-        console.log('conditions -->', conditions); */
-
-    return await mysqlStore.filterBy({
+    const result = await mysqlStore.filterBy({
       table: "products",
       conditions,
       filters,
     });
+
+    return result;
   }
 
   async getOne(id: string) {
@@ -108,8 +109,8 @@ class ProductService {
   By making this modification, the create function will now work as intended, inserting the product into the database.
   */
 
-  async update({ product }) {
-    const productId = product.id;
+  async update({ product }: { product: Product }) {
+    const productId = product.id.toString();
 
     const data = await mysqlStore.update({
       table: "products",
@@ -120,7 +121,7 @@ class ProductService {
     return data;
   }
 
-  async deactivateProduct({ id }) {
+  async deactivateProduct({ id }: { id: string }) {
     const result = await mysqlStore.toggleItemStatus({
       table: "products",
       boolean: "FALSE",

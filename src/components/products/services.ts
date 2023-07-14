@@ -1,6 +1,6 @@
 import { MysqlError } from "mysql";
 import * as mysqlStore from "../../store/mysql";
-import { FilterQueries, Product } from "./models";
+import { FilterQueries, Product } from "./interfaces";
 /* const { error } = require('../network'); */
 
 class ProductService {
@@ -64,15 +64,18 @@ class ProductService {
     return await mysqlStore.getOne({ table: "products", id });
   }
 
-  async create(productsInArrayOfJsons) {
+  async create(productsInArrayOfJsons: Product[]) {
     const data = productsInArrayOfJsons.map((product) => [
       ...Object.values(product),
     ]);
 
     /* Pending to be corrected. In reality it's not returning products but a message from mysql */
-    const products = await mysqlStore.create("products", data);
+    const result = await mysqlStore.create({
+      table: "products",
+      arrayOfData: data,
+    });
 
-    return products;
+    return result;
   }
 
   /*

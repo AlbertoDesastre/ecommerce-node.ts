@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { ProductService } from "./services";
 import { success, errors } from "../../network";
-import { FilterParams, FilterQueries } from "./models";
+import { FilterQueries } from "./interfaces";
 
 /* As a general concept, controllers and in charge of managing the entry and the exit of the routes.
 Controller analyze the request: if it's correct, if the body fills the rules, there are no weird things, etc...

@@ -1,7 +1,14 @@
 require("dotenv").config();
-import mysql, { MysqlError } from "mysql";
-import { Product } from "../components/products/models";
-import { FilterByParams, ListParams } from "./models";
+import mysql, { MysqlError, Query } from "mysql";
+import {
+  CreateParams,
+  DeleteParams,
+  FilterByParams,
+  GetOneParams,
+  ListParams,
+  ToggleItemStatus,
+  UpdateParams,
+} from "./interfaces";
 
 const dbconf = {
   host: process.env.DB_HOST,
@@ -14,7 +21,7 @@ let connection: mysql.Connection;
 
 function handleConnection() {
   connection = mysql.createConnection(dbconf);
-  /* When accessing err object in the code provided, you will find the following important properties/methods:
+  /* You will find the following important properties/methods on "err":
       err.code: The error code associated with the MySQL error.
       err.errno: The error number associated with the MySQL error.
       err.sqlMessage: The error message returned by MySQL.
@@ -42,13 +49,14 @@ function handleConnection() {
 
 handleConnection();
 
-function getOne({ table, id }) {
+//DONE
+function getOne({ table, id }: GetOneParams): Promise<Object[] | MysqlError> {
   return new Promise((resolve, reject) => {
     connection.query(`SELECT * FROM ${table} WHERE id = ${id}`, (err, data) => {
       if (err) return reject(err);
 
       /* I have to do this map because the data I receive from MYSQL are encapsuled in objects called "RawDataPocket" and I want the JSONs without names */
-      data.map((objetFromQuery) => ({
+      data.map((objetFromQuery: Object) => ({
         ...objetFromQuery,
       }));
 
@@ -56,12 +64,12 @@ function getOne({ table, id }) {
     });
   });
 }
-
+//DONE
 function list({
   table,
   limit,
   offset,
-}: ListParams): Promise<Product[] | MysqlError> {
+}: ListParams): Promise<Object[] | MysqlError> {
   return new Promise((resolve, reject) => {
     connection.query(
       `SELECT * FROM ${table} LIMIT ${limit} OFFSET ${offset}`,
@@ -85,7 +93,12 @@ table = 'products';
 conditions = 'name LIKE ?  AND price <= ?  AND color LIKE ?';
 filters = [ '%ca%', 800, '%black%' ];
 */
-function filterBy({ table, conditions, filters }: FilterByParams) {
+/* DONE */
+function filterBy({
+  table,
+  conditions,
+  filters,
+}: FilterByParams): Promise<Object[] | MysqlError> {
   const query = `SELECT * FROM ${table} WHERE ` + conditions;
 
   return new Promise((resolve, reject) => {
@@ -102,7 +115,11 @@ function filterBy({ table, conditions, filters }: FilterByParams) {
 }
 
 /* Important, the "arrayOfData" must be an array with the VALUES of the JSON coming from the request, for example: [[value1,value2], [value1,value2]] */
-function create(table, arrayOfData) {
+//DONE
+function create({
+  table,
+  arrayOfData,
+}: CreateParams): Promise<Object[] | MysqlError> {
   return new Promise((resolve, reject) => {
     connection.query(
       `INSERT INTO ${table} (category_id, name, description, price, quantity, image) VALUES ?`,
@@ -150,7 +167,12 @@ In summary, it is required to always send a array as a container when sending mu
 */
 }
 
-function update({ table, item, id }) {
+/* The returned string will look like "(Rows matched: 1  Changed: 1  Warnings: 0" */
+function update({
+  table,
+  item,
+  id,
+}: UpdateParams): Promise<String | MysqlError> {
   return new Promise((resolve, reject) => {
     connection.query(
       `UPDATE ${table} SET ? WHERE id = ?`,
@@ -164,7 +186,13 @@ function update({ table, item, id }) {
   });
 }
 
-function toggleItemStatus({ table, boolean, id }) {
+/* The returned string will look like "(Rows matched: 1  Changed: 1  Warnings: 0" */
+// DONE
+function toggleItemStatus({
+  table,
+  boolean,
+  id,
+}: ToggleItemStatus): Promise<String | MysqlError> {
   return new Promise((resolve, reject) => {
     connection.query(
       `UPDATE ${table} SET active = ${boolean} WHERE id = ${id}`,
@@ -177,9 +205,13 @@ function toggleItemStatus({ table, boolean, id }) {
   });
 }
 
-function eliminate({ tableee, id }) {
+// PENDING to check if returns a string or object
+function eliminate({
+  table,
+  id,
+}: DeleteParams): Promise<String[] | MysqlError> {
   return new Promise((resolve, reject) => {
-    connection.query(`DELETE FROM ${tableee} WHERE id = ${id}`, (err, data) => {
+    connection.query(`DELETE FROM ${table} WHERE id = ${id}`, (err, data) => {
       if (err) return reject(err);
 
       resolve(data);

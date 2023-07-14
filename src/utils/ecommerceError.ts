@@ -1,4 +1,4 @@
-function ecommerceError(error, code) {
+function ecommerceError(error: any, code: any) {
   const err: any = new Error(error);
 
   if (code) {

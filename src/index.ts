@@ -1,10 +1,8 @@
 import "dotenv/config";
-
 import express from "express";
-const app = express();
+import { routerApi } from "./components/index";
 
-/* Fix this */
-import { routerApi } from "./routes/index";
+const app = express();
 
 app.use(express.json());
 
@@ -16,7 +14,7 @@ In summary it's: Express get's injected > Choose endpoints called > Picks sub-ur
 routerApi(app);
 
 app.get("/goodbye", (req: any, res: any) => {
-  res.send("Sayonara baby");
+  res.send("AAAAAAAAAAA");
 });
 
 app.listen(process.env.PORT, () => {

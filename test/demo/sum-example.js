@@ -1,5 +1,9 @@
-function sum(a, b) {
+function add(a, b) {
   return a + b;
 }
 
-module.exports = sum;
+function substract(a, b) {
+  return a - b;
+}
+
+module.exports = { add, substract };

@@ -1,3 +1,5 @@
+import { MysqlError } from "mysql";
+
 interface ListParams {
   table: string;
   limit: string;
@@ -43,6 +45,35 @@ interface MysqlQueryResult {
   changedRows: number;
 }
 
+interface ConnectionMethods {
+  getOne: ({ table, id }: GetOneParams) => Promise<Object[] | MysqlError>;
+  list: ({
+    table,
+    limit,
+    offset,
+  }: ListParams) => Promise<Object[] | MysqlError>;
+  filterBy: ({
+    table,
+    conditions,
+    filters,
+  }: FilterByParams) => Promise<Object[] | MysqlError>;
+  create: ({
+    table,
+    arrayOfData,
+  }: CreateParams) => Promise<MysqlQueryResult | MysqlError>;
+  update: ({
+    table,
+    item,
+    id,
+  }: UpdateParams) => Promise<MysqlQueryResult | MysqlError>;
+  toggleItemStatus: ({
+    table,
+    boolean,
+    id,
+  }: ToggleItemStatus) => Promise<MysqlQueryResult | MysqlError>;
+  eliminate: ({ table, id }: DeleteParams) => Promise<String[] | MysqlError>;
+}
+
 export {
   FilterByParams,
   ListParams,
@@ -52,4 +83,5 @@ export {
   DeleteParams,
   ToggleItemStatus,
   MysqlQueryResult,
+  ConnectionMethods,
 };

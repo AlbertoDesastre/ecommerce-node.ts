@@ -1,12 +1,13 @@
+import { ConnectionMethods } from "../../src/store/interfaces";
+import { handleConnection } from "../../src/store/mysql";
 
-describe("PRODUCTS__Service", () => {
-  beforeAll(()=>{
-
+describe("*TEST* --> PRODUCTS__Service", () => {
+  let connection: ConnectionMethods;
+  beforeAll(() => {
+    connection = handleConnection();
   });
 
-  test("",() => {
-
+  test("should receive a list of products", async () => {
+    const products = connection;
   });
-
-
 });

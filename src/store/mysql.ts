@@ -1,6 +1,7 @@
 require("dotenv").config();
 import mysql, { MysqlError, Query } from "mysql";
 import {
+  ConnectionMethods,
   CreateParams,
   DeleteParams,
   FilterByParams,
@@ -18,8 +19,7 @@ const dbconf = {
   database: process.env.DB_NAME,
 };
 
-
-function handleConnection() {
+function handleConnection(): ConnectionMethods {
   let connection: mysql.Connection;
 
   connection = mysql.createConnection(dbconf);
@@ -48,16 +48,19 @@ function handleConnection() {
 
   function getOne({ table, id }: GetOneParams): Promise<Object[] | MysqlError> {
     return new Promise((resolve, reject) => {
-      connection.query(`SELECT * FROM ${table} WHERE id = ${id}`, (err, data) => {
-        if (err) return reject(err);
+      connection.query(
+        `SELECT * FROM ${table} WHERE id = ${id}`,
+        (err, data) => {
+          if (err) return reject(err);
 
-        /* I have to do this map because the data I receive from MYSQL are encapsuled in objects called "RawDataPocket" and I want the JSONs without names */
-        data.map((objetFromQuery: Object) => ({
-          ...objetFromQuery,
-        }));
+          /* I have to do this map because the data I receive from MYSQL are encapsuled in objects called "RawDataPocket" and I want the JSONs without names */
+          data.map((objetFromQuery: Object) => ({
+            ...objetFromQuery,
+          }));
 
-        resolve(data);
-      });
+          resolve(data);
+        }
+      );
     });
   }
 
@@ -213,8 +216,15 @@ function handleConnection() {
     });
   }
 
-  return {getOne, list, filterBy, create, update, toggleItemStatus, eliminate};
+  return {
+    getOne,
+    list,
+    filterBy,
+    create,
+    update,
+    toggleItemStatus,
+    eliminate,
+  };
 }
-
 
 export { handleConnection };

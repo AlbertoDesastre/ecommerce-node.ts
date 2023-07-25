@@ -1,18 +1,17 @@
-import { MysqlError } from "mysql";
+import  { MysqlError } from "mysql";
+
 import * as mysqlStore from "../../store/mysql";
 import { FilterQueries, Product } from "./interfaces";
-import { ecommerceError } from "../../utils/ecommerceError";
-import { error } from "console";
-/* const { error } = require('../network'); */
 
 class ProductService {
+  private connection;
+
   constructor() {
-    /*  this.connection = handleConnection(); */
+    this.connection = mysqlStore.handleConnection();
   }
 
   async list({ limit = "15", offset = "0" }) {
-    /* fix thiss */
-    const products = (await mysqlStore.list({
+    const products = (await this.connection.list({
       table: "products",
       limit,
       offset,
@@ -52,7 +51,7 @@ class ProductService {
           For example, if we had all 3 filters the "conditions" will look like this string: "name LIKE ?  AND price <= ?  AND color LIKE ?"   */
     }
 
-    const result = await mysqlStore.filterBy({
+    const result = await this.connection.filterBy({
       table: "products",
       conditions,
       filters,
@@ -62,7 +61,7 @@ class ProductService {
   }
 
   async getOne(id: string) {
-    return await mysqlStore.getOne({ table: "products", id });
+    return await this.connection.getOne({ table: "products", id });
   }
 
   async create(productsInArrayOfJsons: Product[]) {
@@ -71,7 +70,7 @@ class ProductService {
     ]);
 
     /* Pending to be corrected. In reality it's not returning products but a message from mysql */
-    const result = await mysqlStore.create({
+    const result = await this.connection.create({
       table: "products",
       arrayOfData: data,
     });
@@ -112,7 +111,7 @@ class ProductService {
   async update({ product }: { product: Product }) {
     const productId = product.id.toString();
 
-    const data = await mysqlStore.update({
+    const data = await this.connection.update({
       table: "products",
       item: product,
       id: productId,
@@ -122,7 +121,7 @@ class ProductService {
   }
 
   async deactivateProduct({ id }: { id: string }) {
-    const result = await mysqlStore.toggleItemStatus({
+    const result = await this.connection.toggleItemStatus({
       table: "products",
       boolean: "FALSE",
       id,

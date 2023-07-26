@@ -190,31 +190,16 @@ const fakeProducts = [
   },
 ];
 
-/*"Stub" in testing terms means a simulated implementation of a function or method
-   used to replace the actual functionality during tests.
-CODE A (Now this code works, but it's still calling the real method "handleConnection", making a BD connection,
-and I won't use that)
-const connectionStub = {
-  handleConnection: () => {
-    return {
-      list: jest.fn().mockReturnValue(fakeProducts),
-    };
-  },
-};
-*/
-
-// CODE B . I don't understand why this code WORKS
-jest.mock("../../src/store/mysql", () => {
-  const connectionStub = {
-    handleConnection: () => {
-      return {
-        list: () => fakeProducts,
-      };
-    },
-  };
-
-  return connectionStub;
-});
+/* This seems like a pretty good aproximation for testing Connections that require from a function that
+returns a lot of other functions. The reason why it wasn't working is because in line XX I'm trying to call
+"handleConnection()". If I don't mock that specific function with that specific name, when searching for
+handleConnection it will find nothing, even If I mock up correctly it's returning functions.*/
+jest.mock("../../src/store/mysql", () => ({
+  handleConnection: jest.fn().mockReturnValue({
+    list: () => fakeProducts,
+    getOne: () => null,
+  }),
+}));
 
 describe("*TEST* --> PRODUCTS__Service", () => {
   let connection: ConnectionMethods;

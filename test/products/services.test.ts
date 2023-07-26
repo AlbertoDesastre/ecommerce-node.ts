@@ -208,11 +208,19 @@ describe("*TEST* --> PRODUCTS__Service", () => {
   beforeAll(() => {
     connection = handleConnection();
     productService = new ProductService();
+    /* This is specially useful when you want unaltered data for each test.
+    For example, If I wanted to sum "b = 2 + a" in test A, and I wanted to divide in Test B
+    "c = 2 / b" , the "b" will have the value modified by previous test.*/
+    jest.clearAllMocks();
   });
 
   test("should receive a list of 15 products", async () => {
     const products = (await productService.list({})) as Product[];
-
     expect(products.length).toBe(15);
+  });
+
+  test("should receive a specific product, in position 0", async () => {
+    const products = (await productService.list({})) as Product[];
+    expect(products[0].name).toEqual("Nintendo Switch");
   });
 });

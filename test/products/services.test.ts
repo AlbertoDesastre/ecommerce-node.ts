@@ -190,24 +190,18 @@ const fakeProducts = [
   },
 ];
 
-/*   "Stub" in testing terms means a simulated implementation of a function or method
- used to replace the actual functionality during tests. */
+/*"Stub" in testing terms means a simulated implementation of a function or method
+   used to replace the actual functionality during tests.
+CODE A (Now this code works, but it's still calling the real method "handleConnection", making a BD connection,
+and I won't use that)
 const connectionStub = {
   handleConnection: () => {
     return {
-      list: () => fakeProducts,
+      list: jest.fn().mockReturnValue(fakeProducts),
     };
   },
 };
-
-// CODE A
-/*
-I don't understand why this code doesn't work.
-jest.mock("../../src/store/mysql", () => {
- jest.fn().mockImplementation(() => {
-    return connectionStub;
-  });
-}); */
+*/
 
 // CODE B . I don't understand why this code WORKS
 jest.mock("../../src/store/mysql", () => {

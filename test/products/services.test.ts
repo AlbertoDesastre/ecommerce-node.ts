@@ -190,13 +190,15 @@ const fakeProducts = [
   },
 ];
 
+const mockList = jest.fn();
+
 /* This seems like a pretty good aproximation for testing Connections that require from a function that
 returns a lot of other functions. The reason why it wasn't working is because in line XX I'm trying to call
 "handleConnection()". If I don't mock that specific function with that specific name, when searching for
 handleConnection it will find nothing, even If I mock up correctly it's returning functions.*/
 jest.mock("../../src/store/mysql", () => ({
-  handleConnection: jest.fn().mockReturnValue({
-    list: () => fakeProducts,
+  handleConnection: () => ({
+    list: mockList,
     getOne: () => null,
   }),
 }));
@@ -215,11 +217,34 @@ describe("*TEST* --> PRODUCTS__Service", () => {
   });
 
   test("should receive a list of 15 products", async () => {
+    mockList.mockReturnValue(fakeProducts);
     const products = (await productService.list({})) as Product[];
     expect(products.length).toBe(15);
+    expect(mockList).toHaveBeenCalled();
+    expect(mockList).toHaveBeenCalledTimes(1);
+    expect(mockList).toHaveBeenCalledWith({
+      limit: "15",
+      offset: "0",
+      table: "products",
+    });
   });
 
   test("should receive a specific product, in position 0", async () => {
+    mockList.mockReturnValue([
+      {
+        id: 11,
+        category_id: 3,
+        name: "Nintendo Switch",
+        description:
+          "Versatile gaming console for both handheld and TV gaming.",
+        color: "Neon Red/Neon Blue",
+        price: 127,
+        quantity: 90,
+        image: "",
+        active: 1,
+        created_at: "2023-07-09T18:57:14.000Z",
+      },
+    ]);
     const products = (await productService.list({})) as Product[];
     expect(products[0].name).toEqual("Nintendo Switch");
   });

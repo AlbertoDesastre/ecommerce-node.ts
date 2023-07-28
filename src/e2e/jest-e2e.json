@@ -1,5 +1,5 @@
 {
-  "moduleFileExtensions": ["ts"],
+  "moduleFileExtensions": ["ts", "js"],
   "rootDir": ".",
   "testEnvironment": "node",
   "testRegex": ".e2e.ts$"

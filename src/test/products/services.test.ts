@@ -1,7 +1,7 @@
-import { ConnectionMethods } from "../../src/store/interfaces";
-import { handleConnection } from "../../src/store/mysql";
-import { ProductService } from "../../src/components/products/services";
-import { Product } from "../../src/components/products/interfaces";
+import { ConnectionMethods } from "../../store/interfaces";
+import { handleConnection } from "../../store/mysql";
+import { ProductService } from "../../components/products/services";
+import { Product } from "../../components/products/interfaces";
 
 const fakeProducts = [
   {

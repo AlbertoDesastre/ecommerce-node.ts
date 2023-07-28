@@ -1,4 +1,4 @@
-import  { MysqlError } from "mysql";
+import { MysqlError } from "mysql";
 
 import * as mysqlStore from "../../store/mysql";
 import { FilterQueries, Product } from "./interfaces";

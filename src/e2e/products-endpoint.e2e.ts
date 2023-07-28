@@ -15,7 +15,7 @@ describe("Test for goodbye endpoint", () => {
   afterAll(() => {
     server.close();
   });
-
+  /* My first test e2e it's working!! */
   describe("test for [GET] /goodbye", () => {
     test("should return 'GOODBYE!!' ", () => {
       return request(app)

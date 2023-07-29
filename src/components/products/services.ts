@@ -1,4 +1,4 @@
-import  { MysqlError } from "mysql";
+import { MysqlError } from "mysql";
 
 import * as mysqlStore from "../../store/mysql";
 import { FilterQueries, Product } from "./interfaces";
@@ -7,6 +7,8 @@ class ProductService {
   private connection;
 
   constructor() {
+    /* console.log("tipo del modulo -->", typeof mysqlStore);
+       console.log("cómo se ve el modulo -->", mysqlStore); */
     this.connection = mysqlStore.handleConnection();
   }
 

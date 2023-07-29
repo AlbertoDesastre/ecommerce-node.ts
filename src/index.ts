@@ -14,9 +14,11 @@ In summary it's: Express get's injected > Choose endpoints called > Picks sub-ur
 routerApi(app);
 
 app.get("/goodbye", (req: any, res: any) => {
-  res.send("AAAAAAAAAAA");
+  res.send("GOODBYE!!");
 });
 
 app.listen(process.env.PORT, () => {
   console.log("Listening at port: ", process.env.PORT);
 });
+
+export { app };

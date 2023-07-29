@@ -7,6 +7,8 @@ class ProductService {
   private connection;
 
   constructor() {
+    /* console.log("tipo del modulo -->", typeof mysqlStore);
+       console.log("cómo se ve el modulo -->", mysqlStore); */
     this.connection = mysqlStore.handleConnection();
   }
 

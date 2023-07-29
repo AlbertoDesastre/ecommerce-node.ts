@@ -1,16 +1,19 @@
 const mockList = jest.fn();
+const mockGetOne = jest.fn();
+const handleConnectionMock = {
+  list: mockList,
+  getOne: mockGetOne,
+};
+/* The 3 following lines were added just now. I have absolutely no idea why it's working now */
+const mysqlStore = jest.requireActual("../store/mysql");
+const handleConnection = jest.fn().mockReturnValue(handleConnectionMock);
+mysqlStore.handleConnection = handleConnection;
 import request from "supertest";
 import { Express } from "express";
-import { success, errors } from "../network";
 import http from "http";
 import { app } from "..";
 
-jest.mock("../../src/store/mysql", () => ({
-  handleConnection: () => ({
-    list: mockList,
-    getOne: () => {},
-  }),
-}));
+jest.mock("../store/mysql", () => mysqlStore);
 
 describe("Test for products endpoint", () => {
   let expressApp: Express;
@@ -19,14 +22,14 @@ describe("Test for products endpoint", () => {
 
   beforeAll(() => {
     expressApp = app;
-    server = app.listen(3001);
+    server = app.listen(3002);
   });
-  afterAll(async () => {
-    await server.close();
+  afterAll(() => {
+    server.close();
   });
   /* My first test e2e it's working!! */
   describe("test for [GET] /api/v1/products/", () => {
-    test("should return 'GOODBYE!!' ", async () => {
+    test("should return an array with an object' ", async () => {
       //Arrange
       mockList.mockReturnValue([
         {
@@ -47,9 +50,9 @@ describe("Test for products endpoint", () => {
       return await request(app)
         .get("/api/v1/products/")
         .expect(200)
-        .then((body: any) => {
+        .then((response: any) => {
           //Assert
-          expect(body.data.length).toEqual(1);
+          expect(JSON.parse(response.text).body.length).toEqual(1);
         });
     });
   });

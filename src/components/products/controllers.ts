@@ -21,12 +21,12 @@ class ProductController {
 
     const { limit, offset } = req.query as { limit: string; offset: string };
 
-    if (!limit || !offset)
+    /*   if (!limit || !offset)
       return errors({
         res,
         message: "No pagination or offset was provided",
         status: 400,
-      });
+      }); */
 
     this.productService
       .list({ limit, offset })
@@ -35,7 +35,7 @@ class ProductController {
           res,
           message: "This is the list of products",
           data: products as Product[],
-          status: 201,
+          status: 200,
         });
       })
       .catch((err) => {

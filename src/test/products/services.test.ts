@@ -219,6 +219,7 @@ describe("*TEST* --> PRODUCTS__Service", () => {
   test("should receive a list of 15 products", async () => {
     mockList.mockReturnValue(fakeProducts);
     const products = (await productService.list({})) as Product[];
+
     expect(products.length).toBe(15);
     expect(mockList).toHaveBeenCalled();
     expect(mockList).toHaveBeenCalledTimes(1);

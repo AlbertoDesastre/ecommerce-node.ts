@@ -196,7 +196,7 @@ const mockList = jest.fn();
 returns a lot of other functions. The reason why it wasn't working is because in line XX I'm trying to call
 "handleConnection()". If I don't mock that specific function with that specific name, when searching for
 handleConnection it will find nothing, even If I mock up correctly it's returning functions.*/
-jest.mock("../../src/store/mysql", () => ({
+jest.mock("../../store/mysql", () => ({
   handleConnection: () => ({
     list: mockList,
     getOne: () => null,

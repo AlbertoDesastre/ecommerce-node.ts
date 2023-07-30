@@ -54,7 +54,9 @@ describe("Test for products endpoint", () => {
       //
     });
 
-    afterEach(() => {});
+    afterEach(async () => {
+      await connection.eliminate({ table: "products" });
+    });
     test("should return an array with an object' ", async () => {
       //Act
       return await request(app)

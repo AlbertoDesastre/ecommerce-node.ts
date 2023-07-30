@@ -115,9 +115,9 @@ function handleConnection(): ConnectionMethods {
   function create({
     table,
     arrayOfData,
-  }: CreateParams): Promise<MysqlQueryResult | MysqlError> {
+  }: CreateParams): Promise<MysqlQueryResult> {
     return new Promise((resolve, reject) => {
-      console.log(table, arrayOfData);
+      /*  console.log(table, arrayOfData); */
       connection.query(
         `INSERT INTO ${table} (category_id, name, description, price, quantity, image) VALUES ?`,
         [arrayOfData],

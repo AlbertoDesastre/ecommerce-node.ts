@@ -2,6 +2,7 @@ import { MysqlError } from "mysql";
 
 import * as mysqlStore from "../../store/mysql";
 import { FilterQueries, Product } from "./interfaces";
+import { MysqlQueryResult } from "../../store/interfaces";
 
 class ProductService {
   private connection;
@@ -77,7 +78,7 @@ class ProductService {
       arrayOfData: data,
     });
 
-    return result;
+    return result as MysqlQueryResult;
   }
 
   /*

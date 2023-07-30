@@ -14,7 +14,7 @@ interface FilterByParams {
 
 interface CreateParams {
   table: string;
-  arrayOfData: Array<Array<string>>;
+  arrayOfData: Array<Array<string | number>>;
 }
 
 interface UpdateParams {
@@ -26,7 +26,11 @@ interface UpdateParams {
 // Including type equals to X and "Omit" and "Pick" keywords as practice material
 type GetOneParams = Omit<UpdateParams, "item">;
 
-type DeleteParams = Pick<UpdateParams, "table" | "id">;
+/* type DeleteParams = Pick<UpdateParams, "table" | "id">; */
+interface DeleteParams {
+  table: string;
+  id?: string;
+}
 
 interface ToggleItemStatus {
   table: string;
@@ -71,7 +75,7 @@ interface ConnectionMethods {
     boolean,
     id,
   }: ToggleItemStatus) => Promise<MysqlQueryResult | MysqlError>;
-  eliminate: ({ table, id }: DeleteParams) => Promise<String[] | MysqlError>;
+  eliminate: ({ table, id }: DeleteParams) => Promise<MysqlQueryResult>;
 }
 
 export {

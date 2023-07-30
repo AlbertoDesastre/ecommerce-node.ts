@@ -115,8 +115,9 @@ function handleConnection(): ConnectionMethods {
   function create({
     table,
     arrayOfData,
-  }: CreateParams): Promise<MysqlQueryResult | MysqlError> {
+  }: CreateParams): Promise<MysqlQueryResult> {
     return new Promise((resolve, reject) => {
+      /*  console.log(table, arrayOfData); */
       connection.query(
         `INSERT INTO ${table} (category_id, name, description, price, quantity, image) VALUES ?`,
         [arrayOfData],
@@ -198,21 +199,24 @@ function handleConnection(): ConnectionMethods {
     });
   }
 
-  function eliminate({
-    table,
-    id,
-  }: DeleteParams): Promise<String[] | MysqlError> {
+  function eliminate({ table, id }: DeleteParams): Promise<MysqlQueryResult> {
     return new Promise((resolve, reject) => {
-      connection.query(`DELETE FROM ${table} WHERE id = ${id}`, (err, data) => {
-        if (err) return reject(err);
+      if (id === undefined) {
+        connection.query(`DELETE FROM ${table}`, (err, data) => {
+          if (err) return reject(err);
 
-        console.log(
-          "You have pending to check if 'data' it's a string or a MysqlQueryResult !! Check it out look at this -->",
-          data
+          resolve(data);
+        });
+      } else {
+        connection.query(
+          `DELETE FROM ${table} WHERE id = ${id}`,
+          (err: MysqlError | null, data: MysqlQueryResult) => {
+            if (err) return reject(err);
+
+            resolve(data);
+          }
         );
-
-        resolve(data);
-      });
+      }
     });
   }
 

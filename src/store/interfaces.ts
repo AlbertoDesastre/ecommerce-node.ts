@@ -14,7 +14,7 @@ interface FilterByParams {
 
 interface CreateParams {
   table: string;
-  arrayOfData: Array<Array<string>>;
+  arrayOfData: Array<Array<string | number>>;
 }
 
 interface UpdateParams {

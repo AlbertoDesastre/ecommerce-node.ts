@@ -1,6 +1,6 @@
 import { MysqlError } from "mysql";
 
-import * as mysqlStore from "../../store/mysql";
+import { handleConnection } from "../../store/mysql";
 import { FilterQueries, Product } from "./interfaces";
 import { MysqlQueryResult } from "../../store/interfaces";
 
@@ -8,9 +8,7 @@ class ProductService {
   private connection;
 
   constructor() {
-    /* console.log("tipo del modulo -->", typeof mysqlStore);
-       console.log("cómo se ve el modulo -->", mysqlStore); */
-    this.connection = mysqlStore.handleConnection();
+    this.connection = handleConnection();
   }
 
   async list({ limit = "15", offset = "0" }) {

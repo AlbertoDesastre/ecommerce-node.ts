@@ -9,7 +9,6 @@ class ProductService {
 
   constructor() {
     this.connection = handleConnection();
-    console.log(this.connection);
   }
 
   async list({ limit = "15", offset = "0" }) {

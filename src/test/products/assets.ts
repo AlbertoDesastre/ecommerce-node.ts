@@ -2,7 +2,7 @@ import { Product } from "../../components/products/interfaces";
 
 export const fakeProducts: Product[] = [
   {
-    id: 11,
+    id: 1,
     category_id: 3,
     name: "Nintendo Switch",
     description: "Versatile gaming console for both handheld and TV gaming.",
@@ -14,7 +14,7 @@ export const fakeProducts: Product[] = [
     created_at: "2023-07-09T18:57:14.000Z",
   },
   {
-    id: 12,
+    id: 2,
     category_id: 8,
     name: "Samsung Galaxy Watch 4",
     description:
@@ -27,7 +27,7 @@ export const fakeProducts: Product[] = [
     created_at: "2023-07-09T18:57:14.000Z",
   },
   {
-    id: 13,
+    id: 3,
     category_id: 4,
     name: "LG OLED 4K TV",
     description: "Premium OLED TV with deep blacks and rich colors.",
@@ -39,7 +39,7 @@ export const fakeProducts: Product[] = [
     created_at: "2023-07-09T18:57:14.000Z",
   },
   {
-    id: 14,
+    id: 4,
     category_id: 9,
     name: "Fitbit Charge 4",
     description: "Fitness tracker with built-in GPS and heart rate monitoring.",
@@ -51,7 +51,7 @@ export const fakeProducts: Product[] = [
     created_at: "2023-07-09T18:57:14.000Z",
   },
   {
-    id: 15,
+    id: 5,
     category_id: 10,
     name: "Bose SoundLink Revolve+",
     description: "Portable Bluetooth speaker with 360-degree sound.",
@@ -63,7 +63,7 @@ export const fakeProducts: Product[] = [
     created_at: "2023-07-09T18:57:14.000Z",
   },
   {
-    id: 16,
+    id: 6,
     category_id: 11,
     name: "Google Nest Hub",
     description:
@@ -76,7 +76,7 @@ export const fakeProducts: Product[] = [
     created_at: "2023-07-09T18:57:14.000Z",
   },
   {
-    id: 17,
+    id: 7,
     category_id: 2,
     name: "Microsoft Surface Pro 7",
     description: "Versatile 2-in-1 laptop and tablet for productivity.",
@@ -88,7 +88,7 @@ export const fakeProducts: Product[] = [
     created_at: "2023-07-09T18:57:14.000Z",
   },
   {
-    id: 18,
+    id: 8,
     category_id: 5,
     name: "GoPro HERO9 Black",
     description:
@@ -101,7 +101,7 @@ export const fakeProducts: Product[] = [
     created_at: "2023-07-09T18:57:14.000Z",
   },
   {
-    id: 19,
+    id: 9,
     category_id: 11,
     name: "Amazon Echo Dot",
     description:
@@ -114,7 +114,7 @@ export const fakeProducts: Product[] = [
     created_at: "2023-07-09T18:57:14.000Z",
   },
   {
-    id: 20,
+    id: 10,
     category_id: 5,
     name: "Nikon D850",
     description: "Professional DSLR camera with high-resolution image sensor.",
@@ -126,7 +126,7 @@ export const fakeProducts: Product[] = [
     created_at: "2023-07-09T18:57:14.000Z",
   },
   {
-    id: 21,
+    id: 11,
     category_id: 6,
     name: "Apple AirPods Pro",
     description: "Premium wireless earbuds with active noise cancellation.",
@@ -138,7 +138,7 @@ export const fakeProducts: Product[] = [
     created_at: "2023-07-09T18:57:14.000Z",
   },
   {
-    id: 22,
+    id: 12,
     category_id: 12,
     name: "Samsung Galaxy Tab S7+",
     description: "High-performance Android tablet with stunning display.",
@@ -150,7 +150,7 @@ export const fakeProducts: Product[] = [
     created_at: "2023-07-09T18:57:14.000Z",
   },
   {
-    id: 23,
+    id: 13,
     category_id: 4,
     name: "Sony BRAVIA OLED TV",
     description: "Top-of-the-line OLED TV with impressive picture quality.",
@@ -162,7 +162,7 @@ export const fakeProducts: Product[] = [
     created_at: "2023-07-09T18:57:14.000Z",
   },
   {
-    id: 24,
+    id: 14,
     category_id: 8,
     name: "Garmin Forerunner 945",
     description: "Advanced GPS smartwatch for runners and triathletes.",
@@ -174,7 +174,7 @@ export const fakeProducts: Product[] = [
     created_at: "2023-07-09T18:57:14.000Z",
   },
   {
-    id: 25,
+    id: 15,
     category_id: 6,
     name: "Sony WH-1000XM3",
     description: "Noise-canceling headphones with exceptional sound quality.",

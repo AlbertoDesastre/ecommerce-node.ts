@@ -45,12 +45,31 @@ describe("test for Products Service", () => {
       });
     });
 
+    test("should send both 'limit' and 'offset' even when one of them it's missing", async () => {
+      await productService.list({ limit: "4" });
+      expect(mockSqlList).toHaveBeenCalledWith({
+        table: "products",
+        limit: "4",
+        offset: "0",
+      });
+      expect(productListSpy).toHaveBeenCalledTimes(1);
+
+      await productService.list({ offset: "33" });
+      expect(mockSqlList).toHaveBeenCalledWith({
+        table: "products",
+        limit: "15",
+        offset: "33",
+      });
+      expect(productListSpy).toHaveBeenCalledTimes(2);
+    });
+
     test("should receive a list of 15 products", async () => {
       mockSqlList.mockReturnValue(fakeProducts);
       const products = (await productService.list({})) as Product[];
 
       expect(productListSpy).toHaveBeenCalledTimes(1);
       expect(products.length).toBe(15);
+
       expect(mockSqlList).toHaveBeenCalled();
       expect(mockSqlList).toHaveBeenCalledTimes(1);
       expect(mockSqlList).toHaveBeenCalledWith({

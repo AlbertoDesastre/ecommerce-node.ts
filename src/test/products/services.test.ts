@@ -1,27 +1,35 @@
 const mockHandleConnection = jest.fn();
-const mockSqlList = jest.fn();
 const mockSqlGetOne = jest.fn();
+const mockSqlList = jest.fn();
+const mockSqlFilterBy = jest.fn();
+const mockSqlCreate = jest.fn();
+const mockSqlUpdate = jest.fn();
+const mockSqlToggleItemStatus = jest.fn();
+const mockSqlEliminate = jest.fn();
+
+jest.mock("../../store/mysql", () => {
+  return {
+    handleConnection: mockHandleConnection.mockReturnValue({
+      getOne: mockSqlGetOne,
+      list: mockSqlList,
+      filterBy: mockSqlFilterBy,
+      create: mockSqlCreate,
+      update: mockSqlUpdate,
+      toggleItemStatus: mockSqlToggleItemStatus,
+      eliminate: mockSqlEliminate,
+    }),
+  };
+});
 
 import { ProductService } from "../../components/products/services";
 import { Product } from "../../components/products/interfaces";
 import { fakeProducts } from "./assets";
 
-jest.mock("../../store/mysql", () => {
-  return {
-    handleConnection: mockHandleConnection.mockReturnValue({
-      list: mockSqlList,
-      getOne: mockSqlGetOne,
-    }),
-  };
-});
-
 describe("test for Products Service", () => {
   let productService: ProductService;
-  let productListSpy: jest.SpyInstance;
 
   beforeAll(() => {
     productService = new ProductService();
-    productListSpy = jest.spyOn(productService, "list");
   });
 
   beforeEach(() => {
@@ -29,7 +37,17 @@ describe("test for Products Service", () => {
     jest.clearAllMocks();
   });
 
-  describe("products calling [LIST]", () => {
+  describe("products calling [list]", () => {
+    let productListSpy: jest.SpyInstance;
+
+    beforeAll(() => {
+      productListSpy = jest.spyOn(productService, "list");
+    });
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
     test("should receive 'limit=15' and 'offset=0' when it's undefined from controller", async () => {
       productService.list({});
 
@@ -99,4 +117,6 @@ describe("test for Products Service", () => {
       expect(products[0].name).toEqual("Nintendo Switch");
     });
   });
+
+  describe("products calling [filterBy]", () => {});
 });

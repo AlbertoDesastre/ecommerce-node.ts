@@ -1,4 +1,5 @@
 import { router as productsRouter } from "./products/routes";
+import { router as userRouter } from "./user/routes";
 import express from "express";
 
 import type { Express } from "express";
@@ -16,8 +17,8 @@ function routerApi(app: Express) {
   app.use("/api/v1", router);
 
   router.use("/products", productsRouter);
-  /*router.use("/users", productsRouter);
-    router.use("/category", productsRouter);*/
+  router.use("/users", userRouter);
+  // router.use("/category", productsRouter);
 }
 
 export { routerApi };

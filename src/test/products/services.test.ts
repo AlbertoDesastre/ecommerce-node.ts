@@ -24,6 +24,7 @@ jest.mock("../../store/mysql", () => {
 import { ProductService } from "../../components/products/services";
 import { Product } from "../../components/products/interfaces";
 import { fakeProducts } from "./assets";
+import { MysqlError } from "mysql";
 
 describe("test for Products Service", () => {
   let productService: ProductService;
@@ -118,5 +119,76 @@ describe("test for Products Service", () => {
     });
   });
 
-  describe("products calling [filterBy]", () => {});
+  describe("products calling [filterBy]", () => {
+    let productFilterBySpy: jest.SpyInstance;
+
+    beforeAll(() => {
+      productFilterBySpy = jest.spyOn(productService, "filterBy");
+    });
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    test("should receive all given parameters ", () => {
+      productService.filterBy({});
+      expect(productFilterBySpy).toBeCalledWith({});
+      expect(mockSqlFilterBy).toBeCalledTimes(1);
+      expect(mockSqlFilterBy).toBeCalledWith({
+        table: "products",
+        conditions: "",
+        filters: [],
+      });
+
+      productService.filterBy({
+        name: "nintendo",
+        color: "black",
+      });
+      expect(productFilterBySpy).toBeCalledWith({
+        name: "nintendo",
+        price: undefined,
+        color: "black",
+      });
+      expect(mockSqlFilterBy).toBeCalledWith({
+        table: "products",
+        conditions: "name LIKE ? AND color LIKE ?",
+        filters: ["%nintendo%", "%black%"],
+      });
+
+      productService.filterBy({
+        price: "2000",
+      });
+      expect(productFilterBySpy).toBeCalledWith({
+        price: "2000",
+      });
+      expect(mockSqlFilterBy).toBeCalledWith({
+        table: "products",
+        conditions: "price <= ?",
+        filters: ["2000"],
+      });
+    });
+
+    test("should give mySqlStore the correct parameters when all atributes are filled", () => {
+      productService.filterBy({
+        name: "nintendo",
+        price: "2000",
+        color: "black",
+      });
+      expect(productFilterBySpy).toBeCalledWith({
+        name: "nintendo",
+        price: "2000",
+        color: "black",
+      });
+      expect(mockSqlFilterBy).toBeCalledWith({
+        table: "products",
+        conditions: "name LIKE ? AND price <= ? AND color LIKE ?",
+        filters: ["%nintendo%", "2000", "%black%"],
+      });
+    });
+  });
+
+  describe("products calling [getOne]", () => {});
+  describe("products calling [create]", () => {});
+  describe("products calling [update]", () => {});
+  describe("products calling [deactivateProduct]", () => {});
 });

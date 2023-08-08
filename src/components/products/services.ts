@@ -32,15 +32,15 @@ class ProductService {
     let conditions = "";
 
     if (name) {
-      conditionsElements.push("name LIKE ? ");
+      conditionsElements.push("name LIKE ?");
       filters.push(`%${name}%`);
     }
     if (price) {
-      conditionsElements.push("price <= ? ");
+      conditionsElements.push("price <= ?");
       filters.push(price);
     }
     if (color) {
-      conditionsElements.push("color LIKE ? ");
+      conditionsElements.push("color LIKE ?");
       filters.push(`%${color}%`);
     }
     /* For example, in case of the consumer searching for all 3 filters, the "conditions" would look like: [ '%ca%', 800, '%black%' ]

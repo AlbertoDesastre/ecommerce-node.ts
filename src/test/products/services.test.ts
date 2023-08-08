@@ -24,7 +24,6 @@ jest.mock("../../store/mysql", () => {
 import { ProductService } from "../../components/products/services";
 import { Product } from "../../components/products/interfaces";
 import { fakeProducts } from "./assets";
-import { MysqlError } from "mysql";
 
 describe("test for Products Service", () => {
   let productService: ProductService;
@@ -187,8 +186,77 @@ describe("test for Products Service", () => {
     });
   });
 
-  describe("products calling [getOne]", () => {});
-  describe("products calling [create]", () => {});
+  //  describe("products calling [getOne]", () => {});
+  describe("products calling [create]", () => {
+    let productCreateSpy: jest.SpyInstance;
+
+    beforeAll(() => {
+      productCreateSpy = jest.spyOn(productService, "create");
+    });
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+    test("should send the values of the array that's coming from controller", () => {
+      productService.create([
+        {
+          id: 3,
+          category_id: 4,
+          name: "LG OLED 4K TV",
+          description: "Premium OLED TV with deep blacks and rich colors.",
+          color: "Ceramic Black",
+          price: 127,
+          quantity: 30,
+          image: "",
+          active: 1,
+          created_at: "2023-07-09T18:57:14.000Z",
+        },
+        {
+          id: 4,
+          category_id: 9,
+          name: "Fitbit Charge 4",
+          description:
+            "Fitness tracker with built-in GPS and heart rate monitoring.",
+          color: "Black",
+          price: 127,
+          quantity: 200,
+          image: "",
+          active: 1,
+          created_at: "2023-07-09T18:57:14.000Z",
+        },
+      ]);
+
+      expect(mockSqlCreate).toHaveBeenCalledWith({
+        table: "products",
+        arrayOfData: [
+          [
+            3,
+            4,
+            "LG OLED 4K TV",
+            "Premium OLED TV with deep blacks and rich colors.",
+            "Ceramic Black",
+            127,
+            30,
+            "",
+            1,
+            "2023-07-09T18:57:14.000Z",
+          ],
+          [
+            4,
+            9,
+            "Fitbit Charge 4",
+            "Fitness tracker with built-in GPS and heart rate monitoring.",
+            "Black",
+            127,
+            200,
+            "",
+            1,
+            "2023-07-09T18:57:14.000Z",
+          ],
+        ],
+      });
+    });
+  });
   describe("products calling [update]", () => {});
   describe("products calling [deactivateProduct]", () => {});
 });

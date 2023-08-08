@@ -186,7 +186,6 @@ describe("test for Products Service", () => {
     });
   });
 
-  //  describe("products calling [getOne]", () => {});
   describe("products calling [create]", () => {
     let productCreateSpy: jest.SpyInstance;
 
@@ -257,6 +256,4 @@ describe("test for Products Service", () => {
       });
     });
   });
-  describe("products calling [update]", () => {});
-  describe("products calling [deactivateProduct]", () => {});
 });

@@ -18,6 +18,14 @@ describe("Test for products endpoint", () => {
     server.close();
   });
 
+  /* E2E, PENDING TO ADD THE FOLLOWING...
+    Test Case: Limit and Offset at Database Boundaries
+    Verify that the function correctly handles cases where "limit" and "offset" values provided are at the boundaries of the database.
+
+    Test Case: Limit and Offset Exceeding Product Quantity
+    Ensure that the function properly handles cases where "limit" and "offset" are greater than the total quantity of products.
+   */
+
   describe("test for [GET] /api/v1/products/", () => {
     // Arrange
     beforeEach(async () => {

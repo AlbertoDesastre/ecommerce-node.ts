@@ -10,7 +10,7 @@ const authService = new AuthService();
 const get = (req: Request, res: Response) => {
   UserService.get();
 };
-const register = (req: Request, res: Response) => {
+const register = async (req: Request, res: Response) => {
   authService.create();
   return { id: "", user: "", password: "" };
 };

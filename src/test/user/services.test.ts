@@ -3,13 +3,11 @@ import * as userController from "../../components/user/controllers";
 import { Request, Response } from "express";
 
 describe("test for User Service ", () => {
-  let userControllerSpy: jest.SpyInstance;
   let userRouterSpy: jest.SpyInstance;
   let request: Request;
   let response: Response;
-  beforeAll(() => {
-    userControllerSpy = jest.spyOn(userController, "register");
-  });
+
+  beforeAll(() => {});
   beforeEach(() => {
     jest.clearAllMocks();
   });

@@ -4,10 +4,10 @@ import { handleConnection } from "../../store/mysql";
 import { MysqlQueryResult } from "../../store/interfaces";
 
 class AuthService {
-  /*  private connection; */
+  private connection;
 
   constructor() {
-    /*   this.connection = handleConnection(); */
+    this.connection = handleConnection();
   }
   async create() {}
 

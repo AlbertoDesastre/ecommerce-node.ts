@@ -33,14 +33,14 @@ describe("test for User Controller ", () => {
   });
 
   describe("controller calling [register]", () => {
-    test("should receive REQUEST & RESPONSE", () => {
-      userController.register(request, response);
+    test("should receive REQUEST & RESPONSE", async () => {
+      await userController.register(request, response);
       expect(userControllerRegisterSpy).toHaveBeenCalledWith(request, response);
       expect(userControllerRegisterSpy).toHaveBeenCalledTimes(1);
     });
 
-    test("should return an object with user properties", () => {
-      const value = userController.register(request, response);
+    test("should return an object with user properties", async () => {
+      const value = await userController.register(request, response);
       expect(value).toMatchObject({
         id: expect.any(String),
         user: expect.any(String),
@@ -48,8 +48,8 @@ describe("test for User Controller ", () => {
       });
     });
 
-    test("should have called authService.register", () => {
-      userController.register(request, response);
+    test("should have called authService.register", async () => {
+      await userController.register(request, response);
 
       expect(authServiceCreateSpy).toHaveBeenCalledTimes(1);
     });

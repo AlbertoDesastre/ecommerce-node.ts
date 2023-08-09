@@ -1,9 +1,9 @@
 const mockAuthService = jest.fn();
-const mockAuthServiceCreate = jest.fn();
+const mockAuthServiceRegister = jest.fn();
 jest.mock("../../components/auth/services", () => {
   return {
     AuthService: mockAuthService.mockReturnValue({
-      create: mockAuthServiceCreate,
+      register: mockAuthServiceRegister,
       checkUserToken: jest.fn(),
       eliminateUser: jest.fn(),
     }),
@@ -23,7 +23,7 @@ describe("test for User Controller ", () => {
 
   beforeAll(() => {
     userControllerRegisterSpy = jest.spyOn(userController, "register");
-    authServiceCreateSpy = jest.spyOn(authService, "create");
+    authServiceCreateSpy = jest.spyOn(authService, "register");
   });
 
   beforeEach(() => {

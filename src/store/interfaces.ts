@@ -76,6 +76,7 @@ interface ConnectionMethods {
     id,
   }: ToggleItemStatus) => Promise<MysqlQueryResult | MysqlError>;
   eliminate: ({ table, id }: DeleteParams) => Promise<MysqlQueryResult>;
+  closeConnection: () => void;
 }
 
 export {

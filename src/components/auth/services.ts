@@ -9,7 +9,7 @@ class AuthService {
   constructor() {
     this.connection = handleConnection();
   }
-  async register() {}
+  async register({ user, password }: { user: string; password: string }) {}
 
   async checkUserToken() {}
 

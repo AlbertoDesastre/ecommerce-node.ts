@@ -60,7 +60,9 @@ describe("test for User Service ", () => {
   });
 
   /*RECORDAR, TENGO QUE CERRAR LA CONEXIÓN Y ADEMÁS ENCONTRAR UNA MANERA DE NO TENER QUE REPETIR EL MOCK DE HANDLECONNECTION CONSTANTEMENTE  */
-  describe("controller calling [register]", () => {
-    test("should ", () => {});
+  describe("service calling [register]", () => {
+    test("should return the same object that received from controller", () => {
+/*       expect(authService.register).toBeCalledWith({}); */
+    });
   });
 });

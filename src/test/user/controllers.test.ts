@@ -32,6 +32,11 @@ describe("test for User Controller ", () => {
     jest.clearAllMocks();
   });
 
+  afterEach(() => {
+    request = {} as Request;
+    response = {} as Response;
+  });
+
   describe("controller calling [register]", () => {
     test("should receive REQUEST & RESPONSE", async () => {
       await userController.register(request, response);
@@ -39,12 +44,27 @@ describe("test for User Controller ", () => {
       expect(userControllerRegisterSpy).toHaveBeenCalledTimes(1);
     });
 
-    test("should return an object with user properties", async () => {
-      const value = await userController.register(request, response);
-      expect(value).toMatchObject({
+    test("should receive an object from the request", () => {
+      request.body = { user: "testuser", password: "12345" };
+      userController.register(request, response);
+
+      const [[receivedRequest, receivedResponse]] =
+        userControllerRegisterSpy.mock.calls;
+      expect(userControllerRegisterSpy).toHaveBeenCalledTimes(1);
+      expect(receivedRequest).toEqual({
+        body: { user: "testuser", password: "12345" },
+      });
+      expect(receivedResponse).toBe(response);
+    });
+
+    test("should return the object received from the request", async () => {
+      request.body = { user: "testuser", password: "12345" };
+      const user = await userController.register(request, response);
+
+      expect(user).toEqual({
         id: expect.any(String),
-        user: expect.any(String),
-        password: expect.any(String),
+        user: "testuser",
+        password: "12345",
       });
     });
 
@@ -52,6 +72,15 @@ describe("test for User Controller ", () => {
       await userController.register(request, response);
 
       expect(authServiceCreateSpy).toHaveBeenCalledTimes(1);
+    });
+
+    test("should have called authService.register with request.body info ", async () => {
+      request.body = { user: "testuser", password: "12345" };
+      await userController.register(request, response);
+
+      const [[receivedParam]] = authServiceCreateSpy.mock.calls;
+
+      expect(receivedParam).toEqual({ user: "testuser", password: "12345" });
     });
   });
 });

@@ -4,7 +4,6 @@ const handleConnectionMock = {
   list: mockList,
   getOne: mockGetOne,
 };
-/* The 3 following lines were added just now. I have absolutely no idea why it's working now */
 const mysqlStoreMock = jest.requireActual("../store/mysql");
 const handleConnection = jest.fn().mockReturnValue(handleConnectionMock);
 mysqlStoreMock.handleConnection = handleConnection;

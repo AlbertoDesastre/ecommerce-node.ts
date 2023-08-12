@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import * as UserService from "./services";
 import { AuthService } from "../auth/services";
+import { errors, success } from "../../network";
 
 /* DISCLAIMER!! This file contains arrow functions and not a Class for learning purposes.
 The idea is to keep consistency and use Classes on the rest of the project */

@@ -220,6 +220,16 @@ function handleConnection(): ConnectionMethods {
     });
   }
 
+  function closeConnection() {
+    connection.end((err) => {
+      if (err) {
+        console.error(err);
+        return;
+      }
+      console.log("Connection closed.");
+    });
+  }
+
   return {
     getOne,
     list,
@@ -228,6 +238,7 @@ function handleConnection(): ConnectionMethods {
     update,
     toggleItemStatus,
     eliminate,
+    closeConnection,
   };
 }
 

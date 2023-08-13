@@ -12,15 +12,14 @@ jest.mock("../../components/auth/services", () => {
 
 import * as userController from "../../components/user/controllers";
 import { AuthService } from "../../components/auth/services";
-import { Request, Response, response, Express } from "express";
+import { Request, Response, Express } from "express";
+import express from "express";
 import request from "supertest";
 import http from "http";
 import { app } from "../..";
+import { routerApi } from "../../components";
 
 describe("test for User Controller ", () => {
-  let expressApp: Express;
-  let server: http.Server;
-
   let userControllerRegisterSpy: jest.SpyInstance;
   let authService = new AuthService();
   let authServiceCreateSpy: jest.SpyInstance;
@@ -44,10 +43,6 @@ describe("test for User Controller ", () => {
   afterEach(() => {
     mockRequest = {} as Request;
     mockResponse = {} as Response;
-  });
-
-  afterAll(() => {
-    /*  server.close(); */
   });
 
   describe("controller calling [register]", () => {
@@ -84,41 +79,6 @@ describe("test for User Controller ", () => {
       });
     });
 
-    /*
-    !!! Leaving this as an example of a workaround when I wasn't using 'supertest' for this test case !!!
-
-    test("should return response with user information", async () => {
-      mockRequest.body = { user: "testuser", password: "12345" };
-      const controllerResponse = await userController.register(
-        mockRequest,
-        mockResponse
-      );
-
-      expect(controllerResponse).toEqual({
-        error: false,
-        status: 200,
-        message: "User created succesfully",
-        body: [{ user: mockRequest.body.user, token: "" }],
-      });
-    }); */
-
-    /*  test("should return response with user information", async () => {
-       return await request(app);
-
-      mockRequest.body = { user: "testuser", password: "12345" };
-      const controllerResponse = await userController.register(
-        mockRequest,
-        mockResponse
-      );
-
-      expect(controllerResponse).toEqual({
-        error: false,
-        status: 200,
-        message: "User created succesfully",
-        body: [{ user: mockRequest.body.user, token: "" }],
-      });
-    });
- */
     test("should have called authService.register", async () => {
       await userController.register(mockRequest, mockResponse);
 
@@ -133,5 +93,33 @@ describe("test for User Controller ", () => {
 
       expect(receivedParam).toEqual({ user: "testuser", password: "12345" });
     });
+  });
+});
+
+//not working test. Right now it tries to log into Mysql DB even when mocking it.
+describe("testing routes", () => {
+  let expressApp: Express;
+
+  beforeAll(() => {
+    expressApp = app;
+    routerApi(expressApp);
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test("should say goodbye", (done) => {
+    request(expressApp)
+      .get("/goodbye")
+      .expect(200)
+      .end((err, response) => {
+        if (err) {
+          done(err);
+        } else {
+          expect(response.text).toEqual("GOODBYEEEE!!");
+          done();
+        }
+      });
   });
 });

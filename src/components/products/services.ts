@@ -1,17 +1,18 @@
 import { MysqlError } from "mysql";
 
-import { handleConnection } from "../../store/mysql";
+import { pool, handleConnection } from "../../store/mysql";
 import { FilterQueries, Product } from "./interfaces";
 import { MysqlQueryResult } from "../../store/interfaces";
 
 class ProductService {
   private connection;
-
   constructor() {
+    /*  this.connection = pool; */
     this.connection = handleConnection();
   }
 
   async list({ limit = "15", offset = "0" }) {
+    /* const products = await this.connection.query(...) */
     const products = (await this.connection.list({
       table: "products",
       limit,

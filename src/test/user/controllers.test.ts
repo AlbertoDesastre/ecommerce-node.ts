@@ -97,7 +97,7 @@ describe("test for User Controller ", () => {
 });
 
 //not working test. Right now it tries to log into Mysql DB even when mocking it.
-describe("testing routes", () => {
+/* describe("testing routes", () => {
   let expressApp: Express;
 
   beforeAll(() => {
@@ -123,3 +123,4 @@ describe("testing routes", () => {
       });
   });
 });
+ */

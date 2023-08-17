@@ -29,8 +29,8 @@ function handleConnection(): ConnectionMethods {
       setTimeout(handleConnection, 2000);
     } else {
       console.log("DB Connected :)");
+      connection.release();
     }
-    connection.release();
   });
 
   pool.on("error", (err) => {

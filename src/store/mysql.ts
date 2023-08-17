@@ -10,7 +10,7 @@ import {
   MysqlQueryResult,
   ToggleItemStatus,
   UpdateParams,
-} from "./interfaces";
+} from "./types";
 
 const dbconf = {
   connectionLimit: 2,

@@ -1,24 +1,24 @@
 import { MysqlError } from "mysql";
 
-interface ListParams {
+type Params = {
   table: string;
+};
+
+interface ListParams extends Params {
   limit: string;
   offset: string;
 }
 
-interface FilterByParams {
-  table: string;
+interface FilterByParams extends Params {
   conditions: string;
   filters: string[];
 }
 
-interface CreateParams {
-  table: string;
+interface CreateParams extends Params {
   arrayOfData: Array<Array<string | number>>;
 }
 
-interface UpdateParams {
-  table: string;
+interface UpdateParams extends Params {
   item: Object;
   id: string;
 }
@@ -27,18 +27,16 @@ interface UpdateParams {
 type GetOneParams = Omit<UpdateParams, "item">;
 
 /* type DeleteParams = Pick<UpdateParams, "table" | "id">; */
-interface DeleteParams {
-  table: string;
+interface DeleteParams extends Params {
   id?: string;
 }
 
-interface ToggleItemStatus {
-  table: string;
+interface ToggleItemStatus extends Params {
   boolean: "TRUE" | "FALSE";
   id: string;
 }
 
-interface MysqlQueryResult {
+type MysqlQueryResult = {
   fieldCount: number;
   affectedRows: number;
   insertId: number;
@@ -47,9 +45,9 @@ interface MysqlQueryResult {
   message: string;
   protocol41: boolean;
   changedRows: number;
-}
+};
 
-interface ConnectionMethods {
+type ConnectionMethods = {
   getOne: ({ table, id }: GetOneParams) => Promise<Object[] | MysqlError>;
   list: ({
     table,
@@ -77,7 +75,7 @@ interface ConnectionMethods {
   }: ToggleItemStatus) => Promise<MysqlQueryResult | MysqlError>;
   eliminate: ({ table, id }: DeleteParams) => Promise<MysqlQueryResult>;
   closeConnection: () => void;
-}
+};
 
 export {
   FilterByParams,

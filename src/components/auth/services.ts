@@ -1,7 +1,7 @@
 import { MysqlError } from "mysql";
 
 import { handleConnection } from "../../store/mysql";
-import { MysqlQueryResult } from "../../store/interfaces";
+import { MysqlQueryResult } from "../../store/types";
 
 class AuthService {
   private connection;

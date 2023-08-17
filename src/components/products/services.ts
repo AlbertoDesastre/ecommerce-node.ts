@@ -1,8 +1,8 @@
 import { MysqlError } from "mysql";
 
 import { pool, handleConnection } from "../../store/mysql";
-import { FilterQueries, Product } from "./interfaces";
-import { MysqlQueryResult } from "../../store/interfaces";
+import { FilterQueries, Product } from "./types";
+import { MysqlQueryResult } from "../../store/types";
 
 class ProductService {
   private connection;

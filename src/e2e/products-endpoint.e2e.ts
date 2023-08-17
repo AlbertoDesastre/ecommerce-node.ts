@@ -3,7 +3,7 @@ import { Express } from "express";
 import * as mysqlStore from "../store/mysql";
 import http from "http";
 import { app } from "..";
-import { ConnectionMethods } from "../store/interfaces";
+import { ConnectionMethods } from "../store/types";
 
 describe("Test for products endpoint", () => {
   let expressApp: Express;

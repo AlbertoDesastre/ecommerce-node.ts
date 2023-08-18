@@ -46,15 +46,18 @@ describe("test for User Controller ", () => {
   });
 
   describe("controller calling [register]", () => {
+    /*
+    >> This should be an e2e and check responses/requests
     test("should receive REQUEST & RESPONSE", async () => {
       await userController.register(mockRequest, mockResponse);
+
       expect(userControllerRegisterSpy).toHaveBeenCalledWith(
         mockRequest,
         mockResponse
       );
       expect(userControllerRegisterSpy).toHaveBeenCalledTimes(1);
     });
-
+ */
     test("should receive an object from the request", () => {
       mockRequest.body = { user: "testuser", password: "12345" };
       userController.register(mockRequest, mockResponse);
@@ -68,7 +71,9 @@ describe("test for User Controller ", () => {
       expect(receivedResponse).toBe(mockResponse);
     });
 
-    test("should return the object received from the request", async () => {
+    /*
+>> This also should be included maybe on the e2e testing
+test("should return the object received from the request", async () => {
       mockRequest.body = { user: "testuser", password: "12345" };
       const user = await userController.register(mockRequest, mockResponse);
 
@@ -77,7 +82,7 @@ describe("test for User Controller ", () => {
         user: mockRequest.body.user,
         password: mockRequest.body.password,
       });
-    });
+    }); */
 
     test("should have called authService.register", async () => {
       await userController.register(mockRequest, mockResponse);

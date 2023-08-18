@@ -12,13 +12,16 @@ const get = (req: Request, res: Response) => {
   UserService.get();
 };
 const register = async (req: Request, res: Response) => {
-  req.body = { user: "testuser", password: "12345" };
-  const { user, password } = req.body;
+  /*   req.body = { user: "testuser", password: "12345" }; */
+  const user = "testuser";
+  const password = "12345";
+  const mockUser = "";
+  const mockPassword = "";
   const id = "";
 
   authService.register({ user, password });
 
-  return { id, user, password };
+  return { id, mockUser, mockPassword };
 };
 const update = (req: Request, res: Response) => {
   UserService.update();

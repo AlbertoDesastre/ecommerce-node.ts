@@ -1,8 +1,8 @@
 import request from "supertest";
 import { Express } from "express";
-import * as mysqlStore from "../../store/mysql";
 import http from "http";
 import { app } from "../../app";
+import * as mysqlStore from "../../store/mysql";
 import { ConnectionMethods } from "../../store/types";
 import * as userController from "../../components/user/controllers";
 
@@ -17,6 +17,7 @@ describe("Test for products endpoint", () => {
     expressApp = app;
     server = app.listen(3002);
     connection = mysqlStore.handleConnection();
+
     userControllerSpy = jest.spyOn(userController, "register");
   });
   afterEach(async () => {

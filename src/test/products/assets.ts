@@ -1,4 +1,4 @@
-import { Product } from "../../components/products/interfaces";
+import { Product } from "../../components/products/types";
 
 export const fakeProducts: Product[] = [
   {

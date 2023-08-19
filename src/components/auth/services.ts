@@ -1,7 +1,7 @@
 import { MysqlError } from "mysql";
 
 import { handleConnection } from "../../store/mysql";
-import { MysqlQueryResult } from "../../store/interfaces";
+import { MysqlQueryResult } from "../../store/types";
 
 class AuthService {
   private connection;
@@ -9,7 +9,15 @@ class AuthService {
   constructor() {
     this.connection = handleConnection();
   }
-  async register({ user, password }: { user: string; password: string }) {}
+  async register({
+    username,
+    password,
+  }: {
+    username: string;
+    password: string;
+  }) {
+    return [{ username, password }];
+  }
 
   async checkUserToken() {}
 

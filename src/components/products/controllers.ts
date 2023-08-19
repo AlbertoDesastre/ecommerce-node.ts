@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { ProductService } from "./services";
 import { success, errors } from "../../network";
-import { FilterQueries, Product } from "./interfaces";
+import { FilterQueries, Product } from "./types";
 import { MysqlError } from "mysql";
 
 /* As a general concept, controllers and in charge of managing the entry and the exit of the routes.

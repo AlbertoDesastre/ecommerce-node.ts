@@ -1,10 +1,10 @@
-interface FilterQueries {
+type FilterQueries = {
   name?: string;
   price?: string;
   color?: string;
-}
+};
 
-interface Product {
+type Product = {
   id: number;
   category_id: number;
   name: string;
@@ -15,6 +15,6 @@ interface Product {
   image: string;
   active: 0 | 1;
   created_at: string;
-}
+};
 
 export { FilterQueries, Product };

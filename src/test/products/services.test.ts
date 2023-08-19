@@ -22,7 +22,7 @@ jest.mock("../../store/mysql", () => {
 });
 
 import { ProductService } from "../../components/products/services";
-import { Product } from "../../components/products/interfaces";
+import { Product } from "../../components/products/types";
 import { fakeProducts } from "./assets";
 
 describe("test for Products Service", () => {

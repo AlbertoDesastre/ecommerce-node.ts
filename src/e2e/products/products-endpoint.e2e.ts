@@ -1,9 +1,9 @@
 import request from "supertest";
 import { Express } from "express";
-import * as mysqlStore from "../store/mysql";
+import * as mysqlStore from "../../store/mysql";
 import http from "http";
-import { app } from "..";
-import { ConnectionMethods } from "../store/types";
+import { app } from "../../app";
+import { ConnectionMethods } from "../../store/types";
 
 describe("Test for products endpoint", () => {
   let expressApp: Express;
@@ -14,7 +14,7 @@ describe("Test for products endpoint", () => {
     server = app.listen(3002);
     connection = mysqlStore.handleConnection();
   });
-  afterAll(() => {
+  afterEach(() => {
     server.close();
   });
 

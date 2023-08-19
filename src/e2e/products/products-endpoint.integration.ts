@@ -10,7 +10,7 @@ mysqlStoreMock.handleConnection = handleConnection;
 import request from "supertest";
 import { Express } from "express";
 import http from "http";
-import { app } from "..";
+import { app } from "../../app";
 
 /* When calling the real mysqlStore, it will get substitute by "mysqlStoreMock". Now something really interesting happens here...
 The product service calls "mysqlStoreMock" that contains the function "handleConnection", exactly the same name the real module has.

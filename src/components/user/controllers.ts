@@ -26,11 +26,11 @@ const register = (req: Request, res: Response) => {
 
   authService
     .register({ username, email, password })
-    .then((user) => {
+    .then((result) => {
       return success({
         res,
         message: "User created succesfully",
-        data: `Login using your password and email: ${email}`,
+        data: "Login using your password and user/email",
         status: 201,
       });
     })

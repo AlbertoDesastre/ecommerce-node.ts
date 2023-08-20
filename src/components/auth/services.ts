@@ -17,14 +17,16 @@ class AuthService {
 
   createToken({
     username,
+    email,
     password,
   }: {
     username: string;
+    email: string;
     password: string;
   }): string {
     try {
       const token = jwt.sign(
-        { username, password },
+        { username, email, password },
         process.env.SECRET as string
       );
 
@@ -50,7 +52,7 @@ class AuthService {
   }
 
   async register({ username, email, password }: BasicUser) {
-    const token = this.createToken({ username, password });
+    const token = this.createToken({ username, email, password });
     const hashedPassword = await this.encryptPassword({ password });
 
     let userInformation: User = {

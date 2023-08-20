@@ -14,6 +14,7 @@ const get = (req: Request, res: Response) => {
 
 const register = (req: Request, res: Response) => {
   const { username, password } = req.body;
+
   authService.register({ username, password }).then((user) => {
     return success({ res, message: "User created", data: user, status: 200 });
   });

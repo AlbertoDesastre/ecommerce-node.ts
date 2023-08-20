@@ -31,6 +31,8 @@ describe("Test for products endpoint", () => {
     beforeEach(async () => {
       const products = await connection.create({
         table: "products",
+        tableColumns:
+          "(category_id, name, description, price, quantity, image)",
         arrayOfData: [
           [
             11,

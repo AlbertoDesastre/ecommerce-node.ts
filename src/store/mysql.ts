@@ -107,12 +107,13 @@ function handleConnection(): ConnectionMethods {
 
   function create({
     table,
+    tableColumns,
     arrayOfData,
   }: CreateParams): Promise<MysqlQueryResult> {
     return new Promise((resolve, reject) => {
       /*  console.log(table, arrayOfData); */
       pool.query(
-        `INSERT INTO ${table} (category_id, name, description, price, quantity, image) VALUES ?`,
+        `INSERT INTO ${table} ${tableColumns} VALUES ?`,
         [arrayOfData],
         (err, data: MysqlQueryResult) => {
           if (err) return reject(err);

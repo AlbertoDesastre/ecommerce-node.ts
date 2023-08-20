@@ -17,4 +17,7 @@ type Product = {
   created_at: string;
 };
 
-export { FilterQueries, Product };
+type ProductsTableColumns =
+  "(category_id, name, description, price, quantity, image)";
+
+export { FilterQueries, Product, ProductsTableColumns };

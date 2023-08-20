@@ -227,6 +227,8 @@ describe("test for Products Service", () => {
 
       expect(mockSqlCreate).toHaveBeenCalledWith({
         table: "products",
+        tableColumns:
+          "(category_id, name, description, price, quantity, image)",
         arrayOfData: [
           [
             3,

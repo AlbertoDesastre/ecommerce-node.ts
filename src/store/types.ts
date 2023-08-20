@@ -15,6 +15,7 @@ interface FilterByParams extends Params {
 }
 
 interface CreateParams extends Params {
+  tableColumns: string;
   arrayOfData: Array<Array<string | number>>;
 }
 

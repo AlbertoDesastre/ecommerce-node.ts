@@ -13,11 +13,26 @@ const get = (req: Request, res: Response) => {
 };
 
 const register = (req: Request, res: Response) => {
-  const { username, password } = req.body;
+  const { username, email, password } = req.body;
 
-  authService.register({ username, password }).then((user) => {
-    return success({ res, message: "User created", data: user, status: 200 });
-  });
+  if (!username || !email || !password) {
+    return errors({
+      res,
+      message:
+        "Username, email and password must be provided to register an user",
+      status: 400,
+    });
+  }
+
+  authService
+    .register({ username, email, password })
+    .then((user) => {
+      return success({ res, message: "User created", data: user, status: 200 });
+    })
+    .catch((err) => {
+      console.error(err);
+      return errors({ res, message: err, status: 500 });
+    });
 };
 
 const update = (req: Request, res: Response) => {

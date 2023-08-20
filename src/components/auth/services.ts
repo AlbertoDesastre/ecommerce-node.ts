@@ -7,6 +7,7 @@ import jwt from "jsonwebtoken";
 import { handleConnection } from "../../store/mysql";
 import { MysqlQueryResult, TableColumns } from "../../store/types";
 import { User, BasicUser } from "../user/types";
+import { create } from "domain";
 
 class AuthService {
   private connection;
@@ -52,7 +53,6 @@ class AuthService {
   }
 
   async register({ username, email, password }: BasicUser) {
-    const token = this.createToken({ username, email, password });
     const hashedPassword = await this.encryptPassword({ password });
 
     let userInformation: User = {
@@ -61,7 +61,6 @@ class AuthService {
       email,
       password: hashedPassword,
       avatar: null,
-      token,
       created_at: new Date(),
     };
 
@@ -72,6 +71,27 @@ class AuthService {
     });
 
     return response;
+  }
+
+  async login({ username, email, password }: BasicUser) {
+    const token = this.createToken({ username, email, password });
+
+    //pending to type this better
+    const response: any = await this.connection.login({
+      table: "users",
+      username,
+      email,
+    });
+
+    const passwordMatch = await bcrypt.compare(password, response.password);
+
+    if (!passwordMatch) {
+      throw new Error("Password do not match");
+    }
+
+    //pending MAYBE to update token in the database. Check
+
+    return this.createToken({ username, email, password });
   }
 
   async checkUserToken() {}

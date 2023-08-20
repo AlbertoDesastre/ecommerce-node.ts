@@ -7,7 +7,7 @@ type BasicUser = {
 interface User extends BasicUser {
   id: string;
   avatar: string | null;
-  token: string;
+  token?: string;
   created_at: Date;
 }
 

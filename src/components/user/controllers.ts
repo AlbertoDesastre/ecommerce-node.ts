@@ -40,6 +40,44 @@ const register = (req: Request, res: Response) => {
     });
 };
 
+const login = (req: Request, res: Response) => {
+  const { username, email, password } = req.body;
+
+  if (!username && !email) {
+    return errors({
+      res,
+      message: "You can't login without providing an username or email",
+      status: 400,
+    });
+  }
+
+  if (!password) {
+    return errors({
+      res,
+      message: "No password was provided",
+      status: 400,
+    });
+  }
+
+  authService
+    .login({ username, email, password })
+    .then((token) => {
+      return success({
+        res,
+        message: "Logged in successfully",
+        data: token,
+        status: 201,
+      });
+    })
+    .catch((err) => {
+      console.error(err);
+      return errors({
+        res,
+        message: "Password do not match, please try again",
+        status: 500,
+      });
+    });
+};
 const update = (req: Request, res: Response) => {
   UserService.update();
 };
@@ -47,4 +85,4 @@ const eliminate = (req: Request, res: Response) => {
   UserService.eliminate();
 };
 
-export { get, register, update, eliminate };
+export { get, register, login, update, eliminate };

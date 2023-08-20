@@ -78,6 +78,11 @@ type ConnectionMethods = {
   closeConnection: () => void;
 };
 
+enum TableColumns {
+  PRODUCTS = "(category_id, name, description, price, quantity, image)",
+  USERS = "",
+}
+
 export {
   FilterByParams,
   ListParams,
@@ -88,4 +93,5 @@ export {
   ToggleItemStatus,
   MysqlQueryResult,
   ConnectionMethods,
+  TableColumns,
 };

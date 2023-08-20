@@ -1,8 +1,8 @@
 import { MysqlError } from "mysql";
 
 import { pool, handleConnection } from "../../store/mysql";
-import { FilterQueries, Product, ProductsTableColumns } from "./types";
-import { MysqlQueryResult } from "../../store/types";
+import { FilterQueries, Product } from "./types";
+import { MysqlQueryResult, TableColumns } from "../../store/types";
 
 class ProductService {
   private connection;
@@ -72,13 +72,9 @@ class ProductService {
     ]);
 
     /* Pending to be corrected. In reality it's not returning products but a message from mysql */
-
-    let tableColumns: ProductsTableColumns =
-      "(category_id, name, description, price, quantity, image)";
-
     const result = await this.connection.create({
       table: "products",
-      tableColumns,
+      tableColumns: TableColumns.PRODUCTS,
       arrayOfData: data,
     });
 

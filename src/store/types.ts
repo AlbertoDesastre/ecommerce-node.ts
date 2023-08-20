@@ -80,7 +80,7 @@ type ConnectionMethods = {
 
 enum TableColumns {
   PRODUCTS = "(category_id, name, description, price, quantity, image)",
-  USERS = "",
+  USERS = "(id, username, email, password, avatar, token, created_at)",
 }
 
 export {

@@ -27,7 +27,12 @@ const register = (req: Request, res: Response) => {
   authService
     .register({ username, email, password })
     .then((user) => {
-      return success({ res, message: "User created", data: user, status: 200 });
+      return success({
+        res,
+        message: "User created succesfully",
+        data: `Login using your password and email: ${email}`,
+        status: 201,
+      });
     })
     .catch((err) => {
       console.error(err);

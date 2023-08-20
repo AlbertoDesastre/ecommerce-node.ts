@@ -5,7 +5,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 import { handleConnection } from "../../store/mysql";
-import { MysqlQueryResult } from "../../store/types";
+import { MysqlQueryResult, TableColumns } from "../../store/types";
 import { User, BasicUser } from "../user/types";
 
 class AuthService {
@@ -63,14 +63,13 @@ class AuthService {
       created_at: new Date(),
     };
 
-    // sacar del objeto los valores directamente
-
-    /*   const response = await this.connection.create({
+    const response = await this.connection.create({
       table: "users",
+      tableColumns: TableColumns.USERS,
       arrayOfData: [Object.values(userInformation)],
-    }); */
+    });
 
-    return [{ username, password }];
+    return response;
   }
 
   async checkUserToken() {}

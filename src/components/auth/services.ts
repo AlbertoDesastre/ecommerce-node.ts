@@ -91,7 +91,7 @@ class AuthService {
 
     //pending MAYBE to update token in the database. Check
 
-    return this.createToken({ username, email, password });
+    return token;
   }
 
   async checkUserToken() {}

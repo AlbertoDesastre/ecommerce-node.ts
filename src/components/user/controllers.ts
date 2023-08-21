@@ -35,8 +35,13 @@ const register = (req: Request, res: Response) => {
       });
     })
     .catch((err) => {
-      console.error(err);
-      return errors({ res, message: err, status: 500 });
+      let statusCode: number;
+      if (err === "User already exists") {
+        statusCode = 401;
+      } else {
+        statusCode = 500;
+      }
+      return errors({ res, message: err, status: statusCode });
     });
 };
 

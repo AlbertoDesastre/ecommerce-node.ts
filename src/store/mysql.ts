@@ -130,8 +130,13 @@ function handleConnection(): ConnectionMethods {
         `INSERT INTO ${table} ${tableColumns} VALUES ?`,
         [arrayOfData],
         (err, data: MysqlQueryResult) => {
-          if (err) return reject(err);
-
+          if (err) {
+            if (err.code === "ER_DUP_ENTRY" && table === "users") {
+              reject("User already exists");
+            } else {
+              return reject(err);
+            }
+          }
           resolve(data);
         }
       );

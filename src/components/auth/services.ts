@@ -6,7 +6,7 @@ import jwt from "jsonwebtoken";
 
 import { handleConnection } from "../../store/mysql";
 import { MysqlQueryResult, TableColumns } from "../../store/types";
-import { User, BasicUser } from "../user/types";
+import { User, BasicUser, UserUpdateObject } from "../user/types";
 import { create } from "domain";
 
 class AuthService {
@@ -16,15 +16,7 @@ class AuthService {
     this.connection = handleConnection();
   }
 
-  createToken({
-    username,
-    email,
-    password,
-  }: {
-    username: string;
-    email: string;
-    password: string;
-  }): string {
+  createToken({ username, email, password }: BasicUser): string {
     try {
       const token = jwt.sign(
         { username, email, password },
@@ -36,6 +28,10 @@ class AuthService {
       console.error(error);
       throw new Error("Error during token creation");
     }
+  }
+
+  verifyToken(token: string) {
+    return jwt.verify(token, process.env.SECRET as string);
   }
 
   encryptPassword({ password }: { password: string }) {
@@ -93,8 +89,6 @@ class AuthService {
 
     return token;
   }
-
-  async checkUserToken() {}
 
   async eliminateUser() {}
 }

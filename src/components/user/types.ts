@@ -4,6 +4,11 @@ type BasicUser = {
   password: string;
 };
 
+interface UserUpdateObject extends BasicUser {
+  token: string;
+  avatar: string | null;
+}
+
 interface User extends BasicUser {
   id: string;
   avatar: string | null;
@@ -11,4 +16,4 @@ interface User extends BasicUser {
   created_at: Date;
 }
 
-export { User, BasicUser };
+export { User, BasicUser, UserUpdateObject };

@@ -83,8 +83,38 @@ const login = (req: Request, res: Response) => {
       });
     });
 };
+
 const update = (req: Request, res: Response) => {
-  UserService.update();
+  const { username, email, password, avatar } = req.body;
+  const { authorization } = req.headers;
+
+  if (!username || !email || !password) {
+    return errors({
+      res,
+      message:
+        "Couldn't perfom this action because not enough data was provided",
+      status: 400,
+    });
+  }
+
+  UserService.update({
+    username,
+    email,
+    password,
+    avatar,
+    token: authorization as string,
+  })
+    .then((result) => {
+      return success({
+        res,
+        message: "Your profile was updated succesfully",
+        data: "ok",
+        status: 201,
+      });
+    })
+    .catch((err) => {
+      return errors({ res, message: "Something wrong happend", status: 500 });
+    });
 };
 const eliminate = (req: Request, res: Response) => {
   UserService.eliminate();

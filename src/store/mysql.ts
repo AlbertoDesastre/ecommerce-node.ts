@@ -7,6 +7,7 @@ import {
   FilterByParams,
   GetOneParams,
   ListParams,
+  LoginParams,
   MysqlQueryResult,
   ToggleItemStatus,
   UpdateParams,
@@ -47,16 +48,29 @@ function handleConnection(): ConnectionMethods {
       pool.query(`SELECT * FROM ${table} WHERE id = ${id}`, (err, data) => {
         if (err) return reject(err);
 
-        /* I have to do this map because the data I receive from MYSQL are encapsuled in objects called "RawDataPocket" and I want the JSONs without names */
-        data.map((objetFromQuery: Object) => ({
-          ...objetFromQuery,
-        }));
-
         resolve(data);
       });
     });
   }
 
+  function login({
+    table,
+    username,
+    email,
+  }: LoginParams): Promise<Object[] | MysqlError> {
+    return new Promise((resolve, reject) => {
+      // careful!! when searching for real strings you have to put " '' " between words.
+      // The function "getOne" works because in reality on the DB it's searching for a number!!
+      pool.query(
+        `SELECT * FROM ${table} WHERE username = '${username}' OR email = '${email}'`,
+        (err, data) => {
+          if (err) return reject(err);
+
+          resolve(data[0]);
+        }
+      );
+    });
+  }
   function list({
     table,
     limit,
@@ -107,16 +121,22 @@ function handleConnection(): ConnectionMethods {
 
   function create({
     table,
+    tableColumns,
     arrayOfData,
   }: CreateParams): Promise<MysqlQueryResult> {
     return new Promise((resolve, reject) => {
       /*  console.log(table, arrayOfData); */
       pool.query(
-        `INSERT INTO ${table} (category_id, name, description, price, quantity, image) VALUES ?`,
+        `INSERT INTO ${table} ${tableColumns} VALUES ?`,
         [arrayOfData],
         (err, data: MysqlQueryResult) => {
-          if (err) return reject(err);
-
+          if (err) {
+            if (err.code === "ER_DUP_ENTRY" && table === "users") {
+              reject("User already exists");
+            } else {
+              return reject(err);
+            }
+          }
           resolve(data);
         }
       );
@@ -225,6 +245,7 @@ function handleConnection(): ConnectionMethods {
 
   return {
     getOne,
+    login,
     list,
     filterBy,
     create,

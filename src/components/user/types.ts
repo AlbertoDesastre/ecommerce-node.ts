@@ -1,11 +1,19 @@
-type User = {
-  id: string;
+type BasicUser = {
   username: string;
   email: string;
   password: string;
-  avatar?: string;
-  token: string;
-  created_at: Date;
 };
 
-export { User };
+interface UserUpdateObject extends BasicUser {
+  token: string;
+  avatar: string | null;
+}
+
+interface User extends BasicUser {
+  id: string;
+  avatar: string | null;
+  token?: string;
+  created_at: Date;
+}
+
+export { User, BasicUser, UserUpdateObject };

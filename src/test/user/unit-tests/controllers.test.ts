@@ -1,3 +1,7 @@
+//When creating the test section check if this is needed & continuous integration.
+//Check
+
+//TDD: Think as a user who doesn't know a thing about systems
 const mockAuthService = jest.fn();
 const mockAuthServiceRegister = jest.fn();
 jest.mock("../../../components/auth/services", () => {
@@ -27,36 +31,8 @@ describe("test for User Controller ", () => {
     jest.clearAllMocks();
   });
 
+  // To check for requests/responses do directly integrations/e2e test. Things that involves pure logic will go into unit tests.
   describe("controller calling [register]", () => {
     test("should ", () => {});
   });
 });
-
-//not working test. Right now it tries to log into Mysql DB even when mocking it.
-/* describe("testing routes", () => {
-  let expressApp: Express;
-
-  beforeAll(() => {
-    expressApp = app;
-    routerApi(expressApp);
-  });
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
-  test("should say goodbye", (done) => {
-    request(expressApp)
-      .get("/goodbye")
-      .expect(200)
-      .end((err, response) => {
-        if (err) {
-          done(err);
-        } else {
-          expect(response.text).toEqual("GOODBYEEEE!!");
-          done();
-        }
-      });
-  });
-});
- */

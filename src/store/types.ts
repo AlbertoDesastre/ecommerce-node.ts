@@ -15,6 +15,7 @@ interface FilterByParams extends Params {
 }
 
 interface CreateParams extends Params {
+  tableColumns: string;
   arrayOfData: Array<Array<string | number>>;
 }
 
@@ -23,6 +24,10 @@ interface UpdateParams extends Params {
   id: string;
 }
 
+interface LoginParams extends Params {
+  username?: string;
+  email?: string;
+}
 // Including type equals to X and "Omit" and "Pick" keywords as practice material
 type GetOneParams = Omit<UpdateParams, "item">;
 
@@ -49,6 +54,11 @@ type MysqlQueryResult = {
 
 type ConnectionMethods = {
   getOne: ({ table, id }: GetOneParams) => Promise<Object[] | MysqlError>;
+  login: ({
+    table,
+    username,
+    email,
+  }: LoginParams) => Promise<Object[] | MysqlError>;
   list: ({
     table,
     limit,
@@ -77,14 +87,21 @@ type ConnectionMethods = {
   closeConnection: () => void;
 };
 
+enum TableColumns {
+  PRODUCTS = "(category_id, name, description, price, quantity, image)",
+  USERS = "(id, username, email, password, avatar, created_at)",
+}
+
 export {
   FilterByParams,
   ListParams,
   GetOneParams,
+  LoginParams,
   CreateParams,
   UpdateParams,
   DeleteParams,
   ToggleItemStatus,
   MysqlQueryResult,
   ConnectionMethods,
+  TableColumns,
 };

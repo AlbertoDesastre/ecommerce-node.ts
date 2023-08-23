@@ -56,6 +56,15 @@ const login = (req: Request, res: Response) => {
     });
   }
 
+  if (username != undefined && email != undefined) {
+    return errors({
+      res,
+      message:
+        "You can only do a login with a username or an email, but not both",
+      status: 400,
+    });
+  }
+
   if (!password) {
     return errors({
       res,

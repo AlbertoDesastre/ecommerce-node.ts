@@ -55,7 +55,6 @@ describe("test for User Service ", () => {
     authService = new AuthService();
   });
   beforeEach(() => {
-    userServiceSpy = jest.spyOn(authService, "register");
     jest.clearAllMocks();
   });
 

@@ -1,4 +1,5 @@
 import { MysqlError } from "mysql";
+import { User } from "../components/user/types";
 
 type Params = {
   table: string;
@@ -52,13 +53,15 @@ type MysqlQueryResult = {
   changedRows: number;
 };
 
+type RowDataPacketName = "RowDataPacket";
+
+type RowDataPacketArray = Array<Record<RowDataPacketName, Object>>;
+
+type RowDataPacket = Record<RowDataPacketName, Object>;
+
 type ConnectionMethods = {
   getOne: ({ table, id }: GetOneParams) => Promise<Object[] | MysqlError>;
-  login: ({
-    table,
-    username,
-    email,
-  }: LoginParams) => Promise<Object[] | MysqlError>;
+  login: ({ table, username, email }: LoginParams) => Promise<User | undefined>;
   list: ({
     table,
     limit,
@@ -104,4 +107,6 @@ export {
   MysqlQueryResult,
   ConnectionMethods,
   TableColumns,
+  RowDataPacket,
+  RowDataPacketArray,
 };

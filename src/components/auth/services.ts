@@ -70,14 +70,17 @@ class AuthService {
   }
 
   async login({ username, email, password }: BasicUser) {
-    const token = this.createToken({ username, email, password });
-
-    //pending to type this better
-    const response: any = await this.connection.login({
+    const response = await this.connection.login({
       table: "users",
       username,
       email,
     });
+
+    if (response === undefined) {
+      return new Error("This user doesn't exists.");
+    }
+    console.log(response);
+    console.log("response typeof", typeof response);
 
     const passwordMatch = await bcrypt.compare(password, response.password);
 
@@ -85,6 +88,7 @@ class AuthService {
       throw new Error("Password do not match");
     }
 
+    const token = this.createToken({ username, email, password });
     //pending MAYBE to update token in the database. Check
 
     return token;

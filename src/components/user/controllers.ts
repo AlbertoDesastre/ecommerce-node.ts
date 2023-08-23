@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import * as UserService from "./services";
+import * as userService from "./services";
 import { AuthService } from "../auth/services";
 import { errors, success } from "../../network";
 
@@ -9,7 +9,7 @@ The idea is to keep consistency and use Classes on the rest of the project */
 const authService = new AuthService();
 
 const get = (req: Request, res: Response) => {
-  UserService.get();
+  userService.get();
 };
 
 const register = (req: Request, res: Response) => {
@@ -24,7 +24,7 @@ const register = (req: Request, res: Response) => {
     });
   }
 
-  authService
+  userService
     .register({ username, email, password })
     .then((result) => {
       return success({
@@ -73,7 +73,7 @@ const login = (req: Request, res: Response) => {
     });
   }
 
-  authService
+  userService
     .login({ username, email, password })
     .then((token) => {
       return success({
@@ -106,13 +106,14 @@ const update = (req: Request, res: Response) => {
     });
   }
 
-  UserService.update({
-    username,
-    email,
-    password,
-    avatar,
-    token: authorization as string,
-  })
+  userService
+    .update({
+      username,
+      email,
+      password,
+      avatar,
+      token: authorization as string,
+    })
     .then((result) => {
       return success({
         res,
@@ -126,7 +127,7 @@ const update = (req: Request, res: Response) => {
     });
 };
 const eliminate = (req: Request, res: Response) => {
-  UserService.eliminate();
+  userService.eliminate();
 };
 
 export { get, register, login, update, eliminate };

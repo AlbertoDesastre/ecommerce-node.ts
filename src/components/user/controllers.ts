@@ -78,7 +78,7 @@ const login = (req: Request, res: Response) => {
       console.error(err);
       return errors({
         res,
-        message: "Password do not match, please try again",
+        message: err.message,
         status: 500,
       });
     });

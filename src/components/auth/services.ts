@@ -70,17 +70,18 @@ class AuthService {
   }
 
   async login({ username, email, password }: BasicUser) {
+    //note: if you pass both username and email, and username is correct but email doesn't, it will still login.
+    // this could be worrying, but the use case for this is to only send one of this atributes. Test it out on a later time
     const response = await this.connection.login({
       table: "users",
       username,
       email,
     });
 
+    //tengo que lograr que el error cuando un usuario no exista aparezzca en la response del controlador
     if (response === undefined) {
-      return new Error("This user doesn't exists.");
+      throw new Error("This user doesn't exists.");
     }
-    console.log(response);
-    console.log("response typeof", typeof response);
 
     const passwordMatch = await bcrypt.compare(password, response.password);
 

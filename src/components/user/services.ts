@@ -61,13 +61,21 @@ const login = async ({ username, email, password }: BasicUser) => {
 };
 
 const update = async ({
+  id,
   username,
   email,
   password,
   avatar,
-  token,
 }: UserUpdateObject) => {
-  return console.log("I reached update function on user");
+  const response = await connection.update({
+    table: "users",
+    item: { username, email, password, avatar },
+    id: id,
+  });
+
+  console.log(response);
+
+  return response;
 };
 
 const eliminate = () => {};

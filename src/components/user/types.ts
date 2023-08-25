@@ -5,7 +5,7 @@ type BasicUser = {
 };
 
 interface UserUpdateObject extends BasicUser {
-  token: string;
+  id: string;
   avatar: string | null;
 }
 

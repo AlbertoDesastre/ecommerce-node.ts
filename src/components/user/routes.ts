@@ -8,11 +8,7 @@ const router = express.Router();
 router.get("/get/:id", UserController.get);
 router.post("/register", UserController.register);
 router.post("/login", UserController.login);
-router.put(
-  "/update/:username",
-  authMiddleware.checkToken,
-  UserController.update
-);
+router.put("/update/:id", authMiddleware.checkToken, UserController.update);
 router.delete("/delete/:id", UserController.eliminate);
 
 export { router };

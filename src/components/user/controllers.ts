@@ -95,7 +95,7 @@ const login = (req: Request, res: Response) => {
 
 const update = (req: Request, res: Response) => {
   const { username, email, password, avatar } = req.body;
-  const { authorization } = req.headers;
+  const { id } = req.params;
 
   if (!username || !email || !password) {
     return errors({
@@ -108,11 +108,11 @@ const update = (req: Request, res: Response) => {
 
   userService
     .update({
+      id,
       username,
       email,
       password,
       avatar,
-      token: authorization as string,
     })
     .then((result) => {
       return success({

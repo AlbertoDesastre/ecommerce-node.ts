@@ -19,12 +19,9 @@ import { AuthService } from "../../../components/auth/services";
 
 describe("test for User Controller ", () => {
   let userControllerRegisterSpy: jest.SpyInstance;
-  let authService = new AuthService();
-  let authServiceRegisterSpy: jest.SpyInstance;
 
   beforeAll(() => {
     userControllerRegisterSpy = jest.spyOn(userController, "register");
-    authServiceRegisterSpy = jest.spyOn(authService, "register");
   });
 
   beforeEach(() => {

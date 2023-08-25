@@ -4,16 +4,15 @@ type BasicUser = {
   password: string;
 };
 
-interface UserUpdateObject extends BasicUser {
-  token: string;
-  avatar: string | null;
+interface UserWithId extends BasicUser {
+  id: string;
 }
 
 interface User extends BasicUser {
   id: string;
   avatar: string | null;
   token?: string;
-  created_at: Date;
+  created_at: Date | null;
 }
 
-export { User, BasicUser, UserUpdateObject };
+export { User, BasicUser, UserWithId };

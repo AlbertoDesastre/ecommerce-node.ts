@@ -31,7 +31,6 @@ describe("test for User Controller ", () => {
     server = app.listen(3002); */
 
     userControllerRegisterSpy = jest.spyOn(userController, "register");
-    authServiceRegisterSpy = jest.spyOn(authService, "register");
   });
 
   beforeEach(() => {

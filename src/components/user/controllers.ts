@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import * as UserService from "./services";
+import * as userService from "./services";
 import { AuthService } from "../auth/services";
 import { errors, success } from "../../network";
 
@@ -9,7 +9,7 @@ The idea is to keep consistency and use Classes on the rest of the project */
 const authService = new AuthService();
 
 const get = (req: Request, res: Response) => {
-  UserService.get();
+  userService.get();
 };
 
 const register = (req: Request, res: Response) => {
@@ -24,7 +24,7 @@ const register = (req: Request, res: Response) => {
     });
   }
 
-  authService
+  userService
     .register({ username, email, password })
     .then((result) => {
       return success({
@@ -56,6 +56,15 @@ const login = (req: Request, res: Response) => {
     });
   }
 
+  if (username != undefined && email != undefined) {
+    return errors({
+      res,
+      message:
+        "You can only do a login with a username or an email, but not both",
+      status: 400,
+    });
+  }
+
   if (!password) {
     return errors({
       res,
@@ -64,7 +73,7 @@ const login = (req: Request, res: Response) => {
     });
   }
 
-  authService
+  userService
     .login({ username, email, password })
     .then((token) => {
       return success({
@@ -78,7 +87,7 @@ const login = (req: Request, res: Response) => {
       console.error(err);
       return errors({
         res,
-        message: "Password do not match, please try again",
+        message: err.message,
         status: 500,
       });
     });
@@ -86,7 +95,7 @@ const login = (req: Request, res: Response) => {
 
 const update = (req: Request, res: Response) => {
   const { username, email, password, avatar } = req.body;
-  const { authorization } = req.headers;
+  const { id } = req.params;
 
   if (!username || !email || !password) {
     return errors({
@@ -97,13 +106,15 @@ const update = (req: Request, res: Response) => {
     });
   }
 
-  UserService.update({
-    username,
-    email,
-    password,
-    avatar,
-    token: authorization as string,
-  })
+  userService
+    .update({
+      id,
+      username,
+      email,
+      password,
+      avatar,
+      created_at: null,
+    })
     .then((result) => {
       return success({
         res,
@@ -117,7 +128,7 @@ const update = (req: Request, res: Response) => {
     });
 };
 const eliminate = (req: Request, res: Response) => {
-  UserService.eliminate();
+  userService.eliminate();
 };
 
 export { get, register, login, update, eliminate };

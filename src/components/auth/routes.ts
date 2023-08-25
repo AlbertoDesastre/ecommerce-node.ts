@@ -5,7 +5,7 @@ const router = express.Router();
 
 const authController = new AuthController();
 
-router.get("/checkToken", authController.chekUserToken);
+/* router.get("/checkToken", authController.chekUserToken);
 router.post("/eliminate/:id", authController.eliminateUser);
-
+ */
 export { router };

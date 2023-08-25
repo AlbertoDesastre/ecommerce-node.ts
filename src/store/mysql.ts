@@ -12,6 +12,7 @@ import {
   ToggleItemStatus,
   UpdateParams,
 } from "./types";
+import { User } from "../components/user/types";
 
 const dbconf = {
   connectionLimit: 2,
@@ -57,18 +58,29 @@ function handleConnection(): ConnectionMethods {
     table,
     username,
     email,
-  }: LoginParams): Promise<Object[] | MysqlError> {
+  }: LoginParams): Promise<User | undefined> {
     return new Promise((resolve, reject) => {
       // careful!! when searching for real strings you have to put " '' " between words.
       // The function "getOne" works because in reality on the DB it's searching for a number!!
-      pool.query(
-        `SELECT * FROM ${table} WHERE username = '${username}' OR email = '${email}'`,
-        (err, data) => {
-          if (err) return reject(err);
+      if (username) {
+        pool.query(
+          `SELECT id, username, email, password, avatar, token, created_at FROM ${table} WHERE username = '${username}'`,
+          (err: MysqlError, data: User[]) => {
+            if (err) return reject(err);
 
-          resolve(data[0]);
-        }
-      );
+            resolve(data[0]);
+          }
+        );
+      } else if (email) {
+        pool.query(
+          `SELECT id, username, email, password, avatar, token, created_at FROM ${table} WHERE email = '${email}'`,
+          (err: MysqlError, data: User[]) => {
+            if (err) return reject(err);
+
+            resolve(data[0]);
+          }
+        );
+      }
     });
   }
   function list({
@@ -187,6 +199,8 @@ function handleConnection(): ConnectionMethods {
         `UPDATE ${table} SET ? WHERE id = ?`,
         [item, id],
         (err, data: MysqlQueryResult) => {
+          console.log(item);
+          console.log(table);
           if (err) return reject(err);
 
           resolve(data);

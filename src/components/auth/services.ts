@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 import { handleConnection } from "../../store/mysql";
-import { BasicUser } from "../user/types";
+import { BasicUser, UserWithId } from "../user/types";
 
 class AuthService {
   private connection;
@@ -12,10 +12,10 @@ class AuthService {
     this.connection = handleConnection();
   }
 
-  createToken({ username, email, password }: BasicUser): string {
+  createToken({ id, username, email, password }: UserWithId): string {
     try {
       const token = jwt.sign(
-        { username, email, password },
+        { id, username, email, password },
         process.env.SECRET as string
       );
 

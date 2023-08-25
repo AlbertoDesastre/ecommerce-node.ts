@@ -199,6 +199,8 @@ function handleConnection(): ConnectionMethods {
         `UPDATE ${table} SET ? WHERE id = ?`,
         [item, id],
         (err, data: MysqlQueryResult) => {
+          console.log(item);
+          console.log(table);
           if (err) return reject(err);
 
           resolve(data);

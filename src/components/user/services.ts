@@ -2,7 +2,7 @@ import { nanoid } from "nanoid";
 import bcrypt from "bcrypt";
 import { handleConnection } from "../../store/mysql";
 import { TableColumns } from "../../store/types";
-import { BasicUser, User, UserUpdateObject } from "./types";
+import { BasicUser, User, UserWithId } from "./types";
 import { AuthService } from "../auth/services";
 
 const authService = new AuthService();
@@ -54,26 +54,25 @@ const login = async ({ username, email, password }: BasicUser) => {
     throw new Error("Password do not match");
   }
 
-  const token = authService.createToken({ username, email, password });
+  const token = authService.createToken({
+    id: response.id,
+    username,
+    email,
+    password,
+  });
   //pending MAYBE to update token in the database. Check...
 
   return token;
 };
 
-const update = async ({
-  id,
-  username,
-  email,
-  password,
-  avatar,
-}: UserUpdateObject) => {
+const update = async ({ id, username, email, password, avatar }: User) => {
+  const hashedPassword = await authService.encryptPassword({ password });
+
   const response = await connection.update({
     table: "users",
-    item: { username, email, password, avatar },
+    item: { username, email, password: hashedPassword, avatar },
     id: id,
   });
-
-  console.log(response);
 
   return response;
 };

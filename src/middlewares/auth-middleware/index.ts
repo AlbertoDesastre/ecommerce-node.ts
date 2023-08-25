@@ -21,7 +21,7 @@ class AuthMiddleware {
     this.isUserOwnerOfToken({
       res,
       decodedToken: decodedToken as JwtPayload,
-      username: req.body.username,
+      id: req.params.id,
     });
 
     next();
@@ -43,14 +43,13 @@ class AuthMiddleware {
   isUserOwnerOfToken({
     res,
     decodedToken,
-    username,
+    id,
   }: {
     res: Response;
     decodedToken: JwtPayload;
-    username: string;
+    id: string;
   }) {
-    if (decodedToken.username != username) {
-      //refactor this to avoid console.log about the error
+    if (decodedToken.id != id) {
       return errors({
         res,
         message: "You are not allowed to do this.",

@@ -113,6 +113,7 @@ const update = (req: Request, res: Response) => {
       email,
       password,
       avatar,
+      created_at: null,
     })
     .then((result) => {
       return success({

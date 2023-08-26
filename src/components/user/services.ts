@@ -77,6 +77,17 @@ const login = async ({ username, email, password }: BasicUser) => {
 const update = async ({ id, username, email, password, avatar }: User) => {
   const hashedPassword = await authService.encryptPassword({ password });
 
+  const userOnDb = await connection.getOne({
+    table: "users",
+    tableColumns: TableColumns.USERS_GET_VALUES,
+    id,
+    addExtraQuotesToId: true,
+  });
+
+  if (Array.isArray(userOnDb) && userOnDb.length === 0) {
+    throw new Error("The user you are trying to update doesn't exists");
+  }
+
   const response = await connection.update({
     table: "users",
     item: { username, email, password: hashedPassword, avatar },

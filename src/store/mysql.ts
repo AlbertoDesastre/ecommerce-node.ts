@@ -51,7 +51,6 @@ function handleConnection(): ConnectionMethods {
     addExtraQuotesToId,
   }: GetOneParams): Promise<Object[] | MysqlError> {
     return new Promise((resolve, reject) => {
-      //modify this query so you can place the columns you want
       if (addExtraQuotesToId) {
         id = "'" + id + "'";
       }
@@ -211,8 +210,6 @@ function handleConnection(): ConnectionMethods {
         `UPDATE ${table} SET ? WHERE id = ?`,
         [item, id],
         (err, data: MysqlQueryResult) => {
-          console.log(item);
-          console.log(table);
           if (err) return reject(err);
 
           resolve(data);

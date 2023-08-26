@@ -103,6 +103,7 @@ enum TableColumns {
   PRODUCTS_GET_VALUES = "category_id, name, description, price, quantity, image",
   USERS_POST_VALUES = "(id, username, email, password, avatar, created_at)",
   USERS_GET_PARTIAL_VALUES = "username, email, password, avatar",
+  USERS_GET_VALUES = "id, username, email, password, avatar, created_at",
 }
 
 export {

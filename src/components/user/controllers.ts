@@ -139,12 +139,12 @@ const update = (req: Request, res: Response) => {
       return success({
         res,
         message: "Your profile was updated succesfully",
-        data: "ok",
+        data: "OK",
         status: 201,
       });
     })
     .catch((err) => {
-      return errors({ res, message: "Something wrong happend", status: 500 });
+      return errors({ res, message: err.message, status: 500 });
     });
 };
 const eliminate = (req: Request, res: Response) => {

@@ -46,6 +46,7 @@ function handleConnection(): ConnectionMethods {
 
   function getOne({
     table,
+    tableColumns,
     id,
     addExtraQuotesToId,
   }: GetOneParams): Promise<Object[] | MysqlError> {
@@ -54,11 +55,14 @@ function handleConnection(): ConnectionMethods {
       if (addExtraQuotesToId) {
         id = "'" + id + "'";
       }
-      pool.query(`SELECT * FROM ${table} WHERE id = ${id}`, (err, data) => {
-        if (err) return reject(err);
+      pool.query(
+        `SELECT ${tableColumns} FROM ${table} WHERE id = ${id}`,
+        (err, data) => {
+          if (err) return reject(err);
 
-        resolve(data);
-      });
+          resolve(data);
+        }
+      );
     });
   }
 

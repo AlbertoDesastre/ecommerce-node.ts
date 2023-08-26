@@ -31,6 +31,7 @@ interface LoginParams extends Params {
 }
 // Including type equals to X and "Omit" and "Pick" keywords as practice material
 interface GetOneParams extends Params {
+  tableColumns: string;
   id: string | number;
   addExtraQuotesToId: boolean;
 }
@@ -64,6 +65,7 @@ type RowDataPacket = Record<RowDataPacketName, Object>;
 type ConnectionMethods = {
   getOne: ({
     table,
+    tableColumns,
     id,
     addExtraQuotesToId,
   }: GetOneParams) => Promise<Object[] | MysqlError>;
@@ -97,9 +99,10 @@ type ConnectionMethods = {
 };
 
 enum TableColumns {
-  PRODUCTS = "(category_id, name, description, price, quantity, image)",
-  USERS = "(id, username, email, password, avatar, created_at)",
-  // USERS_PARTIAL_INFO =
+  PRODUCTS_POST_VALUES = "(category_id, name, description, price, quantity, image)",
+  PRODUCTS_GET_VALUES = "category_id, name, description, price, quantity, image",
+  USERS_POST_VALUES = "(id, username, email, password, avatar, created_at)",
+  USERS_GET_PARTIAL_VALUES = "username, email, password, avatar",
 }
 
 export {

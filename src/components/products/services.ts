@@ -65,6 +65,7 @@ class ProductService {
   async getOne(id: string) {
     return await this.connection.getOne({
       table: "products",
+      tableColumns: TableColumns.PRODUCTS_GET_VALUES,
       id,
       addExtraQuotesToId: true,
     });
@@ -78,7 +79,7 @@ class ProductService {
     /* Pending to be corrected. In reality it's not returning products but a message from mysql */
     const result = await this.connection.create({
       table: "products",
-      tableColumns: TableColumns.PRODUCTS,
+      tableColumns: TableColumns.PRODUCTS_POST_VALUES,
       arrayOfData: data,
     });
 

@@ -13,6 +13,7 @@ The idea is to keep consistency and use Classes on the rest of the project */
 const get = async ({ id }: { id: string }) => {
   const response = await connection.getOne({
     table: "users",
+    tableColumns: TableColumns.USERS_GET_PARTIAL_VALUES,
     id,
     addExtraQuotesToId: true,
   });
@@ -34,7 +35,7 @@ const register = async ({ username, email, password }: BasicUser) => {
 
   const response = await connection.create({
     table: "users",
-    tableColumns: TableColumns.USERS,
+    tableColumns: TableColumns.USERS_POST_VALUES,
     arrayOfData: [Object.values(userInformation)],
   });
 

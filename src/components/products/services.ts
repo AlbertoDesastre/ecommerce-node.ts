@@ -7,12 +7,10 @@ import { MysqlQueryResult, TableColumns } from "../../store/types";
 class ProductService {
   private connection;
   constructor() {
-    /*  this.connection = pool; */
     this.connection = handleConnection();
   }
 
   async list({ limit = "15", offset = "0" }) {
-    /* const products = await this.connection.query(...) */
     const products = (await this.connection.list({
       table: "products",
       limit,
@@ -63,7 +61,12 @@ class ProductService {
   }
 
   async getOne(id: string) {
-    return await this.connection.getOne({ table: "products", id });
+    return await this.connection.getOne({
+      table: "products",
+      tableColumns: TableColumns.PRODUCTS_GET_VALUES,
+      id,
+      addExtraQuotesToId: true,
+    });
   }
 
   async create(productsInArrayOfJsons: Product[]) {
@@ -74,42 +77,12 @@ class ProductService {
     /* Pending to be corrected. In reality it's not returning products but a message from mysql */
     const result = await this.connection.create({
       table: "products",
-      tableColumns: TableColumns.PRODUCTS,
+      tableColumns: TableColumns.PRODUCTS_POST_VALUES,
       arrayOfData: data,
     });
 
     return result as MysqlQueryResult;
   }
-
-  /*
-  **OLD VERSION OF 'create' THAT DIDN'T WORK, AN EXPLANATION OF WHY**
-
-  create(product) {
-
-    return new Promise((resolve, reject) => {
-      this.connection.query(
-        'INSERT INTO products (category_id, name, description, price, quantity, image) VALUES (?)',
-        product,
-        (err, data) => {
-          if (err) {
-            console.error(err.message);
-            return reject(err);
-          }
-          resolve(data);
-        }
-      );
-    });
-  }
-
-  Explanation:
-  The create function is responsible for inserting a product into the database. It takes a product object as input, which should contain the necessary details for the insertion. However, there was an issue with this code that prevented it from working correctly.
-
-  The problem lies in the SQL query used for the insertion. The query specified a single placeholder ? to represent the values to be inserted. However, when passing the product object as the second parameter in the query function, the values were not assigned correctly to the placeholder.
-
-  To fix this issue, the query should be modified to use a syntax that allows for the automatic assignment of values from an object. One such syntax is SET ?, where the ? represents the object to be inserted. This syntax ensures that the values from the object are correctly mapped to the corresponding columns in the query.
-
-  By making this modification, the create function will now work as intended, inserting the product into the database.
-  */
 
   async update({ product }: { product: Product }) {
     const productId = product.id.toString();

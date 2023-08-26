@@ -44,13 +44,24 @@ function handleConnection(): ConnectionMethods {
     }
   });
 
-  function getOne({ table, id }: GetOneParams): Promise<Object[] | MysqlError> {
+  function getOne({
+    table,
+    tableColumns,
+    id,
+    addExtraQuotesToId,
+  }: GetOneParams): Promise<Object[] | MysqlError> {
     return new Promise((resolve, reject) => {
-      pool.query(`SELECT * FROM ${table} WHERE id = ${id}`, (err, data) => {
-        if (err) return reject(err);
+      if (addExtraQuotesToId) {
+        id = "'" + id + "'";
+      }
+      pool.query(
+        `SELECT ${tableColumns} FROM ${table} WHERE id = ${id}`,
+        (err, data) => {
+          if (err) return reject(err);
 
-        resolve(data);
-      });
+          resolve(data);
+        }
+      );
     });
   }
 
@@ -199,8 +210,6 @@ function handleConnection(): ConnectionMethods {
         `UPDATE ${table} SET ? WHERE id = ?`,
         [item, id],
         (err, data: MysqlQueryResult) => {
-          console.log(item);
-          console.log(table);
           if (err) return reject(err);
 
           resolve(data);

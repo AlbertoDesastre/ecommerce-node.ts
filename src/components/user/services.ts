@@ -10,7 +10,16 @@ const connection = handleConnection();
 
 /* DISCLAIMER!! This file contains arrow functions and not a Class for learning purposes.
 The idea is to keep consistency and use Classes on the rest of the project */
-const get = () => {};
+const get = async ({ id }: { id: string }) => {
+  const response = await connection.getOne({
+    table: "users",
+    tableColumns: TableColumns.USERS_GET_PARTIAL_VALUES,
+    id,
+    addExtraQuotesToId: true,
+  });
+
+  return response;
+};
 
 const register = async ({ username, email, password }: BasicUser) => {
   const hashedPassword = await authService.encryptPassword({ password });
@@ -26,7 +35,7 @@ const register = async ({ username, email, password }: BasicUser) => {
 
   const response = await connection.create({
     table: "users",
-    tableColumns: TableColumns.USERS,
+    tableColumns: TableColumns.USERS_POST_VALUES,
     arrayOfData: [Object.values(userInformation)],
   });
 
@@ -66,6 +75,17 @@ const login = async ({ username, email, password }: BasicUser) => {
 };
 
 const update = async ({ id, username, email, password, avatar }: User) => {
+  const userOnDb = await connection.getOne({
+    table: "users",
+    tableColumns: TableColumns.USERS_GET_VALUES,
+    id,
+    addExtraQuotesToId: true,
+  });
+
+  if (Array.isArray(userOnDb) && userOnDb.length === 0) {
+    throw new Error("The user you are trying to update doesn't exists");
+  }
+
   const hashedPassword = await authService.encryptPassword({ password });
 
   const response = await connection.update({

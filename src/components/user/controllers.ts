@@ -9,7 +9,27 @@ The idea is to keep consistency and use Classes on the rest of the project */
 const authService = new AuthService();
 
 const get = (req: Request, res: Response) => {
-  userService.get();
+  const { id } = req.params;
+
+  userService
+    .get({ id })
+    //fix this type
+    .then((result: any) => {
+      return success({
+        res,
+        message: "Here is the user's information:",
+        data: result,
+        status: 201,
+      });
+    })
+    .catch((err) => {
+      console.error(err);
+      return errors({
+        res,
+        message: err.message,
+        status: 500,
+      });
+    });
 };
 
 const register = (req: Request, res: Response) => {
@@ -119,12 +139,12 @@ const update = (req: Request, res: Response) => {
       return success({
         res,
         message: "Your profile was updated succesfully",
-        data: "ok",
+        data: "OK",
         status: 201,
       });
     })
     .catch((err) => {
-      return errors({ res, message: "Something wrong happend", status: 500 });
+      return errors({ res, message: err.message, status: 500 });
     });
 };
 const eliminate = (req: Request, res: Response) => {

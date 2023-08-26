@@ -63,7 +63,11 @@ class ProductService {
   }
 
   async getOne(id: string) {
-    return await this.connection.getOne({ table: "products", id });
+    return await this.connection.getOne({
+      table: "products",
+      id,
+      addExtraQuotesToId: true,
+    });
   }
 
   async create(productsInArrayOfJsons: Product[]) {

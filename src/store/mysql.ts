@@ -44,8 +44,16 @@ function handleConnection(): ConnectionMethods {
     }
   });
 
-  function getOne({ table, id }: GetOneParams): Promise<Object[] | MysqlError> {
+  function getOne({
+    table,
+    id,
+    addExtraQuotesToId,
+  }: GetOneParams): Promise<Object[] | MysqlError> {
     return new Promise((resolve, reject) => {
+      //modify this query so you can place the columns you want
+      if (addExtraQuotesToId) {
+        id = "'" + id + "'";
+      }
       pool.query(`SELECT * FROM ${table} WHERE id = ${id}`, (err, data) => {
         if (err) return reject(err);
 

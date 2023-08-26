@@ -10,7 +10,15 @@ const connection = handleConnection();
 
 /* DISCLAIMER!! This file contains arrow functions and not a Class for learning purposes.
 The idea is to keep consistency and use Classes on the rest of the project */
-const get = () => {};
+const get = async ({ id }: { id: string }) => {
+  const response = await connection.getOne({
+    table: "users",
+    id,
+    addExtraQuotesToId: true,
+  });
+
+  return response;
+};
 
 const register = async ({ username, email, password }: BasicUser) => {
   const hashedPassword = await authService.encryptPassword({ password });

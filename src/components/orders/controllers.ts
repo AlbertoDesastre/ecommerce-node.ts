@@ -23,11 +23,11 @@ class OrderController {
 
     this.orderService
       .list({ limit, offset })
-      .then((products) => {
+      .then((orders) => {
         return success({
           res,
-          message: "This is the list of products",
-          data: products as Order[],
+          message: "This is the list of orders ordered by date",
+          data: orders as Order[],
           status: 200,
         });
       })
@@ -36,11 +36,11 @@ class OrderController {
       });
   }
 
-  filterBy(req: Request, res: Response) {
-    const { name, price, color } = req.query as FilterQueries;
+  /*   filterBy(req: Request, res: Response) {
+    const { productName, orderCreatedDate } = req.query as FilterQueries;
 
     this.orderService
-      .filterBy({ name, price, color })
+      .filterBy({ productName, orderCreatedDate })
       .then((result) => {
         if (Array.isArray(result)) {
           if (result.length === 0) {
@@ -63,7 +63,7 @@ class OrderController {
         return errors({ res, message: err.message, status: 500 });
       });
   }
-
+ */
   getOne(req: Request, res: Response) {
     /* REMINDER! What comes from params it's always a string */
     const { id } = req.params;
@@ -146,11 +146,11 @@ class OrderController {
       });
   }
 
-  deactivateProduct(req: Request, res: Response) {
+  cancellOrder(req: Request, res: Response) {
     const { id } = req.params;
 
     this.orderService
-      .deactivateProduct({ id })
+      .cancellOrder({ id })
       .then((result) => {
         return success({
           res,

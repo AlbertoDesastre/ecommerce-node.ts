@@ -1,11 +1,18 @@
 import { MysqlError } from "mysql";
 
 import { pool, handleConnection } from "../../store/mysql";
-import { FilterQueries, Order } from "./types";
+import {
+  Order,
+  OrderItem,
+  OrderStatus,
+  OrdersTableColumns,
+  FilterQueries,
+} from "./types";
 import { MysqlQueryResult, TableColumns } from "../../store/types";
 
 class OrderService {
   private connection;
+
   constructor() {
     this.connection = handleConnection();
   }
@@ -29,11 +36,7 @@ class OrderService {
     return orders;
   }
 
-  async filterBy({ name, price, color }: FilterQueries) {
-    /* This function constructs the conditions and filters arrays based on the provided values. Each filter is added to the respective array.
-      The conditions array holds the SQL conditions for filtering, and the filters array holds the corresponding filter values.
-      The filters are modified appropriately (e.g., adding '%' to perform a partial string match or converting the price to an integer).
-      The function then calls the filterBy function of mysqlStore with the table name, conditions, and filters as arguments. */
+  /* async filterBy({ productName, orderCreatedDate }: FilterQueries) {
 
     let conditionsElements: string[] = [];
     let filters: string[] = [];
@@ -51,13 +54,9 @@ class OrderService {
       conditionsElements.push("color LIKE ?");
       filters.push(`%${color}%`);
     }
-    /* For example, in case of the consumer searching for all 3 filters, the "conditions" would look like: [ '%ca%', 800, '%black%' ]
-        Notice that string are already including "%%" to make the later SQL query work with "LIKE"  */
 
     if (conditionsElements.length > 0) {
       conditions = conditionsElements.join(" AND ");
-      /* For every filter, an "AND" it's included automatically to concatenate more than one filter if necessary.
-          For example, if we had all 3 filters the "conditions" will look like this string: "name LIKE ?  AND price <= ?  AND color LIKE ?"   */
     }
 
     const result = await this.connection.filterBy({
@@ -67,7 +66,7 @@ class OrderService {
     });
 
     return result;
-  }
+  } */
 
   async getOne(id: string) {
     return await this.connection.getOne({
@@ -108,7 +107,7 @@ class OrderService {
     return data;
   }
 
-  async deactivateProduct({ id }: { id: string }) {
+  async cancellOrder({ id }: { id: string }) {
     const result = await this.connection.toggleItemStatus({
       table: "orders",
       boolean: "FALSE",

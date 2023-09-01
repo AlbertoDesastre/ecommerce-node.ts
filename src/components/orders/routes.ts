@@ -6,11 +6,8 @@ const router = express.Router();
 const orderController = new OrderController();
 
 router.get("/", (req, res) => {
+  //list ordered by date
   orderController.list(req, res);
-});
-
-router.get("/filter", (req, res) => {
-  orderController.filterBy(req, res);
 });
 
 /* always put routes that requires dynamic data at the end, or the routs with fixed words won't be accesible */
@@ -27,7 +24,7 @@ router.put("/", (req, res) => {
 });
 
 router.delete("/:id", (req, res) => {
-  orderController.deactivateProduct(req, res);
+  orderController.cancellOrder(req, res);
 });
 
 export { router };

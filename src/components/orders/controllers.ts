@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { OrderService } from "./services";
 import { success, errors } from "../../network";
-import { FilterQueries, Order } from "./types";
+import { FilterQueries, OrderModel } from "./types";
 import { MysqlError } from "mysql";
 
 /* As a general concept, controllers and in charge of managing the entry and the exit of the routes.
@@ -16,9 +16,6 @@ class OrderController {
   }
 
   list(req: Request, res: Response) {
-    /* limit = number of maximum rows the DB should bring
-       offset = where should the data start loading. For example, if offset is set to 10, it will start bring data from 10 and onwards */
-
     const { limit, offset } = req.query as { limit: string; offset: string };
 
     this.orderService
@@ -27,7 +24,8 @@ class OrderController {
         return success({
           res,
           message: "This is the list of orders ordered by date",
-          data: orders as Order[],
+          //corregir para que sea un array de ordenes con su array de objetos comprados.
+          data: orders as any,
           status: 200,
         });
       })
@@ -95,7 +93,7 @@ class OrderController {
   }
 
   create(req: Request, res: Response) {
-    const arrayOfProducts: Order[] = req.body;
+    const arrayOfProducts: OrderModel[] = req.body;
 
     if (Object.keys(arrayOfProducts).length === 0) {
       return errors({
@@ -121,7 +119,7 @@ class OrderController {
   }
 
   update(req: Request, res: Response) {
-    const order: Order = req.body;
+    const order: OrderModel = req.body;
 
     if (Object.keys(order).length === 0) {
       return errors({

@@ -95,6 +95,7 @@ type ConnectionMethods = {
     id,
   }: ToggleItemStatus) => Promise<MysqlQueryResult | MysqlError>;
   eliminate: ({ table, id }: DeleteParams) => Promise<MysqlQueryResult>;
+  personalizedQuery: (query: string) => Promise<Object[] | MysqlError>;
   closeConnection: () => void;
 };
 

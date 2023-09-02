@@ -2,11 +2,14 @@ import { MysqlError } from "mysql";
 
 import { pool, handleConnection } from "../../store/mysql";
 import {
-  Order,
-  OrderItem,
+  OrderModel,
+  OrderItemModel,
   OrderStatus,
   OrdersTableColumns,
   FilterQueries,
+  OrdersQueries,
+  OrdersWithItems,
+  FormattedOrders,
 } from "./types";
 import { MysqlQueryResult, TableColumns } from "../../store/types";
 
@@ -26,14 +29,51 @@ class OrderService {
   update order status (probably requires changes on DB as is right now)
   */
 
+  //CORRECT THIS METHOD, IF YOU PLACE A LIMIT IT TAKES OUT POSSIBLE AN ITEM_ORDER THAT'S OWNED BY ALREADY SHOWN ORDER
   async list({ limit = "15", offset = "0" }) {
-    const orders = (await this.connection.list({
-      table: "orders",
-      limit,
-      offset,
-    })) as Order[] | MysqlError;
+    const ordersWithItems = (await this.connection.personalizedQuery(
+      OrdersQueries.GET_ORDERS_AND_ORDER_ITEMS +
+        ` LIMIT ${limit} OFFSET ${offset};`
+    )) as OrdersWithItems[] | MysqlError;
 
-    return orders;
+    // Map is an object that it's build with a pair of key-values. Each key is unique and cannot be find twice in the same Map.
+    // The content of a key can be updated or overwritten. This is wonderful for grouping order_items by a same order_id.
+    const orderMap = new Map();
+
+    if (Array.isArray(ordersWithItems)) {
+      ordersWithItems.forEach((order) => {
+        let orderExists: FormattedOrders = orderMap.get(order.id);
+
+        if (!orderExists) {
+          //if the order hasn't been defined yet in the Map, we define it with it's first values and create products array
+          orderMap.set(order.id, {
+            id: order.id,
+            user_id: order.user_id,
+            total_amount: order.total_amount,
+            status: order.status,
+            created_at: order.created_at,
+            products: [
+              {
+                order_item_id: order.order_item_id,
+                product_id: order.product_id,
+                quantity: order.quantity,
+                subtotal: order.subtotal,
+              },
+            ],
+          });
+        } else {
+          // since the Order and products array it's on the map we can update it's value by pushing new content
+          orderExists.products.push({
+            order_item_id: order.order_item_id,
+            product_id: order.product_id,
+            quantity: order.quantity,
+            subtotal: order.subtotal,
+          });
+        }
+      });
+
+      return [...orderMap.values()];
+    }
   }
 
   /* async filterBy({ productName, orderCreatedDate }: FilterQueries) {
@@ -78,7 +118,7 @@ class OrderService {
     });
   }
 
-  async create(productsInArrayOfJsons: Order[]) {
+  async create(productsInArrayOfJsons: OrderModel[]) {
     const data = productsInArrayOfJsons.map((order) => [
       ...Object.values(order),
     ]);
@@ -95,7 +135,7 @@ class OrderService {
     return result as MysqlQueryResult;
   }
 
-  async update({ order }: { order: Order }) {
+  async update({ order }: { order: OrderModel }) {
     const productId = order.id.toString();
 
     const data = await this.connection.update({

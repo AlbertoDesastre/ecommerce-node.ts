@@ -234,7 +234,7 @@ function handleConnection(): ConnectionMethods {
       );
     });
   }
-  /*   function personalizedQuery(query: string): Promise<Object[] | MysqlError> {
+  function personalizedQuery(query: string): Promise<Object[] | MysqlError> {
     return new Promise((resolve, reject) => {
       pool.query(query, (err, data) => {
         if (err) return reject(err);
@@ -247,7 +247,7 @@ function handleConnection(): ConnectionMethods {
       });
     });
   }
- */
+
   function eliminate({ table, id }: DeleteParams): Promise<MysqlQueryResult> {
     return new Promise((resolve, reject) => {
       if (id === undefined) {
@@ -287,7 +287,7 @@ function handleConnection(): ConnectionMethods {
     create,
     update,
     toggleItemStatus,
-    /*  personalizedQuery, */
+    personalizedQuery,
     eliminate,
     closeConnection,
   };

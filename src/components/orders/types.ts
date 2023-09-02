@@ -12,7 +12,7 @@ enum OrderStatus {
   DELIVERED = "delivered",
 }
 
-type Order = {
+type OrderModel = {
   id: number;
   user_id: string;
   total_amount: number;
@@ -21,7 +21,7 @@ type Order = {
   created_at: Date | null;
 };
 
-type OrderItem = {
+type OrderItemModel = {
   id: number;
   order_id: number;
   product_id: number;
@@ -30,9 +30,48 @@ type OrderItem = {
   created_at: Date | null;
 };
 
+type FormattedOrders = {
+  id: number;
+  user_id: string;
+  total_amount: number;
+  status: string;
+  created_at: string;
+  products: Array<{
+    order_item_id: number;
+    product_id: number;
+    quantity: number;
+    subtotal: number;
+  }>;
+};
+
+type OrdersWithItems = {
+  id: number;
+  user_id: string;
+  total_amount: number;
+  status: string;
+  created_at: string;
+  order_item_id: number;
+  product_id: number;
+  quantity: number;
+  subtotal: number;
+};
+
+enum OrdersQueries {
+  GET_ORDERS_AND_ORDER_ITEMS = "SELECT o.id, o.user_id, o.total_amount, o.status, o.created_at, oi.id AS order_item_id, oi.product_id, oi.quantity, oi.subtotal FROM orders o JOIN order_items oi ON o.id = oi.order_id",
+}
+
 enum OrdersTableColumns {
   CREATE_ORDER = "(user_id, total_amount, status)",
   CREATE_ORDER_ITEMS = "(order_id, product_id, quantity, subtotal)",
 }
 
-export { FilterQueries, Order, OrderItem, OrderStatus, OrdersTableColumns };
+export {
+  FilterQueries,
+  OrderModel,
+  OrderItemModel,
+  FormattedOrders,
+  OrderStatus,
+  OrdersQueries,
+  OrdersWithItems,
+  OrdersTableColumns,
+};

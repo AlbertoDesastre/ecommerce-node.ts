@@ -10,6 +10,8 @@ import {
   OrdersQueries,
   OrdersWithItems,
   FormattedOrders,
+  OrderErrorMessage,
+  OrderPostRequestModel,
 } from "./types";
 import { MysqlQueryResult, TableColumns } from "../../store/types";
 
@@ -21,7 +23,6 @@ class OrderService {
   }
 
   /* Methods to add:
-  list order by User
   list orders that has X item
   list orders by date
   create order
@@ -29,51 +30,28 @@ class OrderService {
   update order status (probably requires changes on DB as is right now)
   */
 
-  //CORRECT THIS METHOD, IF YOU PLACE A LIMIT IT TAKES OUT POSSIBLE AN ITEM_ORDER THAT'S OWNED BY ALREADY SHOWN ORDER
-  async list({ limit = "15", offset = "0" }) {
-    const ordersWithItems = (await this.connection.personalizedQuery(
+  //Think about displaying the items full info, in this method or another one, instead of just item's ids.
+  async list({ userId }: { userId: string }) {
+    const doesUserExist = await this.connection.getOne({
+      table: "users",
+      tableColumns: TableColumns.USERS_GET_PARTIAL_VALUES,
+      id: userId,
+      addExtraQuotesToId: true,
+    });
+
+    if (Array.isArray(doesUserExist) && doesUserExist.length === 0)
+      return OrderErrorMessage.USER_DOESNT_EXISTS;
+
+    const result = (await this.connection.personalizedQuery(
       OrdersQueries.GET_ORDERS_AND_ORDER_ITEMS +
-        ` LIMIT ${limit} OFFSET ${offset};`
+        ` WHERE u.id = "${userId}" ` +
+        OrdersQueries.ORDER_BY_ORDERS_DATE
     )) as OrdersWithItems[] | MysqlError;
 
-    // Map is an object that it's build with a pair of key-values. Each key is unique and cannot be find twice in the same Map.
-    // The content of a key can be updated or overwritten. This is wonderful for grouping order_items by a same order_id.
-    const orderMap = new Map();
+    if (!Array.isArray(result)) throw new Error(result.message);
+    if (result.length === 0) return OrderErrorMessage.USER_DOESNT_HAVE_ORDERS;
 
-    if (Array.isArray(ordersWithItems)) {
-      ordersWithItems.forEach((order) => {
-        let orderExists: FormattedOrders = orderMap.get(order.id);
-
-        if (!orderExists) {
-          //if the order hasn't been defined yet in the Map, we define it with it's first values and create products array
-          orderMap.set(order.id, {
-            id: order.id,
-            user_id: order.user_id,
-            total_amount: order.total_amount,
-            status: order.status,
-            created_at: order.created_at,
-            products: [
-              {
-                order_item_id: order.order_item_id,
-                product_id: order.product_id,
-                quantity: order.quantity,
-                subtotal: order.subtotal,
-              },
-            ],
-          });
-        } else {
-          // since the Order and products array it's on the map we can update it's value by pushing new content
-          orderExists.products.push({
-            order_item_id: order.order_item_id,
-            product_id: order.product_id,
-            quantity: order.quantity,
-            subtotal: order.subtotal,
-          });
-        }
-      });
-
-      return [...orderMap.values()];
-    }
+    return this.formatOrders(result);
   }
 
   /* async filterBy({ productName, orderCreatedDate }: FilterQueries) {
@@ -108,53 +86,132 @@ class OrderService {
     return result;
   } */
 
-  async getOne(id: string) {
-    return await this.connection.getOne({
+  async getOne(id: string): Promise<OrderModel[] | MysqlError> {
+    const result = await this.connection.getOne({
       table: "orders",
-      // CHANGE THIS!!
-      tableColumns: TableColumns.PRODUCTS_GET_VALUES,
+      tableColumns: TableColumns.ORDER_GET_PARTIAL_INFO,
       id,
+      addExtraQuotesToId: false,
+    });
+
+    if (Array.isArray(result) && result.length === 0)
+      throw new Error(OrderErrorMessage.ORDER_NOT_FOUND);
+    if (!Array.isArray(result)) throw new Error(result.message);
+
+    return result as OrderModel[];
+  }
+
+  async create(order: OrderPostRequestModel) {
+    const { user_id, total_amount, products } = order;
+
+    const doesUserExist = await this.connection.getOne({
+      table: "users",
+      tableColumns: "id",
+      id: user_id,
       addExtraQuotesToId: true,
     });
-  }
 
-  async create(productsInArrayOfJsons: OrderModel[]) {
-    const data = productsInArrayOfJsons.map((order) => [
-      ...Object.values(order),
-    ]);
+    if (Array.isArray(doesUserExist) && doesUserExist.length === 0)
+      throw new Error(
+        "You can't create an order to an user that doesn't exists."
+      );
 
-    /* Pending to be corrected. In reality it's not returning orders but a message from mysql */
+    const orderCreatedResult = await this.connection.create({
+      table: "orders",
+      tableColumns: TableColumns.ORDER_POST_VALUES,
+      arrayOfData: [[user_id, total_amount]],
+    });
+
+    if (orderCreatedResult instanceof Error) {
+      throw new Error("Failed to create the order.");
+    }
+
+    const orderItemsArray = products.map((order_item) => {
+      order_item.order_id = orderCreatedResult.insertId;
+      return Object.values(order_item);
+    });
+
     const result = await this.connection.create({
-      table: "orders",
-      // CHANGE THIS!!
-      tableColumns: TableColumns.PRODUCTS_POST_VALUES,
-      // CHANGE THIS!!
-      arrayOfData: data as any,
+      table: "order_items",
+      tableColumns: TableColumns.ORDER_ITEMS_POST_VALUES,
+      arrayOfData: orderItemsArray,
     });
 
-    return result as MysqlQueryResult;
+    if (result instanceof Error)
+      throw new Error(
+        "Something wrong ocurred when creating the order's item/s."
+      );
+
+    return orderCreatedResult.insertId;
   }
 
-  async update({ order }: { order: OrderModel }) {
-    const productId = order.id.toString();
+  async updateStatus({ id, status }: { id: string; status: OrderStatus }) {
+    const orderId = id.toString();
 
-    const data = await this.connection.update({
+    const doesOrderExists = await this.connection.getOne({
       table: "orders",
-      item: order,
-      id: productId,
-    });
-
-    return data;
-  }
-
-  async cancellOrder({ id }: { id: string }) {
-    const result = await this.connection.toggleItemStatus({
-      table: "orders",
-      boolean: "FALSE",
+      tableColumns: TableColumns.ORDER_GET_PARTIAL_INFO,
       id,
+      addExtraQuotesToId: false,
+    });
+
+    if (Array.isArray(doesOrderExists) && doesOrderExists.length === 0) {
+      throw new Error(OrderErrorMessage.ORDER_NOT_FOUND);
+    }
+
+    const result = await this.connection.update({
+      table: "orders",
+      item: { status },
+      id: orderId,
     });
 
     return result;
+  }
+
+  // v HELPERS v
+
+  isValidOrderStatus(status: string): boolean {
+    return Object.values(OrderStatus).includes(status as OrderStatus);
+  }
+
+  formatOrders(ordersWithItems: OrdersWithItems[]): FormattedOrders[] {
+    // Map is an object that it's build with a pair of key-values. Each key is unique and cannot be find twice in the same Map.
+    // The content of a key can be updated or overwritten. This is wonderful for grouping order_items by a same order_id.
+
+    const orderMap: Map<number, FormattedOrders> = new Map();
+
+    ordersWithItems.forEach((order) => {
+      let orderExists = orderMap.get(order.id);
+
+      if (!orderExists) {
+        //if the order hasn't been defined yet in the Map, we define it with it's first values and create products array
+        orderMap.set(order.id, {
+          id: order.id,
+          user_id: order.user_id,
+          total_amount: order.total_amount,
+          status: order.status,
+          created_at: order.created_at,
+          products: [
+            {
+              order_item_id: order.order_item_id,
+              product_id: order.product_id,
+              quantity: order.quantity,
+              subtotal: order.subtotal,
+            },
+          ],
+        });
+      } else {
+        // since the Order and products array it's on the map we can update it's value by pushing new content
+        orderExists.products.push({
+          order_item_id: order.order_item_id,
+          product_id: order.product_id,
+          quantity: order.quantity,
+          subtotal: order.subtotal,
+        });
+      }
+    });
+
+    return [...orderMap.values()];
   }
 }
 

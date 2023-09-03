@@ -10,6 +10,7 @@ enum OrderStatus {
   PREPARING = "preparing",
   SHIPPING = "shipping",
   DELIVERED = "delivered",
+  CANCELLED = "cancelled",
 }
 
 type OrderModel = {
@@ -56,13 +57,27 @@ type OrdersWithItems = {
   subtotal: number;
 };
 
+type OrderPostRequestModel = {
+  order_id: null;
+  user_id: string;
+  total_amount: number;
+  products: Array<Omit<OrderItemModel, "id" | "category_id" | "created_at">>;
+};
+
 enum OrdersQueries {
-  GET_ORDERS_AND_ORDER_ITEMS = "SELECT o.id, o.user_id, o.total_amount, o.status, o.created_at, oi.id AS order_item_id, oi.product_id, oi.quantity, oi.subtotal FROM orders o JOIN order_items oi ON o.id = oi.order_id",
+  GET_ORDERS_AND_ORDER_ITEMS = "SELECT o.id, o.user_id, o.total_amount, o.status, o.created_at, oi.id AS order_item_id, oi.product_id, oi.quantity, oi.subtotal FROM orders o JOIN order_items oi ON o.id = oi.order_id JOIN users u ON o.user_id = u.id",
+  ORDER_BY_ORDERS_DATE = "ORDER BY o.created_at",
 }
 
 enum OrdersTableColumns {
   CREATE_ORDER = "(user_id, total_amount, status)",
   CREATE_ORDER_ITEMS = "(order_id, product_id, quantity, subtotal)",
+}
+
+enum OrderErrorMessage {
+  ORDER_NOT_FOUND = "No order was found",
+  USER_DOESNT_HAVE_ORDERS = "This user doesn't have any orders.",
+  USER_DOESNT_EXISTS = "This consumer doesn't exists and therefore it doesn't have any orders.",
 }
 
 export {
@@ -71,7 +86,9 @@ export {
   OrderItemModel,
   FormattedOrders,
   OrderStatus,
+  OrderPostRequestModel,
   OrdersQueries,
   OrdersWithItems,
   OrdersTableColumns,
+  OrderErrorMessage,
 };

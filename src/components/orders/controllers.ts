@@ -1,8 +1,15 @@
 import { Request, Response } from "express";
 import { OrderService } from "./services";
 import { success, errors } from "../../network";
-import { FilterQueries, OrderModel } from "./types";
+import {
+  FilterQueries,
+  FormattedOrders,
+  OrderErrorMessage,
+  OrderModel,
+  OrderPostRequestModel,
+} from "./types";
 import { MysqlError } from "mysql";
+import { MysqlQueryResult } from "../../store/types";
 
 /* As a general concept, controllers and in charge of managing the entry and the exit of the routes.
 Controller analyze the request: if it's correct, if the body fills the rules, there are no weird things, etc...
@@ -16,21 +23,27 @@ class OrderController {
   }
 
   list(req: Request, res: Response) {
-    const { limit, offset } = req.query as { limit: string; offset: string };
+    const { userId } = req.query as { userId: string };
+
+    if (!userId)
+      return errors({
+        res,
+        message: "An user id must be provided in order to list their orders",
+        status: 400,
+      });
 
     this.orderService
-      .list({ limit, offset })
+      .list({ userId })
       .then((orders) => {
         return success({
           res,
-          message: "This is the list of orders ordered by date",
-          //corregir para que sea un array de ordenes con su array de objetos comprados.
-          data: orders as any,
+          message: "Succesfull call, here are the results.",
+          data: orders,
           status: 200,
         });
       })
-      .catch((err) => {
-        return res.status(500).json(err);
+      .catch((err: MysqlError) => {
+        return errors({ res, message: err.message, status: 500 });
       });
   }
 
@@ -64,52 +77,67 @@ class OrderController {
  */
   getOne(req: Request, res: Response) {
     /* REMINDER! What comes from params it's always a string */
-    const { id } = req.params;
+    const { orderId } = req.params;
 
-    /* data expected to be received = array */
     this.orderService
-      .getOne(id)
+      .getOne(orderId)
       .then((result) => {
-        if (Array.isArray(result)) {
-          if (result.length === 0) {
-            return errors({
-              res,
-              message: "No order was found",
-              status: 401,
-            });
-          } else {
-            return success({
-              res,
-              message: "This order is available",
-              data: result,
-              status: 201,
-            });
-          }
-        }
+        return success({
+          res,
+          message: "This order is available",
+          data: result as OrderModel[],
+          status: 201,
+        });
       })
-      .catch((err) => {
-        return errors({ res, message: err, status: 500 });
+      .catch((err: MysqlError) => {
+        let statusCode;
+        if (err.message === OrderErrorMessage.ORDER_NOT_FOUND) {
+          statusCode = 400;
+        } else {
+          statusCode = 500;
+        }
+
+        return errors({ res, message: err.message, status: statusCode });
       });
   }
 
   create(req: Request, res: Response) {
-    const arrayOfProducts: OrderModel[] = req.body;
+    const order: OrderPostRequestModel = req.body;
 
-    if (Object.keys(arrayOfProducts).length === 0) {
+    if (!order.user_id || !order.total_amount)
       return errors({
         res,
-        message: "You didn't provide a body",
+        message:
+          "An user id and the total amount of the order is needed to create it.",
+        status: 400,
+      });
+
+    if (!order.products || order.products.length === 0)
+      return errors({
+        res,
+        message: "There must be at least one product to create an order.",
+        status: 400,
+      });
+
+    const invalidProducts = order.products.filter(
+      (product) => product.order_id !== null
+    );
+
+    if (invalidProducts.length > 0) {
+      return errors({
+        res,
+        message: "The 'order_id' property msut exist and  be null.",
         status: 400,
       });
     }
 
     this.orderService
-      .create(arrayOfProducts)
+      .create(order)
       .then((result) => {
         return success({
           res,
-          message: "All order/s created",
-          data: result.message,
+          message: "Order created",
+          data: `All order's items were assigned to order ${result}`,
           status: 201,
         });
       })
@@ -118,19 +146,28 @@ class OrderController {
       });
   }
 
-  update(req: Request, res: Response) {
-    const order: OrderModel = req.body;
+  // maybe I should put an authentication part for the orders too
+  updateStatus(req: Request, res: Response) {
+    const { id, status } = req.body;
 
-    if (Object.keys(order).length === 0) {
+    if (!id || !status) {
       return errors({
         res,
-        message: "You didn't provide a body",
+        message: "You didn't provide enough data to update the order",
         status: 400,
       });
     }
-    /* Aquí debería tipar que el req.body contiene un objeto específico*/
+
+    if (!this.orderService.isValidOrderStatus(status)) {
+      return errors({
+        res,
+        message: "Invalid order status",
+        status: 400,
+      });
+    }
+
     this.orderService
-      .update({ order })
+      .updateStatus({ id, status })
       .then((result) => {
         return success({
           res,
@@ -139,26 +176,8 @@ class OrderController {
           status: 201,
         });
       })
-      .catch((err) => {
-        return errors({ res, message: err, status: 500 });
-      });
-  }
-
-  cancellOrder(req: Request, res: Response) {
-    const { id } = req.params;
-
-    this.orderService
-      .cancellOrder({ id })
-      .then((result) => {
-        return success({
-          res,
-          message: "Order deactivated",
-          data: result.message,
-          status: 201,
-        });
-      })
-      .catch((err) => {
-        return errors({ res, message: err, status: 500 });
+      .catch((err: MysqlError) => {
+        return errors({ res, message: err.message, status: 500 });
       });
   }
 }

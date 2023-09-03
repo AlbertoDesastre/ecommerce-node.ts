@@ -6,12 +6,11 @@ const router = express.Router();
 const orderController = new OrderController();
 
 router.get("/", (req, res) => {
-  //list ordered by date
   orderController.list(req, res);
 });
 
 /* always put routes that requires dynamic data at the end, or the routs with fixed words won't be accesible */
-router.get("/:id", (req, res) => {
+router.get("/:orderId", (req, res) => {
   orderController.getOne(req, res);
 });
 
@@ -20,11 +19,7 @@ router.post("/", (req, res) => {
 });
 
 router.put("/", (req, res) => {
-  orderController.update(req, res);
-});
-
-router.delete("/:id", (req, res) => {
-  orderController.cancellOrder(req, res);
+  orderController.updateStatus(req, res);
 });
 
 export { router };

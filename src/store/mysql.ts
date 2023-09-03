@@ -243,6 +243,8 @@ function handleConnection(): ConnectionMethods {
           ...objetFromQuery,
         }));
 
+        console.log("la data de la query --> ", data);
+        console.log(orders);
         resolve(orders);
       });
     });

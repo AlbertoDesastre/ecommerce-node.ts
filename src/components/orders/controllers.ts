@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { OrderService } from "./services";
 import { success, errors } from "../../network";
-import { FilterQueries, OrderModel } from "./types";
+import { FilterQueries, FormattedOrders, OrderModel } from "./types";
 import { MysqlError } from "mysql";
 
 /* As a general concept, controllers and in charge of managing the entry and the exit of the routes.
@@ -16,21 +16,27 @@ class OrderController {
   }
 
   list(req: Request, res: Response) {
-    const { limit, offset } = req.query as { limit: string; offset: string };
+    const { userId } = req.query as { userId: string };
+
+    if (!userId)
+      return errors({
+        res,
+        message: "An user id must be provided in order to list their orders",
+        status: 400,
+      });
 
     this.orderService
-      .list({ limit, offset })
+      .list({ userId })
       .then((orders) => {
         return success({
           res,
-          message: "This is the list of orders ordered by date",
-          //corregir para que sea un array de ordenes con su array de objetos comprados.
-          data: orders as any,
+          message: "Succesfull call, here are the results.",
+          data: orders,
           status: 200,
         });
       })
-      .catch((err) => {
-        return res.status(500).json(err);
+      .catch((err: MysqlError) => {
+        return errors({ res, message: err.message, status: 500 });
       });
   }
 

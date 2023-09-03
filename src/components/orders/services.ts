@@ -30,17 +30,27 @@ class OrderService {
   */
 
   //CORRECT THIS METHOD, IF YOU PLACE A LIMIT IT TAKES OUT POSSIBLE AN ITEM_ORDER THAT'S OWNED BY ALREADY SHOWN ORDER
-  async list({ limit = "a", offset = "0" }) {
-    const ordersWithItems = (await this.connection.personalizedQuery(
+  async list({ userId }: { userId: string }) {
+    const doesUserExist = await this.connection.getOne({
+      table: "users",
+      tableColumns: TableColumns.USERS_GET_PARTIAL_VALUES,
+      id: userId,
+      addExtraQuotesToId: true,
+    });
+
+    if (Array.isArray(doesUserExist) && doesUserExist.length === 0)
+      return "This consumer doesn't exists and therefore it doesn't have any orders.";
+
+    const result = (await this.connection.personalizedQuery(
       OrdersQueries.GET_ORDERS_AND_ORDER_ITEMS +
-        ` LIMIT ${limit} OFFSET ${offset};`
+        ` WHERE u.id = "${userId}" ` +
+        OrdersQueries.ORDER_BY_ORDERS_DATE
     )) as OrdersWithItems[] | MysqlError;
 
-    if (!Array.isArray(ordersWithItems)) {
-      return ordersWithItems;
-    } else {
-      return this.formatOrders(ordersWithItems);
-    }
+    if (!Array.isArray(result)) throw new Error(result.message);
+    if (result.length === 0) return "This user doesn't have any orders.";
+
+    return this.formatOrders(result);
   }
 
   formatOrders(ordersWithItems: OrdersWithItems[]): FormattedOrders[] {

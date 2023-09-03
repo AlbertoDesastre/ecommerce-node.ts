@@ -30,50 +30,57 @@ class OrderService {
   */
 
   //CORRECT THIS METHOD, IF YOU PLACE A LIMIT IT TAKES OUT POSSIBLE AN ITEM_ORDER THAT'S OWNED BY ALREADY SHOWN ORDER
-  async list({ limit = "15", offset = "0" }) {
+  async list({ limit = "a", offset = "0" }) {
     const ordersWithItems = (await this.connection.personalizedQuery(
       OrdersQueries.GET_ORDERS_AND_ORDER_ITEMS +
         ` LIMIT ${limit} OFFSET ${offset};`
     )) as OrdersWithItems[] | MysqlError;
 
+    if (!Array.isArray(ordersWithItems)) {
+      return ordersWithItems;
+    } else {
+      return this.formatOrders(ordersWithItems);
+    }
+  }
+
+  formatOrders(ordersWithItems: OrdersWithItems[]): FormattedOrders[] {
     // Map is an object that it's build with a pair of key-values. Each key is unique and cannot be find twice in the same Map.
     // The content of a key can be updated or overwritten. This is wonderful for grouping order_items by a same order_id.
-    const orderMap = new Map();
 
-    if (Array.isArray(ordersWithItems)) {
-      ordersWithItems.forEach((order) => {
-        let orderExists: FormattedOrders = orderMap.get(order.id);
+    const orderMap: Map<number, FormattedOrders> = new Map();
 
-        if (!orderExists) {
-          //if the order hasn't been defined yet in the Map, we define it with it's first values and create products array
-          orderMap.set(order.id, {
-            id: order.id,
-            user_id: order.user_id,
-            total_amount: order.total_amount,
-            status: order.status,
-            created_at: order.created_at,
-            products: [
-              {
-                order_item_id: order.order_item_id,
-                product_id: order.product_id,
-                quantity: order.quantity,
-                subtotal: order.subtotal,
-              },
-            ],
-          });
-        } else {
-          // since the Order and products array it's on the map we can update it's value by pushing new content
-          orderExists.products.push({
-            order_item_id: order.order_item_id,
-            product_id: order.product_id,
-            quantity: order.quantity,
-            subtotal: order.subtotal,
-          });
-        }
-      });
+    ordersWithItems.forEach((order) => {
+      let orderExists = orderMap.get(order.id);
 
-      return [...orderMap.values()];
-    }
+      if (!orderExists) {
+        //if the order hasn't been defined yet in the Map, we define it with it's first values and create products array
+        orderMap.set(order.id, {
+          id: order.id,
+          user_id: order.user_id,
+          total_amount: order.total_amount,
+          status: order.status,
+          created_at: order.created_at,
+          products: [
+            {
+              order_item_id: order.order_item_id,
+              product_id: order.product_id,
+              quantity: order.quantity,
+              subtotal: order.subtotal,
+            },
+          ],
+        });
+      } else {
+        // since the Order and products array it's on the map we can update it's value by pushing new content
+        orderExists.products.push({
+          order_item_id: order.order_item_id,
+          product_id: order.product_id,
+          quantity: order.quantity,
+          subtotal: order.subtotal,
+        });
+      }
+    });
+
+    return [...orderMap.values()];
   }
 
   /* async filterBy({ productName, orderCreatedDate }: FilterQueries) {

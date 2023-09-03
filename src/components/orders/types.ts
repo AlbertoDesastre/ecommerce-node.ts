@@ -57,6 +57,13 @@ type OrdersWithItems = {
   subtotal: number;
 };
 
+type OrderPostRequestModel = {
+  order_id: null;
+  user_id: string;
+  total_amount: number;
+  products: Array<Omit<OrderItemModel, "id" | "category_id" | "created_at">>;
+};
+
 enum OrdersQueries {
   GET_ORDERS_AND_ORDER_ITEMS = "SELECT o.id, o.user_id, o.total_amount, o.status, o.created_at, oi.id AS order_item_id, oi.product_id, oi.quantity, oi.subtotal FROM orders o JOIN order_items oi ON o.id = oi.order_id JOIN users u ON o.user_id = u.id",
   ORDER_BY_ORDERS_DATE = "ORDER BY o.created_at",
@@ -79,6 +86,7 @@ export {
   OrderItemModel,
   FormattedOrders,
   OrderStatus,
+  OrderPostRequestModel,
   OrdersQueries,
   OrdersWithItems,
   OrdersTableColumns,

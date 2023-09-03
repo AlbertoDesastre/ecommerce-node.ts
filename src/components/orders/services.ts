@@ -11,6 +11,7 @@ import {
   OrdersWithItems,
   FormattedOrders,
   OrderErrorMessage,
+  OrderPostRequestModel,
 } from "./types";
 import { MysqlQueryResult, TableColumns } from "../../store/types";
 
@@ -51,46 +52,6 @@ class OrderService {
     if (result.length === 0) return OrderErrorMessage.USER_DOESNT_HAVE_ORDERS;
 
     return this.formatOrders(result);
-  }
-
-  formatOrders(ordersWithItems: OrdersWithItems[]): FormattedOrders[] {
-    // Map is an object that it's build with a pair of key-values. Each key is unique and cannot be find twice in the same Map.
-    // The content of a key can be updated or overwritten. This is wonderful for grouping order_items by a same order_id.
-
-    const orderMap: Map<number, FormattedOrders> = new Map();
-
-    ordersWithItems.forEach((order) => {
-      let orderExists = orderMap.get(order.id);
-
-      if (!orderExists) {
-        //if the order hasn't been defined yet in the Map, we define it with it's first values and create products array
-        orderMap.set(order.id, {
-          id: order.id,
-          user_id: order.user_id,
-          total_amount: order.total_amount,
-          status: order.status,
-          created_at: order.created_at,
-          products: [
-            {
-              order_item_id: order.order_item_id,
-              product_id: order.product_id,
-              quantity: order.quantity,
-              subtotal: order.subtotal,
-            },
-          ],
-        });
-      } else {
-        // since the Order and products array it's on the map we can update it's value by pushing new content
-        orderExists.products.push({
-          order_item_id: order.order_item_id,
-          product_id: order.product_id,
-          quantity: order.quantity,
-          subtotal: order.subtotal,
-        });
-      }
-    });
-
-    return [...orderMap.values()];
   }
 
   /* async filterBy({ productName, orderCreatedDate }: FilterQueries) {
@@ -140,21 +101,48 @@ class OrderService {
     return result as OrderModel[];
   }
 
-  async create(productsInArrayOfJsons: OrderModel[]) {
-    const data = productsInArrayOfJsons.map((order) => [
-      ...Object.values(order),
-    ]);
+  async create(order: OrderPostRequestModel) {
+    const { user_id, total_amount, products } = order;
 
-    /* Pending to be corrected. In reality it's not returning orders but a message from mysql */
-    const result = await this.connection.create({
-      table: "orders",
-      // CHANGE THIS!!
-      tableColumns: TableColumns.PRODUCTS_POST_VALUES,
-      // CHANGE THIS!!
-      arrayOfData: data as any,
+    const doesUserExist = await this.connection.getOne({
+      table: "users",
+      tableColumns: "id",
+      id: user_id,
+      addExtraQuotesToId: true,
     });
 
-    return result as MysqlQueryResult;
+    if (Array.isArray(doesUserExist) && doesUserExist.length === 0)
+      throw new Error(
+        "You can't create an order to an user that doesn't exists."
+      );
+
+    const orderCreatedResult = await this.connection.create({
+      table: "orders",
+      tableColumns: TableColumns.ORDER_POST_VALUES,
+      arrayOfData: [[user_id, total_amount]],
+    });
+
+    if (orderCreatedResult instanceof Error) {
+      throw new Error("Failed to create the order.");
+    }
+
+    const orderItemsArray = products.map((order_item) => {
+      order_item.order_id = orderCreatedResult.insertId;
+      return Object.values(order_item);
+    });
+
+    const result = await this.connection.create({
+      table: "order_items",
+      tableColumns: TableColumns.ORDER_ITEMS_POST_VALUES,
+      arrayOfData: orderItemsArray,
+    });
+
+    if (result instanceof Error)
+      throw new Error(
+        "Something wrong ocurred when creating the order's item/s."
+      );
+
+    return orderCreatedResult.insertId;
   }
 
   async updateStatus({ id, status }: { id: string; status: OrderStatus }) {
@@ -180,8 +168,50 @@ class OrderService {
     return result;
   }
 
+  // v HELPERS v
+
   isValidOrderStatus(status: string): boolean {
     return Object.values(OrderStatus).includes(status as OrderStatus);
+  }
+
+  formatOrders(ordersWithItems: OrdersWithItems[]): FormattedOrders[] {
+    // Map is an object that it's build with a pair of key-values. Each key is unique and cannot be find twice in the same Map.
+    // The content of a key can be updated or overwritten. This is wonderful for grouping order_items by a same order_id.
+
+    const orderMap: Map<number, FormattedOrders> = new Map();
+
+    ordersWithItems.forEach((order) => {
+      let orderExists = orderMap.get(order.id);
+
+      if (!orderExists) {
+        //if the order hasn't been defined yet in the Map, we define it with it's first values and create products array
+        orderMap.set(order.id, {
+          id: order.id,
+          user_id: order.user_id,
+          total_amount: order.total_amount,
+          status: order.status,
+          created_at: order.created_at,
+          products: [
+            {
+              order_item_id: order.order_item_id,
+              product_id: order.product_id,
+              quantity: order.quantity,
+              subtotal: order.subtotal,
+            },
+          ],
+        });
+      } else {
+        // since the Order and products array it's on the map we can update it's value by pushing new content
+        orderExists.products.push({
+          order_item_id: order.order_item_id,
+          product_id: order.product_id,
+          quantity: order.quantity,
+          subtotal: order.subtotal,
+        });
+      }
+    });
+
+    return [...orderMap.values()];
   }
 }
 

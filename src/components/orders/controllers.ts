@@ -6,8 +6,10 @@ import {
   FormattedOrders,
   OrderErrorMessage,
   OrderModel,
+  OrderPostRequestModel,
 } from "./types";
 import { MysqlError } from "mysql";
+import { MysqlQueryResult } from "../../store/types";
 
 /* As a general concept, controllers and in charge of managing the entry and the exit of the routes.
 Controller analyze the request: if it's correct, if the body fills the rules, there are no weird things, etc...
@@ -100,23 +102,42 @@ class OrderController {
   }
 
   create(req: Request, res: Response) {
-    const arrayOfProducts: OrderModel[] = req.body;
+    const order: OrderPostRequestModel = req.body;
 
-    if (Object.keys(arrayOfProducts).length === 0) {
+    if (!order.user_id || !order.total_amount)
       return errors({
         res,
-        message: "You didn't provide a body",
+        message:
+          "An user id and the total amount of the order is needed to create it.",
+        status: 400,
+      });
+
+    if (!order.products || order.products.length === 0)
+      return errors({
+        res,
+        message: "There must be at least one product to create an order.",
+        status: 400,
+      });
+
+    const invalidProducts = order.products.filter(
+      (product) => product.order_id !== null
+    );
+
+    if (invalidProducts.length > 0) {
+      return errors({
+        res,
+        message: "The 'order_id' property msut exist and  be null.",
         status: 400,
       });
     }
 
     this.orderService
-      .create(arrayOfProducts)
+      .create(order)
       .then((result) => {
         return success({
           res,
-          message: "All order/s created",
-          data: result.message,
+          message: "Order created",
+          data: `All order's items were assigned to order ${result}`,
           status: 201,
         });
       })

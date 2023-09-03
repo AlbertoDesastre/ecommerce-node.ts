@@ -157,26 +157,31 @@ class OrderService {
     return result as MysqlQueryResult;
   }
 
-  async update({ order }: { order: OrderModel }) {
-    const productId = order.id.toString();
+  async updateStatus({ id, status }: { id: string; status: OrderStatus }) {
+    const orderId = id.toString();
 
-    const data = await this.connection.update({
+    const doesOrderExists = await this.connection.getOne({
       table: "orders",
-      item: order,
-      id: productId,
+      tableColumns: TableColumns.ORDER_GET_PARTIAL_INFO,
+      id,
+      addExtraQuotesToId: false,
     });
 
-    return data;
-  }
+    if (Array.isArray(doesOrderExists) && doesOrderExists.length === 0) {
+      throw new Error(OrderErrorMessage.ORDER_NOT_FOUND);
+    }
 
-  async cancellOrder({ id }: { id: string }) {
-    const result = await this.connection.toggleItemStatus({
+    const result = await this.connection.update({
       table: "orders",
-      boolean: "FALSE",
-      id,
+      item: { status },
+      id: orderId,
     });
 
     return result;
+  }
+
+  isValidOrderStatus(status: string): boolean {
+    return Object.values(OrderStatus).includes(status as OrderStatus);
   }
 }
 

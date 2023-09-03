@@ -19,11 +19,7 @@ router.post("/", (req, res) => {
 });
 
 router.put("/", (req, res) => {
-  orderController.update(req, res);
-});
-
-router.delete("/:id", (req, res) => {
-  orderController.cancellOrder(req, res);
+  orderController.updateStatus(req, res);
 });
 
 export { router };

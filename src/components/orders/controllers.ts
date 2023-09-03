@@ -125,19 +125,28 @@ class OrderController {
       });
   }
 
-  update(req: Request, res: Response) {
-    const order: OrderModel = req.body;
+  // maybe I should put an authentication part for the orders too
+  updateStatus(req: Request, res: Response) {
+    const { id, status } = req.body;
 
-    if (Object.keys(order).length === 0) {
+    if (!id || !status) {
       return errors({
         res,
-        message: "You didn't provide a body",
+        message: "You didn't provide enough data to update the order",
         status: 400,
       });
     }
-    /* Aquí debería tipar que el req.body contiene un objeto específico*/
+
+    if (!this.orderService.isValidOrderStatus(status)) {
+      return errors({
+        res,
+        message: "Invalid order status",
+        status: 400,
+      });
+    }
+
     this.orderService
-      .update({ order })
+      .updateStatus({ id, status })
       .then((result) => {
         return success({
           res,
@@ -146,26 +155,8 @@ class OrderController {
           status: 201,
         });
       })
-      .catch((err) => {
-        return errors({ res, message: err, status: 500 });
-      });
-  }
-
-  cancellOrder(req: Request, res: Response) {
-    const { id } = req.params;
-
-    this.orderService
-      .cancellOrder({ id })
-      .then((result) => {
-        return success({
-          res,
-          message: "Order deactivated",
-          data: result.message,
-          status: 201,
-        });
-      })
-      .catch((err) => {
-        return errors({ res, message: err, status: 500 });
+      .catch((err: MysqlError) => {
+        return errors({ res, message: err.message, status: 500 });
       });
   }
 }

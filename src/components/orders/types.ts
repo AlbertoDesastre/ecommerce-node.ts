@@ -10,6 +10,7 @@ enum OrderStatus {
   PREPARING = "preparing",
   SHIPPING = "shipping",
   DELIVERED = "delivered",
+  CANCELLED = "cancelled",
 }
 
 type OrderModel = {

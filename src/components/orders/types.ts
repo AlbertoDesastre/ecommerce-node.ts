@@ -66,6 +66,10 @@ enum OrdersTableColumns {
   CREATE_ORDER_ITEMS = "(order_id, product_id, quantity, subtotal)",
 }
 
+enum OrderErrorMessage {
+  ORDER_NOT_FOUND = "No order was found",
+}
+
 export {
   FilterQueries,
   OrderModel,
@@ -75,4 +79,5 @@ export {
   OrdersQueries,
   OrdersWithItems,
   OrdersTableColumns,
+  OrderErrorMessage,
 };

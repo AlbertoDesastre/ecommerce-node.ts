@@ -1,7 +1,12 @@
 import { Request, Response } from "express";
 import { OrderService } from "./services";
 import { success, errors } from "../../network";
-import { FilterQueries, FormattedOrders, OrderModel } from "./types";
+import {
+  FilterQueries,
+  FormattedOrders,
+  OrderErrorMessage,
+  OrderModel,
+} from "./types";
 import { MysqlError } from "mysql";
 
 /* As a general concept, controllers and in charge of managing the entry and the exit of the routes.
@@ -70,31 +75,27 @@ class OrderController {
  */
   getOne(req: Request, res: Response) {
     /* REMINDER! What comes from params it's always a string */
-    const { id } = req.params;
+    const { orderId } = req.params;
 
-    /* data expected to be received = array */
     this.orderService
-      .getOne(id)
+      .getOne(orderId)
       .then((result) => {
-        if (Array.isArray(result)) {
-          if (result.length === 0) {
-            return errors({
-              res,
-              message: "No order was found",
-              status: 401,
-            });
-          } else {
-            return success({
-              res,
-              message: "This order is available",
-              data: result,
-              status: 201,
-            });
-          }
-        }
+        return success({
+          res,
+          message: "This order is available",
+          data: result as OrderModel[],
+          status: 201,
+        });
       })
-      .catch((err) => {
-        return errors({ res, message: err, status: 500 });
+      .catch((err: MysqlError) => {
+        let statusCode;
+        if (err.message === OrderErrorMessage.ORDER_NOT_FOUND) {
+          statusCode = 400;
+        } else {
+          statusCode = 500;
+        }
+
+        return errors({ res, message: err.message, status: statusCode });
       });
   }
 

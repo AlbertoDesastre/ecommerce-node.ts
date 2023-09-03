@@ -10,6 +10,7 @@ import {
   OrdersQueries,
   OrdersWithItems,
   FormattedOrders,
+  OrderErrorMessage,
 } from "./types";
 import { MysqlQueryResult, TableColumns } from "../../store/types";
 
@@ -21,7 +22,6 @@ class OrderService {
   }
 
   /* Methods to add:
-  list order by User
   list orders that has X item
   list orders by date
   create order
@@ -29,7 +29,7 @@ class OrderService {
   update order status (probably requires changes on DB as is right now)
   */
 
-  //CORRECT THIS METHOD, IF YOU PLACE A LIMIT IT TAKES OUT POSSIBLE AN ITEM_ORDER THAT'S OWNED BY ALREADY SHOWN ORDER
+  //Think about displaying the items full info, in this method or another one, instead of just item's ids.
   async list({ userId }: { userId: string }) {
     const doesUserExist = await this.connection.getOne({
       table: "users",
@@ -125,14 +125,19 @@ class OrderService {
     return result;
   } */
 
-  async getOne(id: string) {
-    return await this.connection.getOne({
+  async getOne(id: string): Promise<OrderModel[] | MysqlError> {
+    const result = await this.connection.getOne({
       table: "orders",
-      // CHANGE THIS!!
-      tableColumns: TableColumns.PRODUCTS_GET_VALUES,
+      tableColumns: TableColumns.ORDER_GET_PARTIAL_INFO,
       id,
-      addExtraQuotesToId: true,
+      addExtraQuotesToId: false,
     });
+
+    if (Array.isArray(result) && result.length === 0)
+      throw new Error(OrderErrorMessage.ORDER_NOT_FOUND);
+    if (!Array.isArray(result)) throw new Error(result.message);
+
+    return result as OrderModel[];
   }
 
   async create(productsInArrayOfJsons: OrderModel[]) {

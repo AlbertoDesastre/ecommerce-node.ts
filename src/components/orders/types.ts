@@ -68,6 +68,8 @@ enum OrdersTableColumns {
 
 enum OrderErrorMessage {
   ORDER_NOT_FOUND = "No order was found",
+  USER_DOESNT_HAVE_ORDERS = "This user doesn't have any orders.",
+  USER_DOESNT_EXISTS = "This consumer doesn't exists and therefore it doesn't have any orders.",
 }
 
 export {

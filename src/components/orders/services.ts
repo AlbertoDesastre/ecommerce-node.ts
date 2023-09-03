@@ -39,7 +39,7 @@ class OrderService {
     });
 
     if (Array.isArray(doesUserExist) && doesUserExist.length === 0)
-      return "This consumer doesn't exists and therefore it doesn't have any orders.";
+      return OrderErrorMessage.USER_DOESNT_EXISTS;
 
     const result = (await this.connection.personalizedQuery(
       OrdersQueries.GET_ORDERS_AND_ORDER_ITEMS +
@@ -48,7 +48,7 @@ class OrderService {
     )) as OrdersWithItems[] | MysqlError;
 
     if (!Array.isArray(result)) throw new Error(result.message);
-    if (result.length === 0) return "This user doesn't have any orders.";
+    if (result.length === 0) return OrderErrorMessage.USER_DOESNT_HAVE_ORDERS;
 
     return this.formatOrders(result);
   }

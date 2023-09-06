@@ -71,12 +71,10 @@ class OrderService {
         OrdersQueries.ORDER_BY_ORDERS_DATE
     );
 
-    // REFACTOR THIS TO BE A HELPER FUNCTION!
-    if (Array.isArray(result) && result.length === 0)
-      return OrderErrorMessage.ORDER_ITEM_DOESNT_EXISTS_WITH_THESE_PARAMS;
-    if (!Array.isArray(result)) throw new Error(result.message);
-
-    return result;
+    return this.errorOrEmptyChecker(
+      result,
+      OrderErrorMessage.ORDER_ITEM_DOESNT_EXISTS_WITH_THESE_PARAMS
+    );
   }
 
   // done
@@ -165,6 +163,16 @@ class OrderService {
   }
 
   // v HELPERS v
+
+  errorOrEmptyChecker(
+    data: Object[] | MysqlError,
+    possibleErrorMessage: string
+  ): string | Error | Object[] {
+    if (Array.isArray(data) && data.length === 0) return possibleErrorMessage;
+    if (!Array.isArray(data)) throw new Error(data.message);
+
+    return data;
+  }
 
   isValidOrderStatus(status: string): boolean {
     return Object.values(OrderStatus).includes(status as OrderStatus);

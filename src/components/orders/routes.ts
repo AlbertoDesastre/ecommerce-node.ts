@@ -9,6 +9,10 @@ router.get("/", (req, res) => {
   orderController.list(req, res);
 });
 
+router.get("/filter", (req, res) => {
+  orderController.filterBy(req, res);
+});
+
 /* always put routes that requires dynamic data at the end, or the routs with fixed words won't be accesible */
 router.get("/:orderId", (req, res) => {
   orderController.getOne(req, res);

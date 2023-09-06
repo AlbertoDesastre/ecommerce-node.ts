@@ -24,13 +24,9 @@ class OrderService {
 
   /* Methods to add:
   list orders that has X item
-  list orders by date
-  create order
-  cancel order but not deleting it
-  update order status (probably requires changes on DB as is right now)
   */
 
-  //Think about displaying the items full info, in this method or another one, instead of just item's ids.
+  //Adjust to bring full item info + do JOIN with user id, to check directly if it exists or not. If it doesn't it will return an empty array.
   async list({ userId }: { userId: string }) {
     const doesUserExist = await this.connection.getOne({
       table: "users",
@@ -43,7 +39,7 @@ class OrderService {
       return OrderErrorMessage.USER_DOESNT_EXISTS;
 
     const result = (await this.connection.personalizedQuery(
-      OrdersQueries.GET_ORDERS_AND_ORDER_ITEMS +
+      OrdersQueries.GET_ORDERS_AND_ORDER_ITEMS_WHERE_USER_ID +
         ` WHERE u.id = "${userId}" ` +
         OrdersQueries.ORDER_BY_ORDERS_DATE
     )) as OrdersWithItems[] | MysqlError;
@@ -54,38 +50,36 @@ class OrderService {
     return this.formatOrders(result);
   }
 
-  /* async filterBy({ productName, orderCreatedDate }: FilterQueries) {
-
+  async filterBy({ productName, itemCreatedAt }: FilterQueries) {
     let conditionsElements: string[] = [];
-    let filters: string[] = [];
     let conditions = "";
 
-    if (name) {
-      conditionsElements.push("name LIKE ?");
-      filters.push(`%${name}%`);
+    if (productName) {
+      conditionsElements.push(`p.name LIKE '%${productName}%'`);
     }
-    if (price) {
-      conditionsElements.push("price <= ?");
-      filters.push(price);
+    if (itemCreatedAt) {
+      conditionsElements.push(`oi.created_at LIKE '%${itemCreatedAt}%'`);
     }
-    if (color) {
-      conditionsElements.push("color LIKE ?");
-      filters.push(`%${color}%`);
-    }
-
     if (conditionsElements.length > 0) {
       conditions = conditionsElements.join(" AND ");
     }
 
-    const result = await this.connection.filterBy({
-      table: "orders",
-      conditions,
-      filters,
-    });
+    const result = await this.connection.personalizedQuery(
+      OrdersQueries.GET_ORDERS_AND_ORDER_ITEMS +
+        " WHERE " +
+        conditions +
+        OrdersQueries.ORDER_BY_ORDERS_DATE
+    );
+
+    // REFACTOR THIS TO BE A HELPER FUNCTION!
+    if (Array.isArray(result) && result.length === 0)
+      return OrderErrorMessage.ORDER_ITEM_DOESNT_EXISTS_WITH_THESE_PARAMS;
+    if (!Array.isArray(result)) throw new Error(result.message);
 
     return result;
-  } */
+  }
 
+  // done
   async getOne(id: string): Promise<OrderModel[] | MysqlError> {
     const result = await this.connection.getOne({
       table: "orders",
@@ -101,6 +95,7 @@ class OrderService {
     return result as OrderModel[];
   }
 
+  // done
   async create(order: OrderPostRequestModel) {
     const { user_id, total_amount, products } = order;
 
@@ -145,6 +140,7 @@ class OrderService {
     return orderCreatedResult.insertId;
   }
 
+  // done
   async updateStatus({ id, status }: { id: string; status: OrderStatus }) {
     const orderId = id.toString();
 

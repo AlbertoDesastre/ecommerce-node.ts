@@ -71,10 +71,11 @@ class OrderService {
         OrdersQueries.ORDER_BY_ORDERS_DATE
     );
 
-    return this.errorOrEmptyChecker(
-      result,
-      OrderErrorMessage.ORDER_ITEM_DOESNT_EXISTS_WITH_THESE_PARAMS
-    );
+    if (Array.isArray(result) && result.length === 0)
+      return OrderErrorMessage.ORDER_ITEM_DOESNT_EXISTS_WITH_THESE_PARAMS;
+    if (!Array.isArray(result)) throw new Error(result.message);
+
+    return this.formatOrders(result as OrdersWithItems[]);
   }
 
   // done
@@ -185,9 +186,7 @@ class OrderService {
     const orderMap: Map<number, FormattedOrders> = new Map();
 
     ordersWithItems.forEach((order) => {
-      let orderExists = orderMap.get(order.id);
-
-      if (!orderExists) {
+      if (!orderMap.has(order.id)) {
         //if the order hasn't been defined yet in the Map, we define it with it's first values and create products array
         orderMap.set(order.id, {
           id: order.id,
@@ -195,24 +194,16 @@ class OrderService {
           total_amount: order.total_amount,
           status: order.status,
           created_at: order.created_at,
-          products: [
-            {
-              order_item_id: order.order_item_id,
-              product_id: order.product_id,
-              quantity: order.quantity,
-              subtotal: order.subtotal,
-            },
-          ],
-        });
-      } else {
-        // since the Order and products array it's on the map we can update it's value by pushing new content
-        orderExists.products.push({
-          order_item_id: order.order_item_id,
-          product_id: order.product_id,
-          quantity: order.quantity,
-          subtotal: order.subtotal,
+          products: [],
         });
       }
+      // since the Order and products array it's on the map we can update it's value by pushing new content
+      orderMap.get(order.id)?.products.push({
+        order_item_id: order.order_item_id,
+        product_id: order.product_id,
+        quantity: order.quantity,
+        subtotal: order.subtotal,
+      });
     });
 
     return [...orderMap.values()];

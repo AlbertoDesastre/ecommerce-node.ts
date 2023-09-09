@@ -8,10 +8,11 @@ import {
   OrdersTableColumns,
   FilterQueries,
   OrdersQueries,
-  OrdersWithItems,
+  OrderWithItems,
   FormattedOrders,
   OrderErrorMessage,
   OrderPostRequestModel,
+  OrderWithProductsInfo,
 } from "./types";
 import { MysqlQueryResult, TableColumns } from "../../store/types";
 
@@ -42,10 +43,12 @@ class OrderService {
       OrdersQueries.GET_ORDERS_AND_ORDER_ITEMS_WHERE_USER_ID +
         ` WHERE u.id = "${userId}" ` +
         OrdersQueries.ORDER_BY_ORDERS_DATE
-    )) as OrdersWithItems[] | MysqlError;
+    )) as OrderWithProductsInfo[] | MysqlError;
 
     if (!Array.isArray(result)) throw new Error(result.message);
     if (result.length === 0) return OrderErrorMessage.USER_DOESNT_HAVE_ORDERS;
+
+    console.log(result);
 
     return this.formatOrders(result);
   }
@@ -64,18 +67,20 @@ class OrderService {
       conditions = conditionsElements.join(" AND ");
     }
 
-    const result = await this.connection.personalizedQuery(
+    const result = (await this.connection.personalizedQuery(
       OrdersQueries.GET_ORDERS_AND_ORDER_ITEMS +
         " WHERE " +
         conditions +
         OrdersQueries.ORDER_BY_ORDERS_DATE
-    );
+    )) as MysqlError;
+
+    console.log(result);
 
     if (Array.isArray(result) && result.length === 0)
       return OrderErrorMessage.ORDER_ITEM_DOESNT_EXISTS_WITH_THESE_PARAMS;
     if (!Array.isArray(result)) throw new Error(result.message);
 
-    return this.formatOrders(result as OrdersWithItems[]);
+    return this.formatOrders(result as OrderWithProductsInfo[]);
   }
 
   // done
@@ -179,7 +184,7 @@ class OrderService {
     return Object.values(OrderStatus).includes(status as OrderStatus);
   }
 
-  formatOrders(ordersWithItems: OrdersWithItems[]): FormattedOrders[] {
+  formatOrders(ordersWithItems: OrderWithProductsInfo[]): FormattedOrders[] {
     // Map is an object that it's build with a pair of key-values. Each key is unique and cannot be find twice in the same Map.
     // The content of a key can be updated or overwritten. This is wonderful for grouping order_items by a same order_id.
 
@@ -193,7 +198,7 @@ class OrderService {
           user_id: order.user_id,
           total_amount: order.total_amount,
           status: order.status,
-          created_at: order.created_at,
+          created_at: new Date(order.order_created_at).toUTCString(),
           products: [],
         });
       }
@@ -201,6 +206,8 @@ class OrderService {
       orderMap.get(order.id)?.products.push({
         order_item_id: order.order_item_id,
         product_id: order.product_id,
+        name: order.name,
+        color: order.color,
         quantity: order.quantity,
         subtotal: order.subtotal,
       });

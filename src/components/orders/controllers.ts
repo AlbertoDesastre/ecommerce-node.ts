@@ -58,6 +58,18 @@ class OrderController {
         status: 400,
       });
 
+    if (itemCreatedAt) {
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+
+      if (!dateRegex.test(itemCreatedAt)) {
+        return errors({
+          res,
+          message: "Invalid date format. Please use the format 'YYYY-MM-DD'.",
+          status: 400,
+        });
+      }
+    }
+
     this.orderService
       .filterBy({ productName, itemCreatedAt })
       .then((result) => {

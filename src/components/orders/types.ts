@@ -72,7 +72,7 @@ type OrderPostRequestModel = {
 };
 
 enum OrdersQueries {
-  GET_ORDERS_AND_ORDER_ITEMS = "SELECT o.id, o.user_id, oi.id AS order_item_id, p.name, p.color, oi.subtotal, oi.quantity, o.created_at AS order_created_at, oi.created_at as item_created_at, o.total_amount AS total_order_amount, o.status FROM orders o JOIN order_items oi ON o.id = oi.order_id JOIN products p ON oi.product_id = p.id",
+  GET_ORDERS_AND_ORDER_ITEMS = "SELECT o.id, o.user_id, o.total_amount , o.created_at AS order_created_at,  oi.id AS order_item_id, p.name, p.color, oi.subtotal, oi.quantity,  oi.created_at as item_created_at, o.total_amount AS total_order_amount, o.status FROM orders o JOIN order_items oi ON o.id = oi.order_id JOIN products p ON oi.product_id = p.id",
   GET_ORDERS_AND_ORDER_ITEMS_WHERE_USER_ID = "SELECT o.id, o.user_id, o.total_amount , o.created_at AS order_created_at,  oi.id AS order_item_id, p.name, p.color, oi.subtotal, oi.quantity,  oi.created_at as item_created_at, o.total_amount AS total_order_amount, o.status FROM orders o JOIN order_items oi ON o.id = oi.order_id JOIN products p ON oi.product_id = p.id JOIN users u ON u.id = o.user_id",
   ORDER_BY_ORDERS_DATE = "ORDER BY o.created_at",
 }

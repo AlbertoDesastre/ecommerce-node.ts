@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import { ProductService } from "./services";
 import { success, errors } from "../../network";
-import { FilterQueries, Product } from "./types";
+import { FilterQueries } from "./types";
+import { Product } from "./models";
 import { MysqlError } from "mysql";
 
 /* As a general concept, controllers and in charge of managing the entry and the exit of the routes.
@@ -130,7 +131,7 @@ class ProductController {
         status: 400,
       });
     }
-    /* Aquí debería tipar que el req.body contiene un objeto específico*/
+
     this.productService
       .update({ product })
       .then((result) => {

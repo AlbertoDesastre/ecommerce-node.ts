@@ -2,7 +2,7 @@ import { MysqlError } from "mysql";
 
 import { pool, handleConnection } from "../../store/mysql";
 import { FilterQueries, Product } from "./types";
-import { MysqlQueryResult, TableColumns } from "../../store/types";
+import { MysqlQueryResult, GeneralUseTableColumns } from "../../store/types";
 
 class ProductService {
   private connection;
@@ -63,7 +63,7 @@ class ProductService {
   async getOne(id: string) {
     return await this.connection.getOne({
       table: "products",
-      tableColumns: TableColumns.PRODUCTS_GET_VALUES,
+      tableColumns: GeneralUseTableColumns.PRODUCTS_GET_VALUES,
       id,
       addExtraQuotesToId: true,
     });
@@ -77,7 +77,7 @@ class ProductService {
     /* Pending to be corrected. In reality it's not returning products but a message from mysql */
     const result = await this.connection.create({
       table: "products",
-      tableColumns: TableColumns.PRODUCTS_POST_VALUES,
+      tableColumns: GeneralUseTableColumns.PRODUCTS_POST_VALUES,
       arrayOfData: data,
     });
 

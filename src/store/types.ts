@@ -99,7 +99,7 @@ type ConnectionMethods = {
   closeConnection: () => void;
 };
 
-enum TableColumns {
+enum GeneralUseTableColumns {
   USERS_POST_VALUES = "(id, username, email, password, avatar, created_at)",
   USERS_GET_ID = "username",
   USERS_GET_PARTIAL_VALUES = "username, email, password, avatar",
@@ -108,11 +108,6 @@ enum TableColumns {
   PRODUCTS_GET_VALUES = "category_id, name, description, price, quantity, image",
   CATEGORIES_POST_VALUES = "(name, description, active)",
   CATEGORIES_GET_VALUES = "id, name, description, created_at",
-  ORDER_POST_VALUES = "(user_id, total_amount)",
-  ORDER_GET_FULL_VALUES = " o.id AS order_id, o.user_id, o.total_amount, o.status, o.created_at AS order_created_at, oi.id AS order_item_id,oi.product_id,oi.quantity,oi.subtotal, oi.created_at AS order_item_created_at",
-  ORDER_GET_PARTIAL_INFO = "id, user_id, total_amount, status, modified_at, created_at",
-  ORDER_ITEMS_POST_VALUES = "(order_id, product_id, quantity, subtotal)",
-  ORDER_ITEMS_GET_VALUES = "id, order_id, product_id, quantity,  subtotal, created_at",
 }
 
 export {
@@ -126,7 +121,7 @@ export {
   ToggleItemStatus,
   MysqlQueryResult,
   ConnectionMethods,
-  TableColumns,
+  GeneralUseTableColumns,
   RowDataPacket,
   RowDataPacketArray,
 };

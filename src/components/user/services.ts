@@ -1,7 +1,7 @@
 import { nanoid } from "nanoid";
 import bcrypt from "bcrypt";
 import { handleConnection } from "../../store/mysql";
-import { TableColumns } from "../../store/types";
+import { GeneralUseTableColumns } from "../../store/types";
 import { BasicUser, User, UserWithId } from "./types";
 import { AuthService } from "../auth/services";
 
@@ -13,7 +13,7 @@ The idea is to keep consistency and use Classes on the rest of the project */
 const get = async ({ id }: { id: string }) => {
   const response = await connection.getOne({
     table: "users",
-    tableColumns: TableColumns.USERS_GET_PARTIAL_VALUES,
+    tableColumns: GeneralUseTableColumns.USERS_GET_PARTIAL_VALUES,
     id,
     addExtraQuotesToId: true,
   });
@@ -35,7 +35,7 @@ const register = async ({ username, email, password }: BasicUser) => {
 
   const response = await connection.create({
     table: "users",
-    tableColumns: TableColumns.USERS_POST_VALUES,
+    tableColumns: GeneralUseTableColumns.USERS_POST_VALUES,
     arrayOfData: [Object.values(userInformation)],
   });
 
@@ -77,7 +77,7 @@ const login = async ({ username, email, password }: BasicUser) => {
 const update = async ({ id, username, email, password, avatar }: User) => {
   const userOnDb = await connection.getOne({
     table: "users",
-    tableColumns: TableColumns.USERS_GET_VALUES,
+    tableColumns: GeneralUseTableColumns.USERS_GET_VALUES,
     id,
     addExtraQuotesToId: true,
   });

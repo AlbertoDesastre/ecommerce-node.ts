@@ -2,7 +2,7 @@ import { MysqlError } from "mysql";
 
 import { handleConnection } from "../../store/mysql";
 import { FilterQueries, Category } from "./types";
-import { MysqlQueryResult, TableColumns } from "../../store/types";
+import { MysqlQueryResult, GeneralUseTableColumns } from "../../store/types";
 
 class CategoryService {
   private connection;
@@ -36,7 +36,7 @@ class CategoryService {
   async getOne(id: string) {
     return await this.connection.getOne({
       table: "categories",
-      tableColumns: TableColumns.CATEGORIES_GET_VALUES,
+      tableColumns: GeneralUseTableColumns.CATEGORIES_GET_VALUES,
       id,
       addExtraQuotesToId: true,
     });
@@ -52,7 +52,7 @@ class CategoryService {
 
     const result = await this.connection.create({
       table: "categories",
-      tableColumns: TableColumns.CATEGORIES_POST_VALUES,
+      tableColumns: GeneralUseTableColumns.CATEGORIES_POST_VALUES,
       arrayOfData: data,
     });
 

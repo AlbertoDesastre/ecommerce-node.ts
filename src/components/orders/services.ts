@@ -1,20 +1,17 @@
 import { MysqlError } from "mysql";
 
-import { pool, handleConnection } from "../../store/mysql";
+import { handleConnection } from "../../store/mysql";
 import {
   OrderModel,
-  OrderItemModel,
   OrderStatus,
-  OrdersTableColumns,
   FilterQueries,
   OrdersQueries,
-  OrderWithItems,
   FormattedOrders,
   OrderErrorMessage,
   OrderPostRequestModel,
   OrderWithProductsInfo,
 } from "./types";
-import { MysqlQueryResult, TableColumns } from "../../store/types";
+import { TableColumns } from "../../store/types";
 
 class OrderService {
   private connection;

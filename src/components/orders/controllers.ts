@@ -182,7 +182,7 @@ class OrderController {
         return success({
           res,
           message: "The order was updated",
-          data: result.message,
+          data: `The order now has '${status}' status`,
           status: 201,
         });
       })

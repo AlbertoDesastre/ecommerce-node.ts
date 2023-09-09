@@ -1,9 +1,10 @@
 import { Request, Response } from "express";
+import { MysqlError } from "mysql";
+
 import { ProductService } from "./services";
 import { success, errors } from "../../network";
 import { FilterQueries } from "./types";
 import { Product } from "./models";
-import { MysqlError } from "mysql";
 
 /* As a general concept, controllers and in charge of managing the entry and the exit of the routes.
 Controller analyze the request: if it's correct, if the body fills the rules, there are no weird things, etc...

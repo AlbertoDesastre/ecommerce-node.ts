@@ -12,7 +12,7 @@ import {
   ToggleItemStatus,
   UpdateParams,
 } from "./types";
-import { User } from "../components/user/types";
+import { User } from "../components/user/models";
 
 const dbconf = {
   connectionLimit: 2,

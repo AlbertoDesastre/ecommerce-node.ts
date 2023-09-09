@@ -1,5 +1,5 @@
 import { MysqlError } from "mysql";
-import { User } from "../components/user/types";
+import { User } from "../components/user/models";
 
 type Params = {
   table: string;
@@ -99,13 +99,6 @@ type ConnectionMethods = {
   closeConnection: () => void;
 };
 
-enum GeneralUseTableColumns {
-  USERS_POST_VALUES = "(id, username, email, password, avatar, created_at)",
-  USERS_GET_ID = "username",
-  USERS_GET_PARTIAL_VALUES = "username, email, password, avatar",
-  USERS_GET_VALUES = "id, username, email, password, avatar, created_at",
-}
-
 export {
   FilterByParams,
   ListParams,
@@ -117,7 +110,6 @@ export {
   ToggleItemStatus,
   MysqlQueryResult,
   ConnectionMethods,
-  GeneralUseTableColumns,
   RowDataPacket,
   RowDataPacketArray,
 };

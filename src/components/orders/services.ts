@@ -14,8 +14,7 @@ import {
   OrdersQueries,
   TableColumns,
 } from "./models";
-
-import { GeneralUseTableColumns } from "../../store/types";
+import { TableColumns as UserTableColumns } from "../user/models";
 
 class OrderService {
   private connection;
@@ -32,7 +31,7 @@ class OrderService {
   async list({ userId }: { userId: string }) {
     const doesUserExist = await this.connection.getOne({
       table: "users",
-      tableColumns: GeneralUseTableColumns.USERS_GET_ID,
+      tableColumns: UserTableColumns.USERS_GET_ID,
       id: userId,
       addExtraQuotesToId: true,
     });
@@ -103,7 +102,7 @@ class OrderService {
 
     const doesUserExist = await this.connection.getOne({
       table: "users",
-      tableColumns: GeneralUseTableColumns.USERS_GET_ID,
+      tableColumns: UserTableColumns.USERS_GET_ID,
       id: user_id,
       addExtraQuotesToId: true,
     });

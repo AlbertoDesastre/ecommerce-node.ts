@@ -20,6 +20,10 @@ class OrderService {
     this.connection = handleConnection();
   }
 
+  // Importan! I check first if a user exists because if it doesn't I'm saving up for a more complex query to the DB.
+  // An alternative would be to do directly the JOIN query and if it's length = 0 just send an error message, but this message would not be as personalized.
+  // I wouldn't be able to tell if it's because if there is no user or there were no orders
+
   // done
   async list({ userId }: { userId: string }) {
     const doesUserExist = await this.connection.getOne({

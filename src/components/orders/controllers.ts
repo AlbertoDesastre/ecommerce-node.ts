@@ -136,7 +136,7 @@ class OrderController {
     if (invalidProducts.length > 0) {
       return errors({
         res,
-        message: "The 'order_id' property msut exist and  be null.",
+        message: "The 'order_id' property must exist and  be null.",
         status: 400,
       });
     }

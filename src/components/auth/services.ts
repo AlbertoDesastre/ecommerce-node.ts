@@ -2,16 +2,9 @@ require("dotenv").config();
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
-import { handleConnection } from "../../store/mysql";
-import { BasicUser, UserWithId } from "../user/types";
+import { UserWithId } from "../user/types";
 
 class AuthService {
-  private connection;
-
-  constructor() {
-    this.connection = handleConnection();
-  }
-
   createToken({ id, username, email, password }: UserWithId): string {
     try {
       const token = jwt.sign(

@@ -23,15 +23,11 @@ class OrderService {
     this.connection = handleConnection();
   }
 
-  /* Methods to add:
-  list orders that has X item
-  */
-
-  //Adjust to bring full item info + do JOIN with user id, to check directly if it exists or not. If it doesn't it will return an empty array.
+  // done
   async list({ userId }: { userId: string }) {
     const doesUserExist = await this.connection.getOne({
       table: "users",
-      tableColumns: TableColumns.USERS_GET_PARTIAL_VALUES,
+      tableColumns: TableColumns.USERS_GET_ID,
       id: userId,
       addExtraQuotesToId: true,
     });
@@ -53,6 +49,7 @@ class OrderService {
     return this.formatOrders(result);
   }
 
+  // done
   async filterBy({ productName, itemCreatedAt }: FilterQueries) {
     let conditionsElements: string[] = [];
     let conditions = "";
@@ -105,7 +102,7 @@ class OrderService {
 
     const doesUserExist = await this.connection.getOne({
       table: "users",
-      tableColumns: "id",
+      tableColumns: TableColumns.USERS_GET_ID,
       id: user_id,
       addExtraQuotesToId: true,
     });

@@ -104,8 +104,6 @@ enum GeneralUseTableColumns {
   USERS_GET_ID = "username",
   USERS_GET_PARTIAL_VALUES = "username, email, password, avatar",
   USERS_GET_VALUES = "id, username, email, password, avatar, created_at",
-  CATEGORIES_POST_VALUES = "(name, description, active)",
-  CATEGORIES_GET_VALUES = "id, name, description, created_at",
 }
 
 export {

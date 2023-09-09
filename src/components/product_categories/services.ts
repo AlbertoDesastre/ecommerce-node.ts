@@ -3,7 +3,7 @@ import { MysqlError } from "mysql";
 import { handleConnection } from "../../store/mysql";
 import { FilterQueries } from "./types";
 import { Category, TableColumns } from "./models";
-import { MysqlQueryResult, GeneralUseTableColumns } from "../../store/types";
+import { MysqlQueryResult } from "../../store/types";
 
 class CategoryService {
   private connection;

@@ -1,19 +1,17 @@
 import { MysqlError } from "mysql";
 
-import { pool, handleConnection } from "../../store/mysql";
+import { handleConnection } from "../../store/mysql";
 import {
   OrderModel,
-  OrderItemModel,
   OrderStatus,
-  OrdersTableColumns,
   FilterQueries,
   OrdersQueries,
-  OrdersWithItems,
   FormattedOrders,
   OrderErrorMessage,
   OrderPostRequestModel,
+  OrderWithProductsInfo,
 } from "./types";
-import { MysqlQueryResult, TableColumns } from "../../store/types";
+import { TableColumns } from "../../store/types";
 
 class OrderService {
   private connection;
@@ -22,19 +20,11 @@ class OrderService {
     this.connection = handleConnection();
   }
 
-  /* Methods to add:
-  list orders that has X item
-  list orders by date
-  create order
-  cancel order but not deleting it
-  update order status (probably requires changes on DB as is right now)
-  */
-
-  //Think about displaying the items full info, in this method or another one, instead of just item's ids.
+  // done
   async list({ userId }: { userId: string }) {
     const doesUserExist = await this.connection.getOne({
       table: "users",
-      tableColumns: TableColumns.USERS_GET_PARTIAL_VALUES,
+      tableColumns: TableColumns.USERS_GET_ID,
       id: userId,
       addExtraQuotesToId: true,
     });
@@ -43,49 +33,51 @@ class OrderService {
       return OrderErrorMessage.USER_DOESNT_EXISTS;
 
     const result = (await this.connection.personalizedQuery(
-      OrdersQueries.GET_ORDERS_AND_ORDER_ITEMS +
+      OrdersQueries.GET_ORDERS_AND_ORDER_ITEMS_WHERE_USER_ID +
         ` WHERE u.id = "${userId}" ` +
         OrdersQueries.ORDER_BY_ORDERS_DATE
-    )) as OrdersWithItems[] | MysqlError;
+    )) as OrderWithProductsInfo[] | MysqlError;
 
     if (!Array.isArray(result)) throw new Error(result.message);
     if (result.length === 0) return OrderErrorMessage.USER_DOESNT_HAVE_ORDERS;
 
+    console.log(result);
+
     return this.formatOrders(result);
   }
 
-  /* async filterBy({ productName, orderCreatedDate }: FilterQueries) {
-
+  // done
+  async filterBy({ productName, itemCreatedAt }: FilterQueries) {
     let conditionsElements: string[] = [];
-    let filters: string[] = [];
     let conditions = "";
 
-    if (name) {
-      conditionsElements.push("name LIKE ?");
-      filters.push(`%${name}%`);
+    if (productName) {
+      conditionsElements.push(`p.name LIKE '%${productName}%'`);
     }
-    if (price) {
-      conditionsElements.push("price <= ?");
-      filters.push(price);
+    if (itemCreatedAt) {
+      conditionsElements.push(`oi.created_at LIKE '%${itemCreatedAt}%'`);
     }
-    if (color) {
-      conditionsElements.push("color LIKE ?");
-      filters.push(`%${color}%`);
-    }
-
     if (conditionsElements.length > 0) {
       conditions = conditionsElements.join(" AND ");
     }
 
-    const result = await this.connection.filterBy({
-      table: "orders",
-      conditions,
-      filters,
-    });
+    const result = (await this.connection.personalizedQuery(
+      OrdersQueries.GET_ORDERS_AND_ORDER_ITEMS +
+        " WHERE " +
+        conditions +
+        OrdersQueries.ORDER_BY_ORDERS_DATE
+    )) as MysqlError;
 
-    return result;
-  } */
+    console.log(result);
 
+    if (Array.isArray(result) && result.length === 0)
+      return OrderErrorMessage.ORDER_ITEM_DOESNT_EXISTS_WITH_THESE_PARAMS;
+    if (!Array.isArray(result)) throw new Error(result.message);
+
+    return this.formatOrders(result as OrderWithProductsInfo[]);
+  }
+
+  // done
   async getOne(id: string): Promise<OrderModel[] | MysqlError> {
     const result = await this.connection.getOne({
       table: "orders",
@@ -101,12 +93,13 @@ class OrderService {
     return result as OrderModel[];
   }
 
+  // done
   async create(order: OrderPostRequestModel) {
     const { user_id, total_amount, products } = order;
 
     const doesUserExist = await this.connection.getOne({
       table: "users",
-      tableColumns: "id",
+      tableColumns: TableColumns.USERS_GET_ID,
       id: user_id,
       addExtraQuotesToId: true,
     });
@@ -145,6 +138,7 @@ class OrderService {
     return orderCreatedResult.insertId;
   }
 
+  // done
   async updateStatus({ id, status }: { id: string; status: OrderStatus }) {
     const orderId = id.toString();
 
@@ -170,45 +164,47 @@ class OrderService {
 
   // v HELPERS v
 
+  errorOrEmptyChecker(
+    data: Object[] | MysqlError,
+    possibleErrorMessage: string
+  ): string | Error | Object[] {
+    if (Array.isArray(data) && data.length === 0) return possibleErrorMessage;
+    if (!Array.isArray(data)) throw new Error(data.message);
+
+    return data;
+  }
+
   isValidOrderStatus(status: string): boolean {
     return Object.values(OrderStatus).includes(status as OrderStatus);
   }
 
-  formatOrders(ordersWithItems: OrdersWithItems[]): FormattedOrders[] {
+  formatOrders(ordersWithItems: OrderWithProductsInfo[]): FormattedOrders[] {
     // Map is an object that it's build with a pair of key-values. Each key is unique and cannot be find twice in the same Map.
     // The content of a key can be updated or overwritten. This is wonderful for grouping order_items by a same order_id.
 
     const orderMap: Map<number, FormattedOrders> = new Map();
 
     ordersWithItems.forEach((order) => {
-      let orderExists = orderMap.get(order.id);
-
-      if (!orderExists) {
+      if (!orderMap.has(order.id)) {
         //if the order hasn't been defined yet in the Map, we define it with it's first values and create products array
         orderMap.set(order.id, {
           id: order.id,
           user_id: order.user_id,
           total_amount: order.total_amount,
           status: order.status,
-          created_at: order.created_at,
-          products: [
-            {
-              order_item_id: order.order_item_id,
-              product_id: order.product_id,
-              quantity: order.quantity,
-              subtotal: order.subtotal,
-            },
-          ],
-        });
-      } else {
-        // since the Order and products array it's on the map we can update it's value by pushing new content
-        orderExists.products.push({
-          order_item_id: order.order_item_id,
-          product_id: order.product_id,
-          quantity: order.quantity,
-          subtotal: order.subtotal,
+          created_at: new Date(order.order_created_at).toUTCString(),
+          products: [],
         });
       }
+      // since the Order and products array it's on the map we can update it's value by pushing new content
+      orderMap.get(order.id)?.products.push({
+        order_item_id: order.order_item_id,
+        product_id: order.product_id,
+        name: order.name,
+        color: order.color,
+        quantity: order.quantity,
+        subtotal: order.subtotal,
+      });
     });
 
     return [...orderMap.values()];

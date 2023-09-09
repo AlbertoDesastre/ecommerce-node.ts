@@ -47,36 +47,46 @@ class OrderController {
       });
   }
 
-  /*   filterBy(req: Request, res: Response) {
-    const { productName, orderCreatedDate } = req.query as FilterQueries;
+  filterBy(req: Request, res: Response) {
+    const { productName, itemCreatedAt } = req.query as FilterQueries;
+
+    if (!productName && !itemCreatedAt)
+      return errors({
+        res,
+        message:
+          "You must provide either 'productName' or 'itemCreatedAt' properties in query params to perform this action.",
+        status: 400,
+      });
+
+    if (itemCreatedAt) {
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+
+      if (!dateRegex.test(itemCreatedAt)) {
+        return errors({
+          res,
+          message: "Invalid date format. Please use the format 'YYYY-MM-DD'.",
+          status: 400,
+        });
+      }
+    }
 
     this.orderService
-      .filterBy({ productName, orderCreatedDate })
+      .filterBy({ productName, itemCreatedAt })
       .then((result) => {
-        if (Array.isArray(result)) {
-          if (result.length === 0) {
-            return errors({
-              res,
-              message: "No order was found",
-              status: 401,
-            });
-          } else {
-            return success({
-              res,
-              message: "Order/s available...",
-              data: result,
-              status: 201,
-            });
-          }
-        }
+        return success({
+          res,
+          message: "Order/s available...",
+          data: result,
+          status: 201,
+        });
       })
       .catch((err: MysqlError) => {
         return errors({ res, message: err.message, status: 500 });
       });
   }
- */
+
+  //done
   getOne(req: Request, res: Response) {
-    /* REMINDER! What comes from params it's always a string */
     const { orderId } = req.params;
 
     this.orderService
@@ -100,7 +110,7 @@ class OrderController {
         return errors({ res, message: err.message, status: statusCode });
       });
   }
-
+  //done
   create(req: Request, res: Response) {
     const order: OrderPostRequestModel = req.body;
 
@@ -172,7 +182,7 @@ class OrderController {
         return success({
           res,
           message: "The order was updated",
-          data: result.message,
+          data: `The order now has '${status}' status`,
           status: 201,
         });
       })

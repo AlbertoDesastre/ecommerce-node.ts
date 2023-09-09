@@ -2,14 +2,6 @@ type FilterQueries = {
   name: string;
 };
 
-type Category = {
-  id: number;
-  name: string;
-  description: string;
-  active: 1 | 0;
-  created_at: string;
-};
+enum ErrorThrower {}
 
-type CategoryTableColumns = "(id, name, description)";
-
-export { FilterQueries, Category, CategoryTableColumns };
+export { FilterQueries, ErrorThrower };

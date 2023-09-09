@@ -13,7 +13,7 @@ import {
   OrderPostRequestModel,
   OrdersQueries,
   TableColumns,
-} from "./model";
+} from "./models";
 
 import { GeneralUseTableColumns } from "../../store/types";
 

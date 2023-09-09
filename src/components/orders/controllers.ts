@@ -4,7 +4,7 @@ import { MysqlError } from "mysql";
 import { OrderService } from "./services";
 import { success, errors } from "../../network";
 import { FilterQueries, ErrorThrower } from "./types";
-import { OrderModel, OrderPostRequestModel } from "./model";
+import { OrderModel, OrderPostRequestModel } from "./models";
 
 /* As a general concept, controllers and in charge of managing the entry and the exit of the routes.
 Controller analyze the request: if it's correct, if the body fills the rules, there are no weird things, etc...

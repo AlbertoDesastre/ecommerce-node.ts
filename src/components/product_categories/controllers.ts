@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import { CategoryService } from "./services";
 import { success, errors } from "../../network";
-import { FilterQueries, Category } from "./types";
+import { FilterQueries } from "./types";
+import { Category } from "./models";
 import { MysqlError } from "mysql";
 
 class CategoryController {

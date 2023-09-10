@@ -156,11 +156,21 @@ function handleConnection(): ConnectionMethods {
         (err, data: MysqlQueryResult) => {
           if (err) {
             if (err.code === "ER_DUP_ENTRY" && table === "users") {
-              reject("User already exists");
-            } else {
-              return reject(err);
+              console.error(ErrorThrower.USER_DUPLICATED);
+              reject(err);
             }
+
+            if (err.errno === 1452) {
+              return reject(
+                new Error(
+                  ErrorThrower.TRYING_TO_INSERT_NON_EXISTING_FOREIGN_KEY
+                )
+              );
+            }
+
+            return reject(err);
           }
+
           resolve(data);
         }
       );

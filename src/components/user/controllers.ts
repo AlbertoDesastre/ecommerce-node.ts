@@ -24,7 +24,6 @@ const get = (req: Request, res: Response) => {
       });
     })
     .catch((err) => {
-      console.error(err);
       return errors({
         res,
         message: err.message,

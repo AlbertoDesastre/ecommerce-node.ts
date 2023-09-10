@@ -74,7 +74,6 @@ class ProductService {
       ...Object.values(product),
     ]);
 
-    /* Pending to be corrected. In reality it's not returning products but a message from mysql */
     const result = await this.connection.create({
       table: "products",
       tableColumns: TableColumns.PRODUCTS_POST_VALUES,

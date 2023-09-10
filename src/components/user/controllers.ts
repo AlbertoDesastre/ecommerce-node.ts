@@ -15,8 +15,7 @@ const get = (req: Request, res: Response) => {
 
   userService
     .get({ id })
-    //fix this type
-    .then((result: any) => {
+    .then((result) => {
       return success({
         res,
         message: "Here is the user's information:",

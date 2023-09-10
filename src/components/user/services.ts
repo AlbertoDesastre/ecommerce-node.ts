@@ -19,7 +19,7 @@ const get = async ({ id }: { id: string }) => {
     addExtraQuotesToId: true,
   });
 
-  return response;
+  return response as User[];
 };
 
 const register = async ({ username, email, password }: BasicUser) => {

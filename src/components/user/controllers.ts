@@ -4,6 +4,7 @@ import * as userService from "./services";
 import { AuthService } from "../auth/services";
 import { errors, success } from "../../network";
 import { ErrorThrower } from "./types";
+import { SuccessfulQueryMessage } from "../../store/types";
 
 /* DISCLAIMER!! This file contains arrow functions and not a Class for learning purposes.
 The idea is to keep consistency and use Classes on the rest of the project */
@@ -139,7 +140,7 @@ const update = (req: Request, res: Response) => {
       return success({
         res,
         message: "Your profile was updated succesfully",
-        data: "OK",
+        data: SuccessfulQueryMessage.ITEM_WAS_UPDATED,
         status: 201,
       });
     })

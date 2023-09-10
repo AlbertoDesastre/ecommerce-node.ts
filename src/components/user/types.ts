@@ -1,18 +1,8 @@
-type BasicUser = {
-  username: string;
-  email: string;
-  password: string;
-};
-
-interface UserWithId extends BasicUser {
-  id: string;
+enum ErrorThrower {
+  USER_ALREADY_EXISTS = "User already exists",
+  USER_DOESNT_EXISTS = "This user doesn't exists.",
+  PASSWORD_NOT_MATCHING = "Password do not match",
+  USER_UPDATING_DOESNT_EXISTS = "The user you are trying to update doesn't exists",
 }
 
-interface User extends BasicUser {
-  id: string;
-  avatar: string | null;
-  token?: string;
-  created_at: Date | null;
-}
-
-export { User, BasicUser, UserWithId };
+export { ErrorThrower };

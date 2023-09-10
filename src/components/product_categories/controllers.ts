@@ -1,8 +1,10 @@
 import { Request, Response } from "express";
+import { MysqlError } from "mysql";
+
 import { CategoryService } from "./services";
 import { success, errors } from "../../network";
-import { FilterQueries, Category } from "./types";
-import { MysqlError } from "mysql";
+import { FilterQueries } from "./types";
+import { Category } from "./models";
 
 class CategoryController {
   private categoryService;
@@ -20,18 +22,18 @@ class CategoryController {
         return success({
           res,
           message: "This is the list of categories",
-          data: categories as Category[],
+          data: categories,
           status: 200,
         });
       })
-      .catch((err) => {
-        return res.status(500).json(err);
+      .catch((err: Error) => {
+        return errors({ res, message: err.message, status: 500 });
       });
   }
 
   filterBy(req: Request, res: Response) {
     const { name } = req.query as FilterQueries;
-    console.log(name);
+
     if (!name) {
       return errors({
         res,
@@ -43,24 +45,14 @@ class CategoryController {
     this.categoryService
       .filterBy({ name })
       .then((result) => {
-        if (Array.isArray(result)) {
-          if (result.length === 0) {
-            return errors({
-              res,
-              message: "No category was found",
-              status: 401,
-            });
-          } else {
-            return success({
-              res,
-              message: "Category/ies available...",
-              data: result,
-              status: 201,
-            });
-          }
-        }
+        return success({
+          res,
+          message: "Category/ies available...",
+          data: result,
+          status: 201,
+        });
       })
-      .catch((err: MysqlError) => {
+      .catch((err: Error) => {
         return errors({ res, message: err.message, status: 500 });
       });
   }
@@ -71,25 +63,15 @@ class CategoryController {
     this.categoryService
       .getOne(id)
       .then((result) => {
-        if (Array.isArray(result)) {
-          if (result.length === 0) {
-            return errors({
-              res,
-              message: "No category was found",
-              status: 401,
-            });
-          } else {
-            return success({
-              res,
-              message: "This category is available",
-              data: result,
-              status: 201,
-            });
-          }
-        }
+        return success({
+          res,
+          message: "This category is available",
+          data: result,
+          status: 201,
+        });
       })
-      .catch((err) => {
-        return errors({ res, message: err, status: 500 });
+      .catch((err: Error) => {
+        return errors({ res, message: err.message, status: 500 });
       });
   }
 
@@ -110,11 +92,11 @@ class CategoryController {
         return success({
           res,
           message: "All category/s created",
-          data: result.message,
+          data: result,
           status: 201,
         });
       })
-      .catch((err: MysqlError) => {
+      .catch((err: Error) => {
         return errors({ res, message: err.message, status: 500 });
       });
   }
@@ -136,12 +118,12 @@ class CategoryController {
         return success({
           res,
           message: "The category was updated",
-          data: result.message,
+          data: result,
           status: 201,
         });
       })
-      .catch((err) => {
-        return errors({ res, message: err, status: 500 });
+      .catch((err: Error) => {
+        return errors({ res, message: err.message, status: 500 });
       });
   }
 
@@ -158,8 +140,8 @@ class CategoryController {
           status: 201,
         });
       })
-      .catch((err) => {
-        return errors({ res, message: err, status: 500 });
+      .catch((err: Error) => {
+        return errors({ res, message: err.message, status: 500 });
       });
   }
 }

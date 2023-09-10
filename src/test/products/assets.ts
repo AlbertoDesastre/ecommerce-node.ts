@@ -1,4 +1,4 @@
-import { Product } from "../../components/products/types";
+import { Product } from "../../components/products/models";
 
 export const fakeProducts: Product[] = [
   {

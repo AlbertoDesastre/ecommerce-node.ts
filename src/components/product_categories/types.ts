@@ -2,14 +2,9 @@ type FilterQueries = {
   name: string;
 };
 
-type Category = {
-  id: number;
-  name: string;
-  description: string;
-  active: 1 | 0;
-  created_at: string;
-};
+enum ErrorThrower {
+  CATEGORY_NOT_FOUND = "The category you are searching for doesn't exists.",
+  CATEGORY_REMAIN_THE_SAME = "No update was made to the category because it has the same state.",
+}
 
-type CategoryTableColumns = "(id, name, description)";
-
-export { FilterQueries, Category, CategoryTableColumns };
+export { FilterQueries, ErrorThrower };

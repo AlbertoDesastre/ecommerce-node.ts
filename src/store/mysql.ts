@@ -4,6 +4,7 @@ import {
   ConnectionMethods,
   CreateParams,
   DeleteParams,
+  ErrorThrower,
   FilterByParams,
   GetOneParams,
   ListParams,
@@ -12,7 +13,7 @@ import {
   ToggleItemStatus,
   UpdateParams,
 } from "./types";
-import { User } from "../components/user/types";
+import { User } from "../components/user/models";
 
 const dbconf = {
   connectionLimit: 2,

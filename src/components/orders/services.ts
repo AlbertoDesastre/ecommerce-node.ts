@@ -2,16 +2,19 @@ import { MysqlError } from "mysql";
 
 import { handleConnection } from "../../store/mysql";
 import {
+  FilterQueries,
+  FormattedOrders,
+  OrderWithProductsInfo,
+  ErrorThrower,
+} from "./types";
+import {
   OrderModel,
   OrderStatus,
-  FilterQueries,
-  OrdersQueries,
-  FormattedOrders,
-  OrderErrorMessage,
   OrderPostRequestModel,
-  OrderWithProductsInfo,
-} from "./types";
-import { TableColumns } from "../../store/types";
+  OrdersQueries,
+  TableColumns,
+} from "./models";
+import { TableColumns as UserTableColumns } from "../user/models";
 
 class OrderService {
   private connection;
@@ -20,17 +23,21 @@ class OrderService {
     this.connection = handleConnection();
   }
 
+  // Importan! I check first if a user exists because if it doesn't I'm saving up for a more complex query to the DB.
+  // An alternative would be to do directly the JOIN query and if it's length = 0 just send an error message, but this message would not be as personalized.
+  // I wouldn't be able to tell if it's because if there is no user or there were no orders
+
   // done
   async list({ userId }: { userId: string }) {
     const doesUserExist = await this.connection.getOne({
       table: "users",
-      tableColumns: TableColumns.USERS_GET_ID,
+      tableColumns: UserTableColumns.USERS_GET_ID,
       id: userId,
       addExtraQuotesToId: true,
     });
 
     if (Array.isArray(doesUserExist) && doesUserExist.length === 0)
-      return OrderErrorMessage.USER_DOESNT_EXISTS;
+      return ErrorThrower.USER_DOESNT_EXISTS;
 
     const result = (await this.connection.personalizedQuery(
       OrdersQueries.GET_ORDERS_AND_ORDER_ITEMS_WHERE_USER_ID +
@@ -39,9 +46,7 @@ class OrderService {
     )) as OrderWithProductsInfo[] | MysqlError;
 
     if (!Array.isArray(result)) throw new Error(result.message);
-    if (result.length === 0) return OrderErrorMessage.USER_DOESNT_HAVE_ORDERS;
-
-    console.log(result);
+    if (result.length === 0) return ErrorThrower.USER_DOESNT_HAVE_ORDERS;
 
     return this.formatOrders(result);
   }
@@ -68,10 +73,8 @@ class OrderService {
         OrdersQueries.ORDER_BY_ORDERS_DATE
     )) as MysqlError;
 
-    console.log(result);
-
     if (Array.isArray(result) && result.length === 0)
-      return OrderErrorMessage.ORDER_ITEM_DOESNT_EXISTS_WITH_THESE_PARAMS;
+      return ErrorThrower.ORDER_ITEM_DOESNT_EXISTS_WITH_THESE_PARAMS;
     if (!Array.isArray(result)) throw new Error(result.message);
 
     return this.formatOrders(result as OrderWithProductsInfo[]);
@@ -87,7 +90,7 @@ class OrderService {
     });
 
     if (Array.isArray(result) && result.length === 0)
-      throw new Error(OrderErrorMessage.ORDER_NOT_FOUND);
+      throw new Error(ErrorThrower.ORDER_NOT_FOUND);
     if (!Array.isArray(result)) throw new Error(result.message);
 
     return result as OrderModel[];
@@ -99,15 +102,13 @@ class OrderService {
 
     const doesUserExist = await this.connection.getOne({
       table: "users",
-      tableColumns: TableColumns.USERS_GET_ID,
+      tableColumns: UserTableColumns.USERS_GET_ID,
       id: user_id,
       addExtraQuotesToId: true,
     });
 
     if (Array.isArray(doesUserExist) && doesUserExist.length === 0)
-      throw new Error(
-        "You can't create an order to an user that doesn't exists."
-      );
+      throw new Error(ErrorThrower.ORDER_NOT_CREATED_NON_EXISTING_USER);
 
     const orderCreatedResult = await this.connection.create({
       table: "orders",
@@ -116,7 +117,7 @@ class OrderService {
     });
 
     if (orderCreatedResult instanceof Error) {
-      throw new Error("Failed to create the order.");
+      throw new Error(ErrorThrower.ORDER_FAILED_CREATION);
     }
 
     const orderItemsArray = products.map((order_item) => {
@@ -131,9 +132,7 @@ class OrderService {
     });
 
     if (result instanceof Error)
-      throw new Error(
-        "Something wrong ocurred when creating the order's item/s."
-      );
+      throw new Error(ErrorThrower.SOMETHING_WRONG_OCURRED);
 
     return orderCreatedResult.insertId;
   }
@@ -150,7 +149,7 @@ class OrderService {
     });
 
     if (Array.isArray(doesOrderExists) && doesOrderExists.length === 0) {
-      throw new Error(OrderErrorMessage.ORDER_NOT_FOUND);
+      throw new Error(ErrorThrower.ORDER_NOT_FOUND);
     }
 
     const result = await this.connection.update({

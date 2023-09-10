@@ -1,15 +1,10 @@
 import { Request, Response } from "express";
+import { MysqlError } from "mysql";
+
 import { OrderService } from "./services";
 import { success, errors } from "../../network";
-import {
-  FilterQueries,
-  FormattedOrders,
-  OrderErrorMessage,
-  OrderModel,
-  OrderPostRequestModel,
-} from "./types";
-import { MysqlError } from "mysql";
-import { MysqlQueryResult } from "../../store/types";
+import { FilterQueries, ErrorThrower } from "./types";
+import { OrderModel, OrderPostRequestModel } from "./models";
 
 /* As a general concept, controllers and in charge of managing the entry and the exit of the routes.
 Controller analyze the request: if it's correct, if the body fills the rules, there are no weird things, etc...
@@ -101,7 +96,7 @@ class OrderController {
       })
       .catch((err: MysqlError) => {
         let statusCode;
-        if (err.message === OrderErrorMessage.ORDER_NOT_FOUND) {
+        if (err.message === ErrorThrower.ORDER_NOT_FOUND) {
           statusCode = 400;
         } else {
           statusCode = 500;
@@ -136,7 +131,7 @@ class OrderController {
     if (invalidProducts.length > 0) {
       return errors({
         res,
-        message: "The 'order_id' property msut exist and  be null.",
+        message: "The 'order_id' property must exist and  be null.",
         status: 400,
       });
     }

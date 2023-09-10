@@ -1,8 +1,10 @@
 import { Request, Response } from "express";
+import { MysqlError } from "mysql";
+
 import { ProductService } from "./services";
 import { success, errors } from "../../network";
-import { FilterQueries, Product } from "./types";
-import { MysqlError } from "mysql";
+import { ErrorThrower, FilterQueries } from "./types";
+import { Product } from "./models";
 
 /* As a general concept, controllers and in charge of managing the entry and the exit of the routes.
 Controller analyze the request: if it's correct, if the body fills the rules, there are no weird things, etc...
@@ -42,25 +44,19 @@ class ProductController {
     this.productService
       .filterBy({ name, price, color })
       .then((result) => {
-        if (Array.isArray(result)) {
-          if (result.length === 0) {
-            return errors({
-              res,
-              message: "No product was found",
-              status: 401,
-            });
-          } else {
-            return success({
-              res,
-              message: "Product/s available...",
-              data: result,
-              status: 201,
-            });
-          }
-        }
+        return success({
+          res,
+          message: "Product/s available...",
+          data: result,
+          status: 201,
+        });
       })
-      .catch((err: MysqlError) => {
-        return errors({ res, message: err.message, status: 500 });
+      .catch((err: Error) => {
+        let statusCode = 500;
+        if (err.message === ErrorThrower.PRODUCT_NOT_FOUND) {
+          statusCode = 401;
+        }
+        return errors({ res, message: err.message, status: statusCode });
       });
   }
 
@@ -68,29 +64,22 @@ class ProductController {
     /* REMINDER! What comes from params it's always a string */
     const { id } = req.params;
 
-    /* data expected to be received = array */
     this.productService
       .getOne(id)
       .then((result) => {
-        if (Array.isArray(result)) {
-          if (result.length === 0) {
-            return errors({
-              res,
-              message: "No product was found",
-              status: 401,
-            });
-          } else {
-            return success({
-              res,
-              message: "This product is available",
-              data: result,
-              status: 201,
-            });
-          }
-        }
+        return success({
+          res,
+          message: "This product is available",
+          data: result,
+          status: 201,
+        });
       })
-      .catch((err) => {
-        return errors({ res, message: err, status: 500 });
+      .catch((err: Error) => {
+        let statusCode = 500;
+        if (err.message === ErrorThrower.PRODUCT_NOT_FOUND) {
+          statusCode = 401;
+        }
+        return errors({ res, message: err.message, status: statusCode });
       });
   }
 
@@ -111,11 +100,11 @@ class ProductController {
         return success({
           res,
           message: "All product/s created",
-          data: result.message,
+          data: result,
           status: 201,
         });
       })
-      .catch((err: MysqlError) => {
+      .catch((err: Error) => {
         return errors({ res, message: err.message, status: 500 });
       });
   }
@@ -130,19 +119,19 @@ class ProductController {
         status: 400,
       });
     }
-    /* Aquí debería tipar que el req.body contiene un objeto específico*/
+
     this.productService
       .update({ product })
       .then((result) => {
         return success({
           res,
           message: "The product was updated",
-          data: result.message,
+          data: result,
           status: 201,
         });
       })
-      .catch((err) => {
-        return errors({ res, message: err, status: 500 });
+      .catch((err: Error) => {
+        return errors({ res, message: err.message, status: 500 });
       });
   }
 
@@ -155,12 +144,12 @@ class ProductController {
         return success({
           res,
           message: "Product deactivated",
-          data: result.message,
+          data: result,
           status: 201,
         });
       })
-      .catch((err) => {
-        return errors({ res, message: err, status: 500 });
+      .catch((err: Error) => {
+        return errors({ res, message: err.message, status: 500 });
       });
   }
 }

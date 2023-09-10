@@ -103,6 +103,10 @@ class ProductService {
       id,
     });
 
+    if (result.message === MysqlErrorThrower.NO_UPDATE_WAS_MADE) {
+      throw new Error(ErrorThrower.PRODUCT_REMAIN_THE_SAME);
+    }
+
     return result;
   }
 }

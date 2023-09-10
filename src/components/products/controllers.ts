@@ -130,7 +130,7 @@ class ProductController {
           status: 201,
         });
       })
-      .catch((err: MysqlError) => {
+      .catch((err: Error) => {
         return errors({ res, message: err.message, status: 500 });
       });
   }

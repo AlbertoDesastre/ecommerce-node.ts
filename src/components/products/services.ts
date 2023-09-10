@@ -45,8 +45,6 @@ class ProductService {
       ProductQueries.GET_PRODUCTS + ` WHERE ${conditions}`
     );
 
-    console.log(result);
-
     if (Array.isArray(result) && result.length === 0)
       throw new Error(ErrorThrower.PRODUCT_NOT_FOUND);
 
@@ -54,12 +52,17 @@ class ProductService {
   }
 
   async getOne(id: string) {
-    return await this.connection.getOne({
+    const result = await this.connection.getOne({
       table: "products",
       tableColumns: TableColumns.PRODUCTS_GET_VALUES,
       id,
       addExtraQuotesToId: true,
     });
+
+    if (Array.isArray(result) && result.length === 0)
+      throw new Error(ErrorThrower.PRODUCT_NOT_FOUND);
+
+    return result as Product[];
   }
 
   async create(productsInArrayOfJsons: Product[]) {

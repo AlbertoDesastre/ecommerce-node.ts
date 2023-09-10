@@ -64,29 +64,22 @@ class ProductController {
     /* REMINDER! What comes from params it's always a string */
     const { id } = req.params;
 
-    /* data expected to be received = array */
     this.productService
       .getOne(id)
       .then((result) => {
-        if (Array.isArray(result)) {
-          if (result.length === 0) {
-            return errors({
-              res,
-              message: "No product was found",
-              status: 401,
-            });
-          } else {
-            return success({
-              res,
-              message: "This product is available",
-              data: result,
-              status: 201,
-            });
-          }
-        }
+        return success({
+          res,
+          message: "This product is available",
+          data: result,
+          status: 201,
+        });
       })
-      .catch((err) => {
-        return errors({ res, message: err, status: 500 });
+      .catch((err: Error) => {
+        let statusCode = 500;
+        if (err.message === ErrorThrower.PRODUCT_NOT_FOUND) {
+          statusCode = 401;
+        }
+        return errors({ res, message: err.message, status: statusCode });
       });
   }
 
@@ -111,7 +104,7 @@ class ProductController {
           status: 201,
         });
       })
-      .catch((err: MysqlError) => {
+      .catch((err: Error) => {
         return errors({ res, message: err.message, status: 500 });
       });
   }

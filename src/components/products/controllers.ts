@@ -100,7 +100,7 @@ class ProductController {
         return success({
           res,
           message: "All product/s created",
-          data: result.message,
+          data: result,
           status: 201,
         });
       })

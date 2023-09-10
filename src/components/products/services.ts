@@ -81,7 +81,7 @@ class ProductService {
       arrayOfData: data,
     });
 
-    return result as MysqlQueryResult;
+    return SuccessfulQueryMessage.ITEM_WERE_CREATED;
   }
 
   async update({ product }: { product: Product }) {

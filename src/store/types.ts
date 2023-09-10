@@ -59,6 +59,8 @@ type MysqlQueryResult = {
 enum ErrorThrower {
   ITEM_WASNT_FOUND = "(Rows matched: 0  Changed: 0  Warnings: 0",
   NO_UPDATE_WAS_MADE = "(Rows matched: 1  Changed: 0  Warnings: 0",
+  USER_DUPLICATED = "User already exists",
+  TRYING_TO_INSERT_NON_EXISTING_FOREIGN_KEY = "You are trying to create something based on a non-existing foreign key in other table.",
 }
 
 enum SuccessfulQueryMessage {

@@ -5,6 +5,7 @@ import { handleConnection } from "../../store/mysql";
 import { BasicUser, User, TableColumns } from "./models";
 import { AuthService } from "../auth/services";
 import { ErrorThrower } from "./types";
+import { ErrorThrower as MysqlErrorThrower } from "../../store/types";
 
 const authService = new AuthService();
 const connection = handleConnection();
@@ -19,7 +20,7 @@ const get = async ({ id }: { id: string }) => {
     addExtraQuotesToId: true,
   });
 
-  return response;
+  return response as User[];
 };
 
 const register = async ({ username, email, password }: BasicUser) => {
@@ -88,13 +89,23 @@ const update = async ({ id, username, email, password, avatar }: User) => {
 
   const hashedPassword = await authService.encryptPassword({ password });
 
-  const response = await connection.update({
+  const result = await connection.update({
     table: "users",
     item: { username, email, password: hashedPassword, avatar },
     id: id,
   });
 
-  return response;
+  console.log(result);
+
+  if (result.message === MysqlErrorThrower.ITEM_WASNT_FOUND)
+    throw new Error(ErrorThrower.USER_UPDATING_DOESNT_EXISTS);
+
+  /* In this case, this error will never happend because the password gets encrypted differently every time, even if it's the same.
+   For that reason, it will always get updated as it has "new" information.
+   if (result.message === MysqlErrorThrower.NO_UPDATE_WAS_MADE)
+    throw new Error(ErrorThrower.USER_REMAIN_THE_SAME); */
+
+  return result;
 };
 
 const eliminate = () => {};

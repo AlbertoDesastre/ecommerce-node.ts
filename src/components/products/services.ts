@@ -1,6 +1,7 @@
 import { MysqlError } from "mysql";
 
 import { handleConnection } from "../../store/mysql";
+import { ErrorThrower as MysqlErrorThrower } from "../../store/types";
 import { ErrorThrower, FilterQueries } from "./types";
 import { Product, ProductQueries, TableColumns } from "./models";
 import { MysqlQueryResult } from "../../store/types";
@@ -88,6 +89,9 @@ class ProductService {
       item: product,
       id: productId,
     });
+
+    if (data.message === MysqlErrorThrower.NO_UPDATE_WAS_MADE)
+      throw new Error(ErrorThrower.PRODUCT_COULDNT_UPDATE);
 
     return data;
   }

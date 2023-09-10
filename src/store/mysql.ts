@@ -4,6 +4,7 @@ import {
   ConnectionMethods,
   CreateParams,
   DeleteParams,
+  ErrorThrower,
   FilterByParams,
   GetOneParams,
   ListParams,

@@ -56,6 +56,10 @@ type MysqlQueryResult = {
   changedRows: number;
 };
 
+enum ErrorThrower {
+  NO_UPDATE_WAS_MADE = "(Rows matched: 0  Changed: 0  Warnings: 0",
+}
+
 type RowDataPacketName = "RowDataPacket";
 
 type RowDataPacketArray = Array<Record<RowDataPacketName, Object>>;
@@ -112,4 +116,5 @@ export {
   ConnectionMethods,
   RowDataPacket,
   RowDataPacketArray,
+  ErrorThrower,
 };

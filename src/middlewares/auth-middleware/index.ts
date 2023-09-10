@@ -1,61 +1,68 @@
-import { Request, Response, NextFunction, response } from "express";
-import { errors } from "../../network";
+import { Request, Response, NextFunction } from "express";
 import { AuthService } from "../../components/auth/services";
-import { JwtPayload } from "jsonwebtoken";
+import { errors } from "../../network";
 
 class AuthMiddleware {
   private authService = new AuthService();
   constructor() {
-    /* This vinculates the method 'checkToken' to AuthMiddleware instance */
     this.checkToken = this.checkToken.bind(this);
   }
 
-  checkToken(req: Request, res: Response, next: NextFunction) {
-    this.validaTokenFormat(req, res);
+  async checkToken(req: Request, res: Response, next: NextFunction) {
+    try {
+      this.validaTokenFormat(req, res);
 
-    // typing as a string here it's secure because previous function makes sure that 'authorization' contains valid string
-    let token = this.transformToReadableToken(
-      req.headers.authorization as string
-    );
-    let decodedToken = this.authService.verifyToken(token);
-    this.isUserOwnerOfToken({
-      res,
-      decodedToken: decodedToken as JwtPayload,
-      id: req.params.id,
-    });
+      let token = this.transformToReadableToken(
+        req.headers.authorization as string
+      );
 
-    next();
+      let decodedToken: any = this.authService.verifyToken(token);
+
+      if (!decodedToken) {
+        return errors({
+          res,
+          message: "Invalid token",
+          status: 401,
+        });
+      }
+
+      if (decodedToken.id !== req.params.id) {
+        return errors({
+          res,
+          message: "You are not allowed to do this.",
+          status: 403,
+        });
+      }
+
+      next();
+    } catch (error) {
+      return errors({
+        res,
+        message: "Internal server error",
+        status: 500,
+      });
+    }
   }
+
   validaTokenFormat(req: Request, res: Response) {
     let token: string | undefined = req.headers.authorization;
     if (!token) {
-      return errors({ res, message: "No token was found", status: 400 });
-    } else if (token.indexOf("Bearer ") === -1) {
-      return errors({ res, message: "Invalid token format", status: 400 });
+      return errors({
+        res,
+        message: "No token was found",
+        status: 400,
+      });
+    } else if (!token.startsWith("Bearer ")) {
+      return errors({
+        res,
+        message: "Invalid token format",
+        status: 400,
+      });
     }
   }
 
   transformToReadableToken(rawToken: string) {
-    let token = rawToken.replace("Bearer ", "");
-    return token;
-  }
-
-  isUserOwnerOfToken({
-    res,
-    decodedToken,
-    id,
-  }: {
-    res: Response;
-    decodedToken: JwtPayload;
-    id: string;
-  }) {
-    if (decodedToken.id != id) {
-      return errors({
-        res,
-        message: "You are not allowed to do this.",
-        status: 400,
-      });
-    }
+    return rawToken.replace("Bearer ", "");
   }
 }
 

@@ -20,7 +20,12 @@ class AuthService {
   }
 
   verifyToken(token: string) {
-    return jwt.verify(token, process.env.SECRET as string);
+    try {
+      const result = jwt.verify(token, process.env.SECRET as string);
+      return result;
+    } catch (error) {
+      return new Error("Something wrong ocurred when verifying token.");
+    }
   }
 
   encryptPassword({ password }: { password: string }) {
@@ -36,8 +41,6 @@ class AuthService {
 
     return hashedPassword;
   }
-
-  async eliminateUser() {}
 }
 
 export { AuthService };

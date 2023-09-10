@@ -1,7 +1,10 @@
 import { MysqlError } from "mysql";
 
 import { handleConnection } from "../../store/mysql";
-import { ErrorThrower as MysqlErrorThrower } from "../../store/types";
+import {
+  ErrorThrower as MysqlErrorThrower,
+  SuccessfulQueryMessage,
+} from "../../store/types";
 import { ErrorThrower, FilterQueries } from "./types";
 import { Product, ProductQueries, TableColumns } from "./models";
 import { MysqlQueryResult } from "../../store/types";
@@ -84,16 +87,19 @@ class ProductService {
   async update({ product }: { product: Product }) {
     const productId = product.id.toString();
 
-    const data = await this.connection.update({
+    const result = await this.connection.update({
       table: "products",
       item: product,
       id: productId,
     });
 
-    if (data.message === MysqlErrorThrower.NO_UPDATE_WAS_MADE)
-      throw new Error(ErrorThrower.PRODUCT_COULDNT_UPDATE);
+    if (result.message === MysqlErrorThrower.ITEM_WASNT_FOUND)
+      throw new Error(ErrorThrower.PRODUCT_NOT_FOUND);
 
-    return data;
+    if (result.message === MysqlErrorThrower.NO_UPDATE_WAS_MADE)
+      throw new Error(ErrorThrower.PRODUCT_REMAIN_THE_SAME);
+
+    return SuccessfulQueryMessage.ITEM_WAS_UPDATED;
   }
 
   async deactivateProduct({ id }: { id: string }) {
@@ -103,11 +109,13 @@ class ProductService {
       id,
     });
 
-    if (result.message === MysqlErrorThrower.NO_UPDATE_WAS_MADE) {
-      throw new Error(ErrorThrower.PRODUCT_REMAIN_THE_SAME);
-    }
+    if (result.message === MysqlErrorThrower.ITEM_WASNT_FOUND)
+      throw new Error(ErrorThrower.PRODUCT_NOT_FOUND);
 
-    return result;
+    if (result.message === MysqlErrorThrower.NO_UPDATE_WAS_MADE)
+      throw new Error(ErrorThrower.PRODUCT_REMAIN_THE_SAME);
+
+    return SuccessfulQueryMessage.ITEM_WAS_UPDATED;
   }
 }
 

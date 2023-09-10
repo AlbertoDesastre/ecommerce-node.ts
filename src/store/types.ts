@@ -57,7 +57,12 @@ type MysqlQueryResult = {
 };
 
 enum ErrorThrower {
-  NO_UPDATE_WAS_MADE = "(Rows matched: 0  Changed: 0  Warnings: 0",
+  ITEM_WASNT_FOUND = "(Rows matched: 0  Changed: 0  Warnings: 0",
+  NO_UPDATE_WAS_MADE = "(Rows matched: 1  Changed: 0  Warnings: 0",
+}
+
+enum SuccessfulQueryMessage {
+  ITEM_WAS_UPDATED = "The item you wanted to update was indeed updated.",
 }
 
 type RowDataPacketName = "RowDataPacket";
@@ -117,4 +122,5 @@ export {
   RowDataPacket,
   RowDataPacketArray,
   ErrorThrower,
+  SuccessfulQueryMessage,
 };

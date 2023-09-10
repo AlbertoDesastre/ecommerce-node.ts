@@ -126,7 +126,7 @@ class ProductController {
         return success({
           res,
           message: "The product was updated",
-          data: result.message,
+          data: result,
           status: 201,
         });
       })
@@ -144,12 +144,12 @@ class ProductController {
         return success({
           res,
           message: "Product deactivated",
-          data: result.message,
+          data: result,
           status: 201,
         });
       })
-      .catch((err) => {
-        return errors({ res, message: err, status: 500 });
+      .catch((err: Error) => {
+        return errors({ res, message: err.message, status: 500 });
       });
   }
 }

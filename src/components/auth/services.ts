@@ -2,10 +2,10 @@ require("dotenv").config();
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
-import { UserWithId } from "../user/types";
+import { BasicUserWithId } from "../user/models";
 
 class AuthService {
-  createToken({ id, username, email, password }: UserWithId): string {
+  createToken({ id, username, email, password }: BasicUserWithId): string {
     try {
       const token = jwt.sign(
         { id, username, email, password },

@@ -4,6 +4,10 @@ type BasicUser = {
   password: string;
 };
 
+interface BasicUserWithId extends BasicUser {
+  id: string;
+}
+
 interface User extends BasicUser {
   id: string;
   avatar: string | null;
@@ -18,4 +22,4 @@ enum TableColumns {
   USERS_GET_VALUES = "id, username, email, password, avatar, created_at",
 }
 
-export { User, BasicUser, TableColumns };
+export { User, BasicUser, BasicUserWithId, TableColumns };

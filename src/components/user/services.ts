@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import { handleConnection } from "../../store/mysql";
 import { BasicUser, User, TableColumns } from "./models";
 import { AuthService } from "../auth/services";
+import { ErrorThrower } from "./types";
 
 const authService = new AuthService();
 const connection = handleConnection();
@@ -52,15 +53,14 @@ const login = async ({ username, email, password }: BasicUser) => {
     email,
   });
 
-  //tengo que lograr que el error cuando un usuario no exista aparezzca en la response del controlador
   if (response === undefined) {
-    throw new Error("This user doesn't exists.");
+    throw new Error(ErrorThrower.USER_DOESNT_EXISTS);
   }
 
   const passwordMatch = await bcrypt.compare(password, response.password);
 
   if (!passwordMatch) {
-    throw new Error("Password do not match");
+    throw new Error(ErrorThrower.PASSWORD_NOT_MATCHING);
   }
 
   const token = authService.createToken({
@@ -83,7 +83,7 @@ const update = async ({ id, username, email, password, avatar }: User) => {
   });
 
   if (Array.isArray(userOnDb) && userOnDb.length === 0) {
-    throw new Error("The user you are trying to update doesn't exists");
+    throw new Error(ErrorThrower.USER_UPDATING_DOESNT_EXISTS);
   }
 
   const hashedPassword = await authService.encryptPassword({ password });

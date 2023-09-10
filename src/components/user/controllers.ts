@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import * as userService from "./services";
 import { AuthService } from "../auth/services";
 import { errors, success } from "../../network";
+import { ErrorThrower } from "./types";
 
 /* DISCLAIMER!! This file contains arrow functions and not a Class for learning purposes.
 The idea is to keep consistency and use Classes on the rest of the project */
@@ -57,7 +58,7 @@ const register = (req: Request, res: Response) => {
     })
     .catch((err) => {
       let statusCode: number;
-      if (err === "User already exists") {
+      if (err === ErrorThrower.USER_ALREADY_EXISTS) {
         statusCode = 401;
       } else {
         statusCode = 500;

@@ -3,7 +3,7 @@ import { MysqlError } from "mysql";
 
 import { ProductService } from "./services";
 import { success, errors } from "../../network";
-import { FilterQueries } from "./types";
+import { ErrorThrower, FilterQueries } from "./types";
 import { Product } from "./models";
 
 /* As a general concept, controllers and in charge of managing the entry and the exit of the routes.
@@ -44,25 +44,19 @@ class ProductController {
     this.productService
       .filterBy({ name, price, color })
       .then((result) => {
-        if (Array.isArray(result)) {
-          if (result.length === 0) {
-            return errors({
-              res,
-              message: "No product was found",
-              status: 401,
-            });
-          } else {
-            return success({
-              res,
-              message: "Product/s available...",
-              data: result,
-              status: 201,
-            });
-          }
-        }
+        return success({
+          res,
+          message: "Product/s available...",
+          data: result,
+          status: 201,
+        });
       })
-      .catch((err: MysqlError) => {
-        return errors({ res, message: err.message, status: 500 });
+      .catch((err: Error) => {
+        let statusCode = 500;
+        if (err.message === ErrorThrower.PRODUCT_NOT_FOUND) {
+          statusCode = 401;
+        }
+        return errors({ res, message: err.message, status: statusCode });
       });
   }
 

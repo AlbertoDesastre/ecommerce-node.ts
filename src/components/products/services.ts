@@ -1,8 +1,8 @@
 import { MysqlError } from "mysql";
 
 import { handleConnection } from "../../store/mysql";
-import { FilterQueries } from "./types";
-import { Product, TableColumns } from "./models";
+import { ErrorThrower, FilterQueries } from "./types";
+import { Product, ProductQueries, TableColumns } from "./models";
 import { MysqlQueryResult } from "../../store/types";
 
 class ProductService {
@@ -26,13 +26,13 @@ class ProductService {
     let conditions = "";
 
     if (name) {
-      conditionsElements.push(`name LIKE %${name}%`);
+      conditionsElements.push(`name LIKE '%${name}%'`);
     }
     if (price) {
       conditionsElements.push(`price <= ${price}`);
     }
     if (color) {
-      conditionsElements.push(`color LIKE %${color}%`);
+      conditionsElements.push(`color LIKE '%${color}%'`);
     }
 
     if (conditionsElements.length > 0) {
@@ -42,10 +42,15 @@ class ProductService {
     }
 
     const result = await this.connection.personalizedQuery(
-      TableColumns.PRODUCTS_GET_VALUES
+      ProductQueries.GET_PRODUCTS + ` WHERE ${conditions}`
     );
 
-    return result;
+    console.log(result);
+
+    if (Array.isArray(result) && result.length === 0)
+      throw new Error(ErrorThrower.PRODUCT_NOT_FOUND);
+
+    return result as Product[];
   }
 
   async getOne(id: string) {

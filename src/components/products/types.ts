@@ -4,6 +4,8 @@ type FilterQueries = {
   color?: string;
 };
 
-enum ErrorThrower {}
+enum ErrorThrower {
+  PRODUCT_NOT_FOUND = "No product was found",
+}
 
 export { FilterQueries, ErrorThrower };

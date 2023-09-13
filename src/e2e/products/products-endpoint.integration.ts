@@ -1,4 +1,4 @@
-const mockList = jest.fn();
+/* const mockList = jest.fn();
 const mockGetOne = jest.fn();
 const handleConnectionMock = {
   list: mockList,
@@ -12,18 +12,18 @@ import { Express } from "express";
 import http from "http";
 import { app } from "../../app";
 
-/* When calling the real mysqlStore, it will get substitute by "mysqlStoreMock". Now something really interesting happens here...
-The product service calls "mysqlStoreMock" that contains the function "handleConnection", exactly the same name the real module has.
-If you changed "handleConnection" name that's getting assigned on line 10, jest will try to Mock the Module, and when trying to access
-the method "handleConnection" it will fail. Jest needs the exact name the Product Service it's using in real cases, otherwises, it will fail.
+// When calling the real mysqlStore, it will get substitute by "mysqlStoreMock". Now something really interesting happens here...
+// The product service calls "mysqlStoreMock" that contains the function "handleConnection", exactly the same name the real module has.
+// If you changed "handleConnection" name that's getting assigned on line 10, jest will try to Mock the Module, and when trying to access
+// the method "handleConnection" it will fail. Jest needs the exact name the Product Service it's using in real cases, otherwises, it will fail.
 
-In fact, you could change the const in line 9 to whatever name you want and it will still work. The magic is happening in line 10, when the mock is getting
-assigned "handleConnection" with a the mocked function.*/
+// In fact, you could change the const in line 9 to whatever name you want and it will still work. The magic is happening in line 10, when the mock is getting
+//assigned "handleConnection" with a the mocked function.
 jest.mock("../store/mysql", () => mysqlStoreMock);
 
 describe("Test for products endpoint", () => {
   let expressApp: Express;
-  /* It's very curious that the method to close a connection/server it's owned by HTTP and not Express */
+  // It's very curious that the method to close a connection/server it's owned by HTTP and not Express
   let server: http.Server;
 
   beforeAll(() => {
@@ -33,7 +33,7 @@ describe("Test for products endpoint", () => {
   afterAll(() => {
     server.close();
   });
-  /* My first test e2e it's working!! */
+  // My first test e2e it's working!!
   describe("test for [GET] /api/v1/products/", () => {
     test("should return an array with an object' ", async () => {
       //Arrange
@@ -67,3 +67,4 @@ describe("Test for products endpoint", () => {
     });
   });
 });
+ */

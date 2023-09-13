@@ -26,22 +26,84 @@ describe("Test for products endpoint", () => {
   });
   afterAll(() => {});
 
-  describe("test for [POST] /api/v1/users/register", () => {
+  describe("test for [REGISTER] (/api/v1/users/register -- POST) ", () => {
+    let userStates = {
+      incompleteUsername: { email: "eduardo@mail.com", password: "12345" },
+      incompleteEmail: {
+        email: "eduardo@mail.com",
+        password: "12345",
+      },
+      incompletePassword: { username: "eduardo", email: "eduardo@mail.com" },
+      completeUser: {
+        username: "eduardo",
+        email: "eduardo@mail.com",
+        password: "12345",
+      },
+    };
+
     // Arrange
     beforeEach(async () => {});
+    afterEach(async () => {
+      connection.eliminate({ table: "users" });
+    });
 
-    test("should ", async () => {
+    test("should return 400 if username it's not provided", async () => {
       //Act
       return await request(app)
         .post("/api/v1/users/register")
-        .send({ username: "eduardo", password: "12345" })
-        .expect(200)
+        .send(userStates.incompleteUsername)
+        .expect(400)
         .then((res) => {
           expect(JSON.parse(res.text)).toEqual({
-            message: "User created",
-            body: [{ username: "eduardo", password: "12345" }],
+            body: "Username, email and password must be provided to register an user",
+            error: true,
+            status: 400,
+          });
+        });
+    });
+
+    test("should return 400 if password it's not provided", async () => {
+      //Act
+      return await request(app)
+        .post("/api/v1/users/register")
+        .send(userStates.incompletePassword)
+        .expect(400)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            body: "Username, email and password must be provided to register an user",
+            error: true,
+            status: 400,
+          });
+        });
+    });
+
+    test("should return 400 if email it's not provided", async () => {
+      //Act
+      return await request(app)
+        .post("/api/v1/users/register")
+        .send(userStates.incompleteEmail)
+        .expect(400)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            body: "Username, email and password must be provided to register an user",
+            error: true,
+            status: 400,
+          });
+        });
+    });
+
+    test("should create User if all data it's provided", async () => {
+      //Act
+      return await request(app)
+        .post("/api/v1/users/register")
+        .send(userStates.completeUser)
+        .expect(201)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
             error: false,
-            status: 200,
+            status: 201,
+            message: "User created succesfully",
+            body: "Login using your password and user/email",
           });
         });
     });

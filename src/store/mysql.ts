@@ -31,7 +31,7 @@ function handleConnection(): ConnectionMethods {
       console.error("[db error]", err.message);
       setTimeout(handleConnection, 2000);
     } else {
-      console.log("DB Connected :)");
+      /*       console.log("DB Connected :)"); */
       connection.release();
     }
   });

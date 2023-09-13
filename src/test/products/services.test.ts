@@ -36,6 +36,7 @@ describe("test for Products Service", () => {
       await productService.list({ limit: "4" });
 
       expect(productListSpy).toHaveBeenCalledTimes(1);
+      expect(productListSpy.mock.calls[0][0]).toEqual({ limit: "4" });
 
       await productService.list({ offset: "33" });
 

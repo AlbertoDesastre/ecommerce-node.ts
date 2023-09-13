@@ -9,12 +9,17 @@ describe("Test for products endpoint", () => {
   let expressApp: Express;
   let server: http.Server;
   let connection: ConnectionMethods;
+
   beforeAll(() => {
     expressApp = app;
     server = app.listen(3002);
     connection = mysqlStore.handleConnection();
   });
-  afterEach(() => {
+
+  afterEach(async () => {
+    await connection.eliminate({ table: "order_items" });
+    await connection.eliminate({ table: "orders" });
+    await connection.eliminate({ table: "products" });
     server.close();
   });
 
@@ -64,9 +69,6 @@ describe("Test for products endpoint", () => {
       //
     });
 
-    afterEach(async () => {
-      await connection.eliminate({ table: "products" });
-    });
     test("should return an array with an object' ", async () => {
       //Act
       return await request(app)

@@ -26,22 +26,21 @@ describe("Test for products endpoint", () => {
   });
   afterAll(() => {});
 
-  describe("test for [POST] /api/v1/users/register", () => {
+  describe("test for [REGISTER] (/api/v1/users/register -- POST) ", () => {
     // Arrange
     beforeEach(async () => {});
 
-    test("should ", async () => {
+    test("should return 400 if not all data it's provided", async () => {
       //Act
       return await request(app)
         .post("/api/v1/users/register")
         .send({ username: "eduardo", password: "12345" })
-        .expect(200)
+        .expect(400)
         .then((res) => {
           expect(JSON.parse(res.text)).toEqual({
-            message: "User created",
-            body: [{ username: "eduardo", password: "12345" }],
-            error: false,
-            status: 200,
+            body: "Username, email and password must be provided to register an user",
+            error: true,
+            status: 400,
           });
         });
     });

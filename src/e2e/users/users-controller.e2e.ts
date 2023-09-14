@@ -83,6 +83,25 @@ describe("Test for products endpoint", () => {
         });
     });
 
+    test("should return 400 if the attributes are present but are undefined or null", async () => {
+      //Act
+      return await request(app)
+        .post("/api/v1/users/register")
+        .send({
+          username: null,
+          email: undefined,
+          password: null,
+        })
+        .expect(400)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            body: "Username, email and password must be provided to register an user",
+            error: true,
+            status: 400,
+          });
+        });
+    });
+
     test("should create User if all data it's provided", async () => {
       //Act
       return await request(app)

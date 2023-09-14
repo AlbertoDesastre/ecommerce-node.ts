@@ -4,35 +4,45 @@ import http from "http";
 import { app } from "../../app";
 import * as mysqlStore from "../../store/mysql";
 import { ConnectionMethods } from "../../store/types";
-import * as userController from "../../components/user/controllers";
+import * as userService from "../../components/user/services";
 import { BasicUser } from "../../components/user/models";
-import { ErrorThrower } from "../../components/user/types";
 
 describe("Test for products endpoint", () => {
   let expressApp: Express;
   let server: http.Server;
   let connection: ConnectionMethods;
 
-  let userControllerSpy: jest.SpyInstance;
-
   beforeAll(() => {
     expressApp = app;
     server = app.listen(3002);
     connection = mysqlStore.handleConnection();
-
-    userControllerSpy = jest.spyOn(userController, "register");
   });
   afterEach(async () => {
     await connection.eliminate({ table: "users" });
     server.close();
   });
-  afterAll(() => {});
 
   describe("test for [REGISTER -- SERVICE] (/api/v1/users/register -- POST) ", () => {
-    // Arrange
-    beforeEach(async () => {});
-    afterEach(async () => {
-      connection.eliminate({ table: "users" });
+    test("authService should create an user when the data it's provided", async () => {
+      const userTemplate: BasicUser = {
+        username: "eduardo",
+        email: "eduardo@mail.com",
+        password: "12345",
+      };
+
+      const user = await userService.register(userTemplate);
+
+      // improve this test by adding the Get function to see if the consumer was in fact registered
+      expect(user).toEqual({
+        affectedRows: 1,
+        changedRows: 0,
+        fieldCount: 0,
+        insertId: 0,
+        message: "",
+        protocol41: true,
+        serverStatus: 2,
+        warningCount: 0,
+      });
     });
   });
 });

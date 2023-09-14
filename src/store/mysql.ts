@@ -156,8 +156,7 @@ function handleConnection(): ConnectionMethods {
         (err, data: MysqlQueryResult) => {
           if (err) {
             if (err.code === "ER_DUP_ENTRY" && table === "users") {
-              console.error(ErrorThrower.USER_DUPLICATED);
-              reject(err);
+              return reject(ErrorThrower.USER_DUPLICATED);
             }
 
             if (err.errno === 1452) {

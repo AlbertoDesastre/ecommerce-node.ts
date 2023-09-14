@@ -5,6 +5,8 @@ import { app } from "../../app";
 import * as mysqlStore from "../../store/mysql";
 import { ConnectionMethods } from "../../store/types";
 import * as userController from "../../components/user/controllers";
+import { BasicUser } from "../../components/user/models";
+import { ErrorThrower } from "../../components/user/types";
 
 describe("Test for products endpoint", () => {
   let expressApp: Express;
@@ -27,20 +29,6 @@ describe("Test for products endpoint", () => {
   afterAll(() => {});
 
   describe("test for [REGISTER] (/api/v1/users/register -- POST) ", () => {
-    let userStates = {
-      incompleteUsername: { email: "eduardo@mail.com", password: "12345" },
-      incompleteEmail: {
-        email: "eduardo@mail.com",
-        password: "12345",
-      },
-      incompletePassword: { username: "eduardo", email: "eduardo@mail.com" },
-      completeUser: {
-        username: "eduardo",
-        email: "eduardo@mail.com",
-        password: "12345",
-      },
-    };
-
     // Arrange
     beforeEach(async () => {});
     afterEach(async () => {
@@ -51,7 +39,7 @@ describe("Test for products endpoint", () => {
       //Act
       return await request(app)
         .post("/api/v1/users/register")
-        .send(userStates.incompleteUsername)
+        .send({ email: "eduardo@mail.com", password: "12345" })
         .expect(400)
         .then((res) => {
           expect(JSON.parse(res.text)).toEqual({
@@ -66,7 +54,7 @@ describe("Test for products endpoint", () => {
       //Act
       return await request(app)
         .post("/api/v1/users/register")
-        .send(userStates.incompletePassword)
+        .send({ username: "eduardo", email: "eduardo@mail.com" })
         .expect(400)
         .then((res) => {
           expect(JSON.parse(res.text)).toEqual({
@@ -81,7 +69,10 @@ describe("Test for products endpoint", () => {
       //Act
       return await request(app)
         .post("/api/v1/users/register")
-        .send(userStates.incompleteEmail)
+        .send({
+          email: "eduardo@mail.com",
+          password: "12345",
+        })
         .expect(400)
         .then((res) => {
           expect(JSON.parse(res.text)).toEqual({
@@ -96,7 +87,11 @@ describe("Test for products endpoint", () => {
       //Act
       return await request(app)
         .post("/api/v1/users/register")
-        .send(userStates.completeUser)
+        .send({
+          username: "eduardo",
+          email: "eduardo@mail.com",
+          password: "12345",
+        })
         .expect(201)
         .then((res) => {
           expect(JSON.parse(res.text)).toEqual({
@@ -104,6 +99,39 @@ describe("Test for products endpoint", () => {
             status: 201,
             message: "User created succesfully",
             body: "Login using your password and user/email",
+          });
+        });
+    });
+
+    test("should throw 'existing user' error if user with the same 'email' or 'username' exists ", async () => {
+      const userTemplate: BasicUser = {
+        username: "eduardo",
+        email: "eduardo@mail.com",
+        password: "12345",
+      };
+
+      const user_one = await request(app)
+        .post("/api/v1/users/register")
+        .send(userTemplate)
+        .expect(201)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: false,
+            status: 201,
+            message: "User created succesfully",
+            body: "Login using your password and user/email",
+          });
+        });
+
+      return await request(app)
+        .post("/api/v1/users/register")
+        .send(userTemplate)
+        .expect(401)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 401,
+            body: ErrorThrower.USER_ALREADY_EXISTS,
           });
         });
     });

@@ -35,13 +35,13 @@ const register = async ({ username, email, password }: BasicUser) => {
     created_at: new Date(),
   };
 
-  const response = await connection.create({
+  const result = await connection.create({
     table: "users",
     tableColumns: TableColumns.USERS_POST_VALUES,
     arrayOfData: [Object.values(userInformation)],
   });
 
-  return response;
+  return result;
 };
 
 const login = async ({ username, email, password }: BasicUser) => {
@@ -94,8 +94,6 @@ const update = async ({ id, username, email, password, avatar }: User) => {
     item: { username, email, password: hashedPassword, avatar },
     id: id,
   });
-
-  console.log(result);
 
   if (result.message === MysqlErrorThrower.ITEM_WASNT_FOUND)
     throw new Error(ErrorThrower.USER_UPDATING_DOESNT_EXISTS);

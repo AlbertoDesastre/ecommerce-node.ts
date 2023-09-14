@@ -28,7 +28,7 @@ describe("Test for products endpoint", () => {
   });
   afterAll(() => {});
 
-  describe("test for [REGISTER] (/api/v1/users/register -- POST) ", () => {
+  describe("test for [REGISTER -- CONTROLLER] (/api/v1/users/register -- POST) ", () => {
     // Arrange
     beforeEach(async () => {});
     afterEach(async () => {
@@ -110,7 +110,8 @@ describe("Test for products endpoint", () => {
         password: "12345",
       };
 
-      const user_one = await request(app)
+      // first call registers userTemplate
+      await request(app)
         .post("/api/v1/users/register")
         .send(userTemplate)
         .expect(201)
@@ -122,7 +123,7 @@ describe("Test for products endpoint", () => {
             body: "Login using your password and user/email",
           });
         });
-
+      // second call registers the same userTemplate
       return await request(app)
         .post("/api/v1/users/register")
         .send(userTemplate)

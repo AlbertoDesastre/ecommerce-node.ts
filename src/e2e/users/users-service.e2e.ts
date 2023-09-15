@@ -30,18 +30,21 @@ describe("Test for products endpoint", () => {
         password: "12345",
       };
 
-      const user = await userService.register(userTemplate);
+      await userService.register(userTemplate);
 
       // improve this test by adding the Get function to see if the consumer was in fact registered
-      expect(user).toEqual({
-        affectedRows: 1,
-        changedRows: 0,
-        fieldCount: 0,
-        insertId: 0,
-        message: "",
-        protocol41: true,
-        serverStatus: 2,
-        warningCount: 0,
+
+      const registeredUser: any = await connection.personalizedQuery(
+        `SELECT username, email FROM users WHERE email = '${userTemplate.email}'`
+      );
+
+      expect(registeredUser).toHaveLength(1);
+      expect({
+        username: userTemplate.username,
+        email: userTemplate.email,
+      }).toEqual({
+        username: registeredUser[0].username,
+        email: registeredUser[0].email,
       });
     });
   });

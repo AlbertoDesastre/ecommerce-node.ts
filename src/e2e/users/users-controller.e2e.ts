@@ -31,6 +31,49 @@ describe("Test for products endpoint", () => {
   });
   afterAll(() => {});
 
+  const userTemplate: BasicUser = {
+    username: "eduardo",
+    email: "eduardo@mail.com",
+    password: "12345",
+  };
+
+  describe('"test for [GET -- CONTROLLER] (/api/v1/users/register/:userId -- GET) "', () => {
+    test("should throw error if user doesn't exists ", async () => {
+      // register it's omitted
+      const fakeId = "210491dd2mf3@";
+
+      await request(app)
+        .get(`/api/v1/users/get/${fakeId}`)
+        .expect(404)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 404,
+            body: ErrorThrower.USER_DOESNT_EXISTS,
+          });
+        });
+    });
+
+    test("should get user information if it exists on DB", async () => {
+      await userService.register(userTemplate);
+
+      const userId: any = await connection.personalizedQuery(
+        `SELECT id FROM users WHERE email = '${userTemplate.email}'`
+      );
+
+      await request(app)
+        .get(`/api/v1/users/get/${userId}`)
+        .expect(404)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 404,
+            body: ErrorThrower.USER_DOESNT_EXISTS,
+          });
+        });
+    });
+  });
+
   describe("test for [REGISTER -- CONTROLLER] (/api/v1/users/register -- POST) ", () => {
     // Arrange
     beforeEach(async () => {});
@@ -78,12 +121,6 @@ describe("Test for products endpoint", () => {
     });
 
     test("should throw 'existing user' error if user with the same 'email' or 'username' exists ", async () => {
-      const userTemplate: BasicUser = {
-        username: "eduardo",
-        email: "eduardo@mail.com",
-        password: "12345",
-      };
-
       // first call registers userTemplate
       await request(app)
         .post("/api/v1/users/register")
@@ -112,13 +149,76 @@ describe("Test for products endpoint", () => {
     });
   });
 
-  describe('"test for [GET -- CONTROLLER] (/api/v1/users/register/:userId -- GET) "', () => {
-    test("should throw error if user doesn't exists ", async () => {
-      // register it's omitted
-      const fakeId = "210491dd2mf3@";
+  describe("test for [LOGIN -- CONTROLLER] (/api/v1/users/login -- POST) ", () => {
+    // Arrange
+    beforeEach(async () => {});
+    afterEach(async () => {
+      connection.eliminate({ table: "users" });
+    });
 
-      await request(app)
-        .get(`/api/v1/users/get/${fakeId}`)
+    test("should return 400 if username and email are both missing", async () => {
+      // Act
+      return await request(app)
+        .post("/api/v1/users/login")
+        .send({
+          password: "password123",
+        })
+        .expect(400)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 400,
+            body: ErrorThrower.CONTROLLER_DONT_PROVIDE_USERNAME_AND_EMAIL,
+          });
+        });
+    });
+
+    test("should return 400 if both username and email are provided", async () => {
+      // Act
+      return await request(app)
+        .post("/api/v1/users/login")
+        .send({
+          username: "user123",
+          email: "user123@example.com",
+          password: "password123",
+        })
+        .expect(400)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 400,
+            body: ErrorThrower.CONTROLLER_ONLY_ONE_PARAMETER_ACCEPTED,
+          });
+        });
+    });
+
+    test("should return 400 if password is missing", async () => {
+      // Act
+      return await request(app)
+        .post("/api/v1/users/login")
+        .send({
+          username: "user123",
+        })
+        .expect(400)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 400,
+            body: ErrorThrower.CONTROLLER_NO_PASSWORD_PASSED,
+          });
+        });
+    });
+
+    test("should return 'User doesn't exists' if user wasn't found", async () => {
+      // Act
+      // register it's omitted for this test!
+
+      return await request(app)
+        .post("/api/v1/users/login")
+        .send({
+          username: "non-existing-user",
+          password: "fake",
+        })
         .expect(404)
         .then((res) => {
           expect(JSON.parse(res.text)).toEqual({
@@ -129,29 +229,51 @@ describe("Test for products endpoint", () => {
         });
     });
 
-    test("should get user information if it exists on DB", async () => {
-      const userTemplate: BasicUser = {
-        username: "eduardo",
-        email: "eduardo@mail.com",
-        password: "12345",
-      };
+    test("should return 'Password don't match' if password are not compatible", async () => {
+      // Act
 
       await userService.register(userTemplate);
 
-      const userId: any = await connection.personalizedQuery(
-        `SELECT id FROM users WHERE email = '${userTemplate.email}'`
-      );
-
-      await request(app)
-        .get(`/api/v1/users/get/${userId}`)
-        .expect(404)
+      return await request(app)
+        .post("/api/v1/users/login")
+        .send({
+          username: userTemplate.username,
+          password: "super-wrong-password",
+        })
+        .expect(500)
         .then((res) => {
           expect(JSON.parse(res.text)).toEqual({
             error: true,
-            status: 404,
-            body: ErrorThrower.USER_DOESNT_EXISTS,
+            status: 500,
+            body: ErrorThrower.PASSWORD_NOT_MATCHING,
           });
         });
+    });
+
+    test("should return a token if user exists and password matchs", async () => {
+      // Act
+
+      /* token format --> "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IktGWUMyTkJDSjFSZ0xlSDRDZm5FciIsInVzZXJuYW1lIjoiYWxiZXJ0aXRvTyIsInBhc3N3b3JkIjoiMTIzNDU2IiwiaWF0IjoxNjk0ODc4NTI0fQ.Q1NLo4y7Jy_03mq5bXKd4bAT3mc9-6tOpF0PLUd31lM" */
+      await userService.register(userTemplate);
+
+      const response = await request(app)
+        .post("/api/v1/users/login")
+        .send({
+          username: userTemplate.username,
+          password: userTemplate.password,
+        })
+        .expect(201);
+
+      const responseBody = JSON.parse(response.text);
+
+      expect(responseBody.error).toBe(false);
+      expect(responseBody.status).toBe(201);
+      expect(responseBody.message).toBe("Logged in successfully");
+      expect(responseBody.body).toBeDefined();
+
+      const token = responseBody.body;
+      expect(typeof token).toBe("string");
+      expect(token.length).toBeGreaterThan(10); // Adjust this number if the JWT configuration and .env SECRET requires it
     });
   });
 });

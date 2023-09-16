@@ -247,8 +247,8 @@ function handleConnection(): ConnectionMethods {
   function personalizedQuery(query: string): Promise<Object[] | MysqlError> {
     return new Promise((resolve, reject) => {
       pool.query(query, (err, data) => {
-        console.log(query);
-        console.log("la data de la query --> ", data);
+        // console.log(query);
+        // console.log("la data de la query --> ", data);
         if (err) return reject(err);
 
         const orders = data.map((objetFromQuery: Object) => ({

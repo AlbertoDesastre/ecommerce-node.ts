@@ -24,11 +24,17 @@ const get = (req: Request, res: Response) => {
         status: 201,
       });
     })
-    .catch((err) => {
+    .catch((err: Error) => {
+      let statusCode;
+      if (err.message === ErrorThrower.USER_DOESNT_EXISTS) {
+        statusCode = 404;
+      } else {
+        statusCode = 500;
+      }
       return errors({
         res,
         message: err.message,
-        status: 500,
+        status: statusCode,
       });
     });
 };

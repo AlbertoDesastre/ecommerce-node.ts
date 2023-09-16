@@ -13,14 +13,18 @@ const connection = handleConnection();
 /* DISCLAIMER!! This file contains arrow functions and not a Class for learning purposes.
 The idea is to keep consistency and use Classes on the rest of the project */
 const get = async ({ id }: { id: string }) => {
-  const response = await connection.getOne({
+  const result = await connection.getOne({
     table: "users",
     tableColumns: TableColumns.USERS_GET_PARTIAL_VALUES,
     id,
     addExtraQuotesToId: true,
   });
 
-  return response as User[];
+  if (Array.isArray(result) && result.length === 0) {
+    throw new Error(ErrorThrower.USER_DOESNT_EXISTS);
+  }
+
+  return result as User[];
 };
 
 const register = async ({ username, email, password }: BasicUser) => {
@@ -48,24 +52,24 @@ const login = async ({ username, email, password }: BasicUser) => {
   //note: if you pass both username and email, and username is correct but email doesn't, it will still login.
   // this could be worrying, but the use case for this is to only send one of this atributes. Test it out on a later time
 
-  const response = await connection.login({
+  const result = await connection.login({
     table: "users",
     username,
     email,
   });
 
-  if (response === undefined) {
+  if (result === undefined) {
     throw new Error(ErrorThrower.USER_DOESNT_EXISTS);
   }
 
-  const passwordMatch = await bcrypt.compare(password, response.password);
+  const passwordMatch = await bcrypt.compare(password, result.password);
 
   if (!passwordMatch) {
     throw new Error(ErrorThrower.PASSWORD_NOT_MATCHING);
   }
 
   const token = authService.createToken({
-    id: response.id,
+    id: result.id,
     username,
     email,
     password,

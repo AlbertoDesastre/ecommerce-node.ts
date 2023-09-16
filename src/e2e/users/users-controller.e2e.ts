@@ -1,10 +1,13 @@
 import request from "supertest";
 import { Express } from "express";
 import http from "http";
+
 import { app } from "../../app";
 import * as mysqlStore from "../../store/mysql";
 import { ConnectionMethods } from "../../store/types";
+
 import * as userController from "../../components/user/controllers";
+import * as userService from "../../components/user/services";
 import { BasicUser } from "../../components/user/models";
 import { ErrorThrower } from "../../components/user/types";
 
@@ -35,55 +38,7 @@ describe("Test for products endpoint", () => {
       connection.eliminate({ table: "users" });
     });
 
-    test("should return 400 if username it's not provided", async () => {
-      //Act
-      return await request(app)
-        .post("/api/v1/users/register")
-        .send({ email: "eduardo@mail.com", password: "12345" })
-        .expect(400)
-        .then((res) => {
-          expect(JSON.parse(res.text)).toEqual({
-            body: "Username, email and password must be provided to register an user",
-            error: true,
-            status: 400,
-          });
-        });
-    });
-
-    test("should return 400 if password it's not provided", async () => {
-      //Act
-      return await request(app)
-        .post("/api/v1/users/register")
-        .send({ username: "eduardo", email: "eduardo@mail.com" })
-        .expect(400)
-        .then((res) => {
-          expect(JSON.parse(res.text)).toEqual({
-            body: "Username, email and password must be provided to register an user",
-            error: true,
-            status: 400,
-          });
-        });
-    });
-
-    test("should return 400 if email it's not provided", async () => {
-      //Act
-      return await request(app)
-        .post("/api/v1/users/register")
-        .send({
-          email: "eduardo@mail.com",
-          password: "12345",
-        })
-        .expect(400)
-        .then((res) => {
-          expect(JSON.parse(res.text)).toEqual({
-            body: "Username, email and password must be provided to register an user",
-            error: true,
-            status: 400,
-          });
-        });
-    });
-
-    test("should return 400 if the attributes are present but are undefined or null", async () => {
+    test("should return 400 if the attributes are undefined, or are present but are undefined or null", async () => {
       //Act
       return await request(app)
         .post("/api/v1/users/register")
@@ -152,6 +107,49 @@ describe("Test for products endpoint", () => {
             error: true,
             status: 401,
             body: ErrorThrower.USER_ALREADY_EXISTS,
+          });
+        });
+    });
+  });
+
+  describe('"test for [GET -- CONTROLLER] (/api/v1/users/register/:userId -- GET) "', () => {
+    test("should throw error if user doesn't exists ", async () => {
+      // register it's omitted
+      const fakeId = "210491dd2mf3@";
+
+      await request(app)
+        .get(`/api/v1/users/get/${fakeId}`)
+        .expect(404)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 404,
+            body: ErrorThrower.USER_DOESNT_EXISTS,
+          });
+        });
+    });
+
+    test("should get user information if it exists on DB", async () => {
+      const userTemplate: BasicUser = {
+        username: "eduardo",
+        email: "eduardo@mail.com",
+        password: "12345",
+      };
+
+      await userService.register(userTemplate);
+
+      const userId: any = await connection.personalizedQuery(
+        `SELECT id FROM users WHERE email = '${userTemplate.email}'`
+      );
+
+      await request(app)
+        .get(`/api/v1/users/get/${userId}`)
+        .expect(404)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 404,
+            body: ErrorThrower.USER_DOESNT_EXISTS,
           });
         });
     });

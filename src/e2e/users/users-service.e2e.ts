@@ -6,6 +6,8 @@ import * as mysqlStore from "../../store/mysql";
 import { ConnectionMethods } from "../../store/types";
 import * as userService from "../../components/user/services";
 import { BasicUser, TableColumns } from "../../components/user/models";
+import { ErrorThrower } from "../../components/user/types";
+import { rejects } from "assert";
 
 describe("Test for products endpoint", () => {
   let expressApp: Express;
@@ -44,6 +46,16 @@ describe("Test for products endpoint", () => {
         email: userTemplate.email,
         avatar: null,
       }).toEqual(user[0]);
+    });
+
+    test("authService.get should return an Error when a user doesn't exists", () => {
+      // registration for this consumer it's omitted --> await userService.register(userTemplate);
+
+      // for Async functions ".rejects" helper must be used, if the promise it's fullfilled the test will fail
+      // additionally, functions that are expected to throw errors must be wrapped in another function, inside the expect
+      expect(async () => {
+        await userService.get({ id: "newi#@32nfw33333" });
+      }).rejects.toThrowError(ErrorThrower.USER_DOESNT_EXISTS);
     });
   });
 

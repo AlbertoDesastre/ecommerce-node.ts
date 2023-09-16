@@ -11,7 +11,7 @@ import * as userService from "../../components/user/services";
 import { BasicUser } from "../../components/user/models";
 import { ErrorThrower } from "../../components/user/types";
 
-describe("Test for products endpoint", () => {
+describe("Test for *USER* --> CONTROLLER", () => {
   let expressApp: Express;
   let server: http.Server;
   let connection: ConnectionMethods;
@@ -37,7 +37,7 @@ describe("Test for products endpoint", () => {
     password: "12345",
   };
 
-  describe('"test for [GET -- CONTROLLER] (/api/v1/users/register/:userId -- GET) "', () => {
+  describe('"test for [GET] (/api/v1/users/register/:userId -- GET) "', () => {
     test("should throw error if user doesn't exists ", async () => {
       // register it's omitted
       const fakeId = "210491dd2mf3@";
@@ -74,7 +74,7 @@ describe("Test for products endpoint", () => {
     });
   });
 
-  describe("test for [REGISTER -- CONTROLLER] (/api/v1/users/register -- POST) ", () => {
+  describe("test for [REGISTER] (/api/v1/users/register -- POST) ", () => {
     // Arrange
     beforeEach(async () => {});
     afterEach(async () => {
@@ -149,7 +149,7 @@ describe("Test for products endpoint", () => {
     });
   });
 
-  describe("test for [LOGIN -- CONTROLLER] (/api/v1/users/login -- POST) ", () => {
+  describe("test for [LOGIN] (/api/v1/users/login -- POST) ", () => {
     // Arrange
     beforeEach(async () => {});
     afterEach(async () => {

@@ -5,7 +5,7 @@ import http from "http";
 import { app } from "../../app";
 import { ConnectionMethods } from "../../store/types";
 
-describe("Test for products endpoint", () => {
+describe("Test for *PRODUCTS* --> CONTROLLER", () => {
   let expressApp: Express;
   let server: http.Server;
   let connection: ConnectionMethods;

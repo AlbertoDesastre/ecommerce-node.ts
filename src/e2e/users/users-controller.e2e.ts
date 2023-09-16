@@ -1,10 +1,15 @@
 import request from "supertest";
 import { Express } from "express";
 import http from "http";
+
 import { app } from "../../app";
 import * as mysqlStore from "../../store/mysql";
 import { ConnectionMethods } from "../../store/types";
+
 import * as userController from "../../components/user/controllers";
+import * as userService from "../../components/user/services";
+import { BasicUser } from "../../components/user/models";
+import { ErrorThrower } from "../../components/user/types";
 
 describe("Test for products endpoint", () => {
   let expressApp: Express;
@@ -26,62 +31,65 @@ describe("Test for products endpoint", () => {
   });
   afterAll(() => {});
 
-  describe("test for [REGISTER] (/api/v1/users/register -- POST) ", () => {
-    let userStates = {
-      incompleteUsername: { email: "eduardo@mail.com", password: "12345" },
-      incompleteEmail: {
-        email: "eduardo@mail.com",
-        password: "12345",
-      },
-      incompletePassword: { username: "eduardo", email: "eduardo@mail.com" },
-      completeUser: {
-        username: "eduardo",
-        email: "eduardo@mail.com",
-        password: "12345",
-      },
-    };
+  const userTemplate: BasicUser = {
+    username: "eduardo",
+    email: "eduardo@mail.com",
+    password: "12345",
+  };
 
+  describe('"test for [GET -- CONTROLLER] (/api/v1/users/register/:userId -- GET) "', () => {
+    test("should throw error if user doesn't exists ", async () => {
+      // register it's omitted
+      const fakeId = "210491dd2mf3@";
+
+      await request(app)
+        .get(`/api/v1/users/get/${fakeId}`)
+        .expect(404)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 404,
+            body: ErrorThrower.USER_DOESNT_EXISTS,
+          });
+        });
+    });
+
+    test("should get user information if it exists on DB", async () => {
+      await userService.register(userTemplate);
+
+      const userId: any = await connection.personalizedQuery(
+        `SELECT id FROM users WHERE email = '${userTemplate.email}'`
+      );
+
+      await request(app)
+        .get(`/api/v1/users/get/${userId}`)
+        .expect(404)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 404,
+            body: ErrorThrower.USER_DOESNT_EXISTS,
+          });
+        });
+    });
+  });
+
+  describe("test for [REGISTER -- CONTROLLER] (/api/v1/users/register -- POST) ", () => {
     // Arrange
     beforeEach(async () => {});
     afterEach(async () => {
       connection.eliminate({ table: "users" });
     });
 
-    test("should return 400 if username it's not provided", async () => {
+    test("should return 400 if the attributes are undefined, or are present but are undefined or null", async () => {
       //Act
       return await request(app)
         .post("/api/v1/users/register")
-        .send(userStates.incompleteUsername)
-        .expect(400)
-        .then((res) => {
-          expect(JSON.parse(res.text)).toEqual({
-            body: "Username, email and password must be provided to register an user",
-            error: true,
-            status: 400,
-          });
-        });
-    });
-
-    test("should return 400 if password it's not provided", async () => {
-      //Act
-      return await request(app)
-        .post("/api/v1/users/register")
-        .send(userStates.incompletePassword)
-        .expect(400)
-        .then((res) => {
-          expect(JSON.parse(res.text)).toEqual({
-            body: "Username, email and password must be provided to register an user",
-            error: true,
-            status: 400,
-          });
-        });
-    });
-
-    test("should return 400 if email it's not provided", async () => {
-      //Act
-      return await request(app)
-        .post("/api/v1/users/register")
-        .send(userStates.incompleteEmail)
+        .send({
+          username: null,
+          email: undefined,
+          password: null,
+        })
         .expect(400)
         .then((res) => {
           expect(JSON.parse(res.text)).toEqual({
@@ -96,7 +104,11 @@ describe("Test for products endpoint", () => {
       //Act
       return await request(app)
         .post("/api/v1/users/register")
-        .send(userStates.completeUser)
+        .send({
+          username: "eduardo",
+          email: "eduardo@mail.com",
+          password: "12345",
+        })
         .expect(201)
         .then((res) => {
           expect(JSON.parse(res.text)).toEqual({
@@ -106,6 +118,162 @@ describe("Test for products endpoint", () => {
             body: "Login using your password and user/email",
           });
         });
+    });
+
+    test("should throw 'existing user' error if user with the same 'email' or 'username' exists ", async () => {
+      // first call registers userTemplate
+      await request(app)
+        .post("/api/v1/users/register")
+        .send(userTemplate)
+        .expect(201)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: false,
+            status: 201,
+            message: "User created succesfully",
+            body: "Login using your password and user/email",
+          });
+        });
+      // second call registers the same userTemplate
+      return await request(app)
+        .post("/api/v1/users/register")
+        .send(userTemplate)
+        .expect(401)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 401,
+            body: ErrorThrower.USER_ALREADY_EXISTS,
+          });
+        });
+    });
+  });
+
+  describe("test for [LOGIN -- CONTROLLER] (/api/v1/users/login -- POST) ", () => {
+    // Arrange
+    beforeEach(async () => {});
+    afterEach(async () => {
+      connection.eliminate({ table: "users" });
+    });
+
+    test("should return 400 if username and email are both missing", async () => {
+      // Act
+      return await request(app)
+        .post("/api/v1/users/login")
+        .send({
+          password: "password123",
+        })
+        .expect(400)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 400,
+            body: ErrorThrower.CONTROLLER_DONT_PROVIDE_USERNAME_AND_EMAIL,
+          });
+        });
+    });
+
+    test("should return 400 if both username and email are provided", async () => {
+      // Act
+      return await request(app)
+        .post("/api/v1/users/login")
+        .send({
+          username: "user123",
+          email: "user123@example.com",
+          password: "password123",
+        })
+        .expect(400)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 400,
+            body: ErrorThrower.CONTROLLER_ONLY_ONE_PARAMETER_ACCEPTED,
+          });
+        });
+    });
+
+    test("should return 400 if password is missing", async () => {
+      // Act
+      return await request(app)
+        .post("/api/v1/users/login")
+        .send({
+          username: "user123",
+        })
+        .expect(400)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 400,
+            body: ErrorThrower.CONTROLLER_NO_PASSWORD_PASSED,
+          });
+        });
+    });
+
+    test("should return 'User doesn't exists' if user wasn't found", async () => {
+      // Act
+      // register it's omitted for this test!
+
+      return await request(app)
+        .post("/api/v1/users/login")
+        .send({
+          username: "non-existing-user",
+          password: "fake",
+        })
+        .expect(404)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 404,
+            body: ErrorThrower.USER_DOESNT_EXISTS,
+          });
+        });
+    });
+
+    test("should return 'Password don't match' if password are not compatible", async () => {
+      // Act
+
+      await userService.register(userTemplate);
+
+      return await request(app)
+        .post("/api/v1/users/login")
+        .send({
+          username: userTemplate.username,
+          password: "super-wrong-password",
+        })
+        .expect(500)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 500,
+            body: ErrorThrower.PASSWORD_NOT_MATCHING,
+          });
+        });
+    });
+
+    test("should return a token if user exists and password matchs", async () => {
+      // Act
+
+      /* token format --> "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IktGWUMyTkJDSjFSZ0xlSDRDZm5FciIsInVzZXJuYW1lIjoiYWxiZXJ0aXRvTyIsInBhc3N3b3JkIjoiMTIzNDU2IiwiaWF0IjoxNjk0ODc4NTI0fQ.Q1NLo4y7Jy_03mq5bXKd4bAT3mc9-6tOpF0PLUd31lM" */
+      await userService.register(userTemplate);
+
+      const response = await request(app)
+        .post("/api/v1/users/login")
+        .send({
+          username: userTemplate.username,
+          password: userTemplate.password,
+        })
+        .expect(201);
+
+      const responseBody = JSON.parse(response.text);
+
+      expect(responseBody.error).toBe(false);
+      expect(responseBody.status).toBe(201);
+      expect(responseBody.message).toBe("Logged in successfully");
+      expect(responseBody.body).toBeDefined();
+
+      const token = responseBody.body;
+      expect(typeof token).toBe("string");
+      expect(token.length).toBeGreaterThan(10); // Adjust this number if the JWT configuration and .env SECRET requires it
     });
   });
 });

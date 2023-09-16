@@ -156,8 +156,7 @@ function handleConnection(): ConnectionMethods {
         (err, data: MysqlQueryResult) => {
           if (err) {
             if (err.code === "ER_DUP_ENTRY" && table === "users") {
-              console.error(ErrorThrower.USER_DUPLICATED);
-              reject(err);
+              return reject(ErrorThrower.USER_DUPLICATED);
             }
 
             if (err.errno === 1452) {
@@ -248,8 +247,8 @@ function handleConnection(): ConnectionMethods {
   function personalizedQuery(query: string): Promise<Object[] | MysqlError> {
     return new Promise((resolve, reject) => {
       pool.query(query, (err, data) => {
-        console.log(query);
-        console.log("la data de la query --> ", data);
+        // console.log(query);
+        // console.log("la data de la query --> ", data);
         if (err) return reject(err);
 
         const orders = data.map((objetFromQuery: Object) => ({

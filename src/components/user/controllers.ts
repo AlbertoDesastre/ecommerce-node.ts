@@ -24,11 +24,17 @@ const get = (req: Request, res: Response) => {
         status: 201,
       });
     })
-    .catch((err) => {
+    .catch((err: Error) => {
+      let statusCode;
+      if (err.message === ErrorThrower.USER_DOESNT_EXISTS) {
+        statusCode = 404;
+      } else {
+        statusCode = 500;
+      }
       return errors({
         res,
         message: err.message,
-        status: 500,
+        status: statusCode,
       });
     });
 };
@@ -72,7 +78,7 @@ const login = (req: Request, res: Response) => {
   if (!username && !email) {
     return errors({
       res,
-      message: "You can't login without providing an username or email",
+      message: ErrorThrower.CONTROLLER_DONT_PROVIDE_USERNAME_AND_EMAIL,
       status: 400,
     });
   }
@@ -80,8 +86,7 @@ const login = (req: Request, res: Response) => {
   if (username != undefined && email != undefined) {
     return errors({
       res,
-      message:
-        "You can only do a login with a username or an email, but not both",
+      message: ErrorThrower.CONTROLLER_ONLY_ONE_PARAMETER_ACCEPTED,
       status: 400,
     });
   }
@@ -89,7 +94,7 @@ const login = (req: Request, res: Response) => {
   if (!password) {
     return errors({
       res,
-      message: "No password was provided",
+      message: ErrorThrower.CONTROLLER_NO_PASSWORD_PASSED,
       status: 400,
     });
   }
@@ -105,11 +110,14 @@ const login = (req: Request, res: Response) => {
       });
     })
     .catch((err) => {
-      console.error(err);
+      let statusCode;
+      if (err.message === ErrorThrower.USER_DOESNT_EXISTS) {
+        statusCode = 404;
+      }
       return errors({
         res,
         message: err.message,
-        status: 500,
+        status: statusCode ? statusCode : 500,
       });
     });
 };

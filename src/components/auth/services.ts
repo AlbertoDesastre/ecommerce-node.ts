@@ -14,7 +14,7 @@ class AuthService {
 
       return token;
     } catch (error) {
-      console.error(error);
+      // console.error(error);
       throw new Error("Error during token creation");
     }
   }
@@ -35,7 +35,7 @@ class AuthService {
         return hashedPassword;
       })
       .catch((err) => {
-        console.error(err);
+        // console.error(err);
         throw new Error("Error ocurred hashing the password");
       });
 

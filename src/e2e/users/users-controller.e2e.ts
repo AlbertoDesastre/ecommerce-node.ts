@@ -4,14 +4,15 @@ import http from "http";
 
 import { app } from "../../app";
 import * as mysqlStore from "../../store/mysql";
-import { ConnectionMethods } from "../../store/types";
+import { ConnectionMethods, SuccessfulQueryMessage } from "../../store/types";
 
 import * as userController from "../../components/user/controllers";
 import * as userService from "../../components/user/services";
 import { BasicUser } from "../../components/user/models";
 import { ErrorThrower } from "../../components/user/types";
+import { ErrorThrower as AuthErrorThrower } from "../../middlewares/auth-middleware/types";
 
-describe("Test for products endpoint", () => {
+describe("Test for *USER* --> CONTROLLER", () => {
   let expressApp: Express;
   let server: http.Server;
   let connection: ConnectionMethods;
@@ -37,7 +38,7 @@ describe("Test for products endpoint", () => {
     password: "12345",
   };
 
-  describe('"test for [GET -- CONTROLLER] (/api/v1/users/register/:userId -- GET) "', () => {
+  describe('"test for [GET] (/api/v1/users/register/:userId -- GET) "', () => {
     test("should throw error if user doesn't exists ", async () => {
       // register it's omitted
       const fakeId = "210491dd2mf3@";
@@ -74,7 +75,7 @@ describe("Test for products endpoint", () => {
     });
   });
 
-  describe("test for [REGISTER -- CONTROLLER] (/api/v1/users/register -- POST) ", () => {
+  describe("test for [REGISTER] (/api/v1/users/register -- POST) ", () => {
     // Arrange
     beforeEach(async () => {});
     afterEach(async () => {
@@ -149,7 +150,7 @@ describe("Test for products endpoint", () => {
     });
   });
 
-  describe("test for [LOGIN -- CONTROLLER] (/api/v1/users/login -- POST) ", () => {
+  describe("test for [LOGIN] (/api/v1/users/login -- POST) ", () => {
     // Arrange
     beforeEach(async () => {});
     afterEach(async () => {
@@ -274,6 +275,142 @@ describe("Test for products endpoint", () => {
       const token = responseBody.body;
       expect(typeof token).toBe("string");
       expect(token.length).toBeGreaterThan(10); // Adjust this number if the JWT configuration and .env SECRET requires it
+    });
+  });
+
+  describe("test for [UPDATE] (/api/v1/users/:id -- PUT)", () => {
+    let user;
+    let token: string;
+    let userIdInArray: any;
+    let userId: string;
+
+    const userGettingUpdated = {
+      username: "paco",
+      email: "paco@mail.com",
+      avatar: "url_fake/e.com",
+      password: "54321",
+    };
+
+    // Arrange
+    beforeEach(async () => {
+      user = await userService.register(userTemplate);
+      token = await userService.login(userTemplate);
+
+      userIdInArray = await connection.personalizedQuery(
+        `SELECT id FROM users WHERE email = '${userTemplate.email}'`
+      );
+      userId = userIdInArray[0].id;
+    });
+
+    afterEach(async () => {
+      connection.eliminate({ table: "users" });
+    });
+
+    test("should return 400 if no token was provided", async () => {
+      // Act
+      return await request(app)
+        .put(`/api/v1/users/update/${userId}`)
+        .set({ Authorization: "" }) // pass empty string as an Authorization
+        .send(userTemplate)
+        .expect(400)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 400,
+            body: AuthErrorThrower.TOKEN_NOT_FOUND,
+          });
+        });
+    });
+
+    test("should return 400 if token was provided with wrong format", async () => {
+      // Act
+      return await request(app)
+        .put(`/api/v1/users/update/${userId}`)
+        .set({ Authorization: `GWBIOG ${token}` })
+        .send(userTemplate)
+        .expect(400)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 400,
+            body: AuthErrorThrower.TOKEN_WRONG_FORMAT,
+          });
+        });
+    });
+
+    test("should return 500 if a user tries to update another user", async () => {
+      const desastreUser = {
+        username: "desastre",
+        email: "desastre@mail.com",
+        password: "12345",
+      };
+      await userService.register(desastreUser);
+
+      const desastreToken = await userService.login(desastreUser);
+
+      // Act
+      return await request(app)
+        .put(`/api/v1/users/update/${userId}`) // this is the id from the TemplateUser, not Desastre's User
+        .set({ Authorization: `Bearer ${desastreToken}` })
+        .send(desastreUser)
+        .expect(500)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 500,
+            body: AuthErrorThrower.NOT_ALLOWED,
+          });
+        });
+    });
+
+    test("should return 201 if user is updated successfully", async () => {
+      return await request(app)
+        .put(`/api/v1/users/update/${userId}`)
+        .set({ Authorization: `Bearer ${token}` })
+        .send(userGettingUpdated)
+        .expect(201)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: false,
+            status: 201,
+            message: "Your profile was updated succesfully",
+            body: SuccessfulQueryMessage.ITEM_WAS_UPDATED,
+          });
+        });
+    });
+  });
+
+  describe("test for [DELETE] (/api/v1/users/:id -- PUT)", () => {
+    test("should return 200 if user information it's deleted", async () => {
+      // pending to create orders and order items for this user to delete all info
+      // also pending to manage cases where user doesn't have any orders yet and those deletions have to be omiited
+
+      const desastreUser = {
+        username: "desastre",
+        email: "desastre@mail.com",
+        password: "12345",
+      };
+      await userService.register(desastreUser);
+      const desastreToken = await userService.login(desastreUser);
+
+      const desastreIdInArray: any = await connection.personalizedQuery(
+        `SELECT id FROM users WHERE email = '${desastreUser.email}'`
+      );
+
+      const desastreId = desastreIdInArray[0];
+
+      return await request(app)
+        .put(`/api/v1/users/update/${desastreIdInArray}`)
+        .set({ Authorization: `Bearer ${desastreToken}` })
+        .expect(200)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: false,
+            status: 200,
+            message: "Your profile was updated succesfully",
+            body: SuccessfulQueryMessage.ALL_INFO_WAS_DELETE,
+          });
+        });
     });
   });
 });

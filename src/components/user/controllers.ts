@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 
 import * as userService from "./services";
 import { AuthService } from "../auth/services";
@@ -122,15 +122,14 @@ const login = (req: Request, res: Response) => {
     });
 };
 
-const update = (req: Request, res: Response) => {
+const update = (req: Request, res: Response, next: NextFunction) => {
   const { username, email, password, avatar } = req.body;
   const { id } = req.params;
 
   if (!username || !email || !password) {
     return errors({
       res,
-      message:
-        "Couldn't perfom this action because not enough data was provided",
+      message: ErrorThrower.CONTROLLER_NOT_ENOUGH_INFO_PROVIDED,
       status: 400,
     });
   }
@@ -156,8 +155,25 @@ const update = (req: Request, res: Response) => {
       return errors({ res, message: err.message, status: 500 });
     });
 };
+
 const eliminate = (req: Request, res: Response) => {
-  userService.eliminate();
+  const { id } = req.params;
+
+  userService
+    .eliminate({
+      id,
+    })
+    .then((result) => {
+      return success({
+        res,
+        message: "All the data related to your profile was deleted",
+        data: SuccessfulQueryMessage.ALL_INFO_WAS_DELETE,
+        status: 200,
+      });
+    })
+    .catch((err) => {
+      return errors({ res, message: err.message, status: 500 });
+    });
 };
 
 export { get, register, login, update, eliminate };

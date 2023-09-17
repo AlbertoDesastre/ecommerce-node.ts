@@ -1,6 +1,7 @@
 import "dotenv/config";
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import { routerApi } from "./components/index";
+import { errors } from "./network";
 
 const app = express();
 
@@ -13,8 +14,10 @@ that I specified, where I have all the sub-routes like "filter", "?limit=10", ":
 In summary it's: Express get's injected > Choose endpoints called > Picks sub-url*/
 routerApi(app);
 
-app.get("/goodbye", (req: any, res: any) => {
-  res.send("GOODBYE!!");
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  // console.error(err);
+
+  return errors({ res, message: err.message, status: err.statusCode });
 });
 
 export { app };

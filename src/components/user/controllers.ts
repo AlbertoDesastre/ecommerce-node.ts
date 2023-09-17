@@ -129,8 +129,7 @@ const update = (req: Request, res: Response) => {
   if (!username || !email || !password) {
     return errors({
       res,
-      message:
-        "Couldn't perfom this action because not enough data was provided",
+      message: ErrorThrower.CONTROLLER_NOT_ENOUGH_INFO_PROVIDED,
       status: 400,
     });
   }
@@ -156,6 +155,7 @@ const update = (req: Request, res: Response) => {
       return errors({ res, message: err.message, status: 500 });
     });
 };
+
 const eliminate = (req: Request, res: Response) => {
   userService.eliminate();
 };

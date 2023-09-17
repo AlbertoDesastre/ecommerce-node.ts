@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
+
 import { AuthService } from "../../components/auth/services";
-import { errors } from "../../network";
+import { ErrorThrower } from "./types";
 
 class AuthMiddleware {
   private authService = new AuthService();
@@ -11,53 +12,32 @@ class AuthMiddleware {
   async checkToken(req: Request, res: Response, next: NextFunction) {
     try {
       this.validaTokenFormat(req, res);
-
       let token = this.transformToReadableToken(
         req.headers.authorization as string
       );
-
       let decodedToken: any = this.authService.verifyToken(token);
+      let error;
 
       if (!decodedToken) {
-        return errors({
-          res,
-          message: "Invalid token",
-          status: 401,
-        });
+        error = new Error(ErrorThrower.INVALID_TOKEN);
       }
 
       if (decodedToken.id !== req.params.id) {
-        return errors({
-          res,
-          message: "You are not allowed to do this.",
-          status: 403,
-        });
+        error = new Error(ErrorThrower.NOT_ALLOWED);
       }
 
       next();
-    } catch (error) {
-      return errors({
-        res,
-        message: "Internal server error",
-        status: 500,
-      });
+    } catch (err) {
+      next(err);
     }
   }
 
   validaTokenFormat(req: Request, res: Response) {
     let token: string | undefined = req.headers.authorization;
     if (!token) {
-      return errors({
-        res,
-        message: "No token was found",
-        status: 400,
-      });
+      throw new Error(ErrorThrower.TOKEN_NOT_FOUND);
     } else if (!token.startsWith("Bearer ")) {
-      return errors({
-        res,
-        message: "Invalid token format",
-        status: 400,
-      });
+      throw new Error(ErrorThrower.TOKEN_WRONG_FORMAT);
     }
   }
 

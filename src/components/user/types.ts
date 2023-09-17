@@ -7,6 +7,7 @@ enum ErrorThrower {
   CONTROLLER_DONT_PROVIDE_USERNAME_AND_EMAIL = "You can't login without providing an username or email",
   CONTROLLER_ONLY_ONE_PARAMETER_ACCEPTED = "You can only do a login with a username or an email, but not both",
   CONTROLLER_NO_PASSWORD_PASSED = "No password was provided",
+  CONTROLLER_NOT_ENOUGH_INFO_PROVIDED = "Couldn't perfom this action because not enough data was provided",
 }
 
 export { ErrorThrower };

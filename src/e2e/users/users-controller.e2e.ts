@@ -4,7 +4,7 @@ import http from "http";
 
 import { app } from "../../app";
 import * as mysqlStore from "../../store/mysql";
-import { ConnectionMethods } from "../../store/types";
+import { ConnectionMethods, SuccessfulQueryMessage } from "../../store/types";
 
 import * as userController from "../../components/user/controllers";
 import * as userService from "../../components/user/services";
@@ -275,5 +275,65 @@ describe("Test for *USER* --> CONTROLLER", () => {
       expect(typeof token).toBe("string");
       expect(token.length).toBeGreaterThan(10); // Adjust this number if the JWT configuration and .env SECRET requires it
     });
+  });
+
+  describe("test for [UPDATE] (/api/v1/users/:id -- PUT)", () => {
+    // Arrange
+    beforeEach(async () => {});
+    afterEach(async () => {
+      connection.eliminate({ table: "users" });
+    });
+
+    const userGettingUpdated = {
+      username: "paco",
+      email: "paco@mail.com",
+      avatar: "url_fake/e.com",
+      password: null,
+    };
+
+    test("should ", () => {});
+    /* test("should return 400 if no token was provided", async () => {
+      // Arrange
+      await userService.register(userTemplate);
+
+      const userId: any = await connection.personalizedQuery(
+        `SELECT id FROM users WHERE email = '${userTemplate.email}'`
+      );
+
+      // Act
+      return await request(app)
+        .put(`/api/v1/users/update/${userId}`)
+        .set({ Authorization: process.env.EXAMPLE_TOKEN }) // pass empty string as an Authorization
+        .send(userTemplate)
+        .expect(400)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 400,
+            body: ErrorThrower.CONTROLLER_NOT_ENOUGH_INFO_PROVIDED,
+          });
+        });
+    });
+ */
+    /*    test("should return 201 if user is updated successfully", async () => {
+      // Arrange
+      await userService.register(userTemplate);
+      const userId: any = await connection.personalizedQuery(
+        `SELECT id FROM users WHERE email = '${userTemplate.email}'`
+      );
+
+      return await request(app)
+        .put(`/api/v1/users/update/${userId}`) // Replace with an actual user ID
+        .send(userGettingUpdated)
+        .expect(201)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: false,
+            status: 201,
+            message: "Your profile was updated succesfully",
+            body: SuccessfulQueryMessage.ITEM_WAS_UPDATED,
+          });
+        });NNP
+    }); */
   });
 });

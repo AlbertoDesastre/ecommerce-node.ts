@@ -338,6 +338,31 @@ describe("Test for *USER* --> CONTROLLER", () => {
         });
     });
 
+    test("should return 401 if a user tries to update another user", async () => {
+      const desastreUser = {
+        username: "desastre",
+        email: "desastre@mail.com",
+        password: "12345",
+      };
+      await userService.register(desastreUser);
+
+      const desastreToken = await userService.login(desastreUser);
+
+      // Act
+      return await request(app)
+        .put(`/api/v1/users/update/${userId}`) // this is the id from the TemplateUser, not Desastre's User
+        .set({ Authorization: `Bearer ${desastreToken}` })
+        .send(desastreUser)
+        .expect(500)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 500,
+            body: AuthErrorThrower.NOT_ALLOWED,
+          });
+        });
+    });
+
     test("should return 201 if user is updated successfully", async () => {
       return await request(app)
         .put(`/api/v1/users/update/${userId}`)

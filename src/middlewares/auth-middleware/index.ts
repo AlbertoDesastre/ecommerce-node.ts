@@ -24,8 +24,7 @@ class AuthMiddleware {
       }
 
       if (decodedToken.id !== req.params.id) {
-        error = new Error(ErrorThrower.NOT_ALLOWED);
-        error.statusCode = 401;
+        throw new Error(ErrorThrower.NOT_ALLOWED);
       }
 
       next();

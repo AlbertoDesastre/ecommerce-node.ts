@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 
 import * as userService from "./services";
 import { AuthService } from "../auth/services";
@@ -122,7 +122,7 @@ const login = (req: Request, res: Response) => {
     });
 };
 
-const update = (req: Request, res: Response) => {
+const update = (req: Request, res: Response, next: NextFunction) => {
   const { username, email, password, avatar } = req.body;
   const { id } = req.params;
 

@@ -10,6 +10,7 @@ import * as userController from "../../components/user/controllers";
 import * as userService from "../../components/user/services";
 import { BasicUser } from "../../components/user/models";
 import { ErrorThrower } from "../../components/user/types";
+import { ErrorThrower as AuthErrorThrower } from "../../middlewares/auth-middleware/types";
 
 describe("Test for *USER* --> CONTROLLER", () => {
   let expressApp: Express;
@@ -278,52 +279,69 @@ describe("Test for *USER* --> CONTROLLER", () => {
   });
 
   describe("test for [UPDATE] (/api/v1/users/:id -- PUT)", () => {
-    // Arrange
-    beforeEach(async () => {});
-    afterEach(async () => {
-      connection.eliminate({ table: "users" });
-    });
+    let user;
+    let token: string;
+    let userIdInArray: any;
+    let userId: string;
 
     const userGettingUpdated = {
       username: "paco",
       email: "paco@mail.com",
       avatar: "url_fake/e.com",
-      password: null,
+      password: "54321",
     };
 
-    test("should ", () => {});
-    /* test("should return 400 if no token was provided", async () => {
-      // Arrange
-      await userService.register(userTemplate);
+    // Arrange
+    beforeEach(async () => {
+      user = await userService.register(userTemplate);
+      token = await userService.login(userTemplate);
 
-      const userId: any = await connection.personalizedQuery(
+      userIdInArray = await connection.personalizedQuery(
         `SELECT id FROM users WHERE email = '${userTemplate.email}'`
       );
+      userId = userIdInArray[0].id;
+    });
 
+    afterEach(async () => {
+      connection.eliminate({ table: "users" });
+    });
+
+    test("should return 400 if no token was provided", async () => {
       // Act
       return await request(app)
         .put(`/api/v1/users/update/${userId}`)
-        .set({ Authorization: process.env.EXAMPLE_TOKEN }) // pass empty string as an Authorization
+        .set({ Authorization: "" }) // pass empty string as an Authorization
         .send(userTemplate)
         .expect(400)
         .then((res) => {
           expect(JSON.parse(res.text)).toEqual({
             error: true,
             status: 400,
-            body: ErrorThrower.CONTROLLER_NOT_ENOUGH_INFO_PROVIDED,
+            body: AuthErrorThrower.TOKEN_NOT_FOUND,
           });
         });
     });
- */
-    /*    test("should return 201 if user is updated successfully", async () => {
-      // Arrange
-      await userService.register(userTemplate);
-      const userId: any = await connection.personalizedQuery(
-        `SELECT id FROM users WHERE email = '${userTemplate.email}'`
-      );
 
+    test("should return 400 if token was provided with wrong format", async () => {
+      // Act
       return await request(app)
-        .put(`/api/v1/users/update/${userId}`) // Replace with an actual user ID
+        .put(`/api/v1/users/update/${userId}`)
+        .set({ Authorization: `GWBIOG ${token}` })
+        .send(userTemplate)
+        .expect(400)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 400,
+            body: AuthErrorThrower.TOKEN_WRONG_FORMAT,
+          });
+        });
+    });
+
+    test("should return 201 if user is updated successfully", async () => {
+      return await request(app)
+        .put(`/api/v1/users/update/${userId}`)
+        .set({ Authorization: `Bearer ${token}` })
         .send(userGettingUpdated)
         .expect(201)
         .then((res) => {
@@ -333,7 +351,7 @@ describe("Test for *USER* --> CONTROLLER", () => {
             message: "Your profile was updated succesfully",
             body: SuccessfulQueryMessage.ITEM_WAS_UPDATED,
           });
-        });NNP
-    }); */
+        });
+    });
   });
 });

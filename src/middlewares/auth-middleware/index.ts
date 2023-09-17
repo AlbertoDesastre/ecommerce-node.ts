@@ -11,7 +11,7 @@ class AuthMiddleware {
 
   async checkToken(req: Request, res: Response, next: NextFunction) {
     try {
-      this.validaTokenFormat(req, res);
+      this.validaTokenFormat(req, res, next);
       let token = this.transformToReadableToken(
         req.headers.authorization as string
       );
@@ -34,12 +34,18 @@ class AuthMiddleware {
     }
   }
 
-  validaTokenFormat(req: Request, res: Response) {
+  validaTokenFormat(req: Request, res: Response, next: NextFunction) {
     let token: string | undefined = req.headers.authorization;
+    let error: any;
+
     if (!token) {
-      throw new Error(ErrorThrower.TOKEN_NOT_FOUND);
+      error = new Error(ErrorThrower.TOKEN_NOT_FOUND);
+      error.statusCode = 400;
+      next(error);
     } else if (!token.startsWith("Bearer ")) {
-      throw new Error(ErrorThrower.TOKEN_WRONG_FORMAT);
+      error = new Error(ErrorThrower.TOKEN_WRONG_FORMAT);
+      error.statusCode = 400;
+      next(error);
     }
   }
 

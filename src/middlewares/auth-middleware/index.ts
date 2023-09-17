@@ -16,14 +16,16 @@ class AuthMiddleware {
         req.headers.authorization as string
       );
       let decodedToken: any = this.authService.verifyToken(token);
-      let error;
+      let error: any;
 
       if (!decodedToken) {
         error = new Error(ErrorThrower.INVALID_TOKEN);
+        error.statusCode = 400;
       }
 
       if (decodedToken.id !== req.params.id) {
         error = new Error(ErrorThrower.NOT_ALLOWED);
+        error.statusCode = 401;
       }
 
       next();

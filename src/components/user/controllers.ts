@@ -157,7 +157,23 @@ const update = (req: Request, res: Response, next: NextFunction) => {
 };
 
 const eliminate = (req: Request, res: Response) => {
-  userService.eliminate();
+  const { id } = req.params;
+
+  userService
+    .eliminate({
+      id,
+    })
+    .then((result) => {
+      return success({
+        res,
+        message: "All the data related to your profile was deleted",
+        data: SuccessfulQueryMessage.ALL_INFO_WAS_DELETE,
+        status: 200,
+      });
+    })
+    .catch((err) => {
+      return errors({ res, message: err.message, status: 500 });
+    });
 };
 
 export { get, register, login, update, eliminate };

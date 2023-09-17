@@ -338,7 +338,7 @@ describe("Test for *USER* --> CONTROLLER", () => {
         });
     });
 
-    test("should return 401 if a user tries to update another user", async () => {
+    test("should return 500 if a user tries to update another user", async () => {
       const desastreUser = {
         username: "desastre",
         email: "desastre@mail.com",
@@ -375,6 +375,40 @@ describe("Test for *USER* --> CONTROLLER", () => {
             status: 201,
             message: "Your profile was updated succesfully",
             body: SuccessfulQueryMessage.ITEM_WAS_UPDATED,
+          });
+        });
+    });
+  });
+
+  describe("test for [DELETE] (/api/v1/users/:id -- PUT)", () => {
+    test("should return 200 if user information it's deleted", async () => {
+      // pending to create orders and order items for this user to delete all info
+      // also pending to manage cases where user doesn't have any orders yet and those deletions have to be omiited
+
+      const desastreUser = {
+        username: "desastre",
+        email: "desastre@mail.com",
+        password: "12345",
+      };
+      await userService.register(desastreUser);
+      const desastreToken = await userService.login(desastreUser);
+
+      const desastreIdInArray: any = await connection.personalizedQuery(
+        `SELECT id FROM users WHERE email = '${desastreUser.email}'`
+      );
+
+      const desastreId = desastreIdInArray[0];
+
+      return await request(app)
+        .put(`/api/v1/users/update/${desastreIdInArray}`)
+        .set({ Authorization: `Bearer ${desastreToken}` })
+        .expect(200)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: false,
+            status: 200,
+            message: "Your profile was updated succesfully",
+            body: SuccessfulQueryMessage.ALL_INFO_WAS_DELETE,
           });
         });
     });

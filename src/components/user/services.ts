@@ -110,6 +110,15 @@ const update = async ({ id, username, email, password, avatar }: User) => {
   return result;
 };
 
-const eliminate = () => {};
+const eliminate = async ({ id }: { id: string }) => {
+  console.log(id);
+  await connection.personalizedQuery(
+    `DELETE FROM order_items WHERE order_id IN (SELECT id FROM orders WHERE user_id = "${id}")`
+  );
+  await connection.personalizedQuery(
+    `DELETE FROM orders WHERE user_id = "${id}"`
+  );
+  await connection.eliminate({ table: "users", id });
+};
 
 export { get, register, login, update, eliminate };

@@ -66,6 +66,7 @@ enum ErrorThrower {
 enum SuccessfulQueryMessage {
   ITEM_WAS_UPDATED = "The item you wanted to update was indeed updated.",
   ITEM_WERE_CREATED = "Every item/s provided were created.",
+  ALL_INFO_WAS_DELETE = "All information was deleted",
 }
 
 type RowDataPacketName = "RowDataPacket";

@@ -270,7 +270,7 @@ function handleConnection(): ConnectionMethods {
         });
       } else {
         pool.query(
-          `DELETE FROM ${table} WHERE id = ${id}`,
+          `DELETE FROM ${table} WHERE id = ${addExtraQuotesToId ? id : 'id'}`,
           (err: MysqlError | null, data: MysqlQueryResult) => {
             if (err) return reject(err);
 

@@ -38,6 +38,7 @@ interface GetOneParams extends Params {
 /* type DeleteParams = Pick<UpdateParams, "table" | "id">; */
 interface DeleteParams extends Params {
   id?: string;
+  addExtraQuotesToId?: boolean;
 }
 
 interface ToggleItemStatus extends Params {
@@ -107,7 +108,11 @@ type ConnectionMethods = {
     boolean,
     id,
   }: ToggleItemStatus) => Promise<MysqlQueryResult | MysqlError>;
-  eliminate: ({ table, id }: DeleteParams) => Promise<MysqlQueryResult>;
+  eliminate: ({
+    table,
+    id,
+    addExtraQuotesToId,
+  }: DeleteParams) => Promise<MysqlQueryResult>;
   personalizedQuery: (query: string) => Promise<Object[] | MysqlError>;
   closeConnection: () => void;
 };

@@ -10,6 +10,10 @@ router.get("/get/:id", UserController.get);
 router.post("/register", UserController.register);
 router.post("/login", UserController.login);
 router.put("/update/:id", authMiddleware.checkToken, UserController.update);
-router.delete("/delete/:id", UserController.eliminate);
+router.delete(
+  "/delete/:id",
+  authMiddleware.checkToken,
+  UserController.eliminate
+);
 
 export { router };

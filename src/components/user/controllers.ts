@@ -166,7 +166,7 @@ const eliminate = (req: Request, res: Response) => {
     .then((result) => {
       return success({
         res,
-        message: "All the data related to your profile was deleted",
+        message: "User deleted",
         data: SuccessfulQueryMessage.ALL_INFO_WAS_DELETE,
         status: 200,
       });

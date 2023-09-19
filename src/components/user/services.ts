@@ -5,7 +5,10 @@ import { handleConnection } from "../../store/mysql";
 import { BasicUser, User, TableColumns } from "./models";
 import { AuthService } from "../auth/services";
 import { ErrorThrower } from "./types";
-import { ErrorThrower as MysqlErrorThrower } from "../../store/types";
+import {
+  ErrorThrower as MysqlErrorThrower,
+  SuccessfulQueryMessage,
+} from "../../store/types";
 
 const authService = new AuthService();
 const connection = handleConnection();
@@ -111,14 +114,19 @@ const update = async ({ id, username, email, password, avatar }: User) => {
 };
 
 const eliminate = async ({ id }: { id: string }) => {
-  console.log(id);
-  await connection.personalizedQuery(
-    `DELETE FROM order_items WHERE order_id IN (SELECT id FROM orders WHERE user_id = "${id}")`
-  );
-  await connection.personalizedQuery(
-    `DELETE FROM orders WHERE user_id = "${id}"`
-  );
-  await connection.eliminate({ table: "users", id });
+  // pending to add here the methods to delete orders + order items, coming from their respective services
+
+  const result = await connection.eliminate({
+    table: "users",
+    id,
+    addExtraQuotesToId: true,
+  });
+
+  if (result instanceof Error) {
+    throw new Error(result.message);
+  }
+
+  return SuccessfulQueryMessage.ALL_INFO_WAS_DELETE;
 };
 
 export { get, register, login, update, eliminate };

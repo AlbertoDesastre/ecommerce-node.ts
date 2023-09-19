@@ -260,7 +260,11 @@ function handleConnection(): ConnectionMethods {
     });
   }
 
-  function eliminate({ table, id }: DeleteParams): Promise<MysqlQueryResult> {
+  function eliminate({
+    table,
+    id,
+    addExtraQuotesToId,
+  }: DeleteParams): Promise<MysqlQueryResult> {
     return new Promise((resolve, reject) => {
       if (id === undefined) {
         pool.query(`DELETE FROM ${table}`, (err, data) => {
@@ -269,9 +273,13 @@ function handleConnection(): ConnectionMethods {
           resolve(data);
         });
       } else {
+        if (addExtraQuotesToId) {
+          id = "'" + id + "'";
+        }
         pool.query(
-          `DELETE FROM ${table} WHERE id = ${addExtraQuotesToId ? id : 'id'}`,
+          `DELETE FROM ${table} WHERE id = ${id}`,
           (err: MysqlError | null, data: MysqlQueryResult) => {
+            console.log(`DELETE FROM ${table} WHERE id = ${id}`);
             if (err) return reject(err);
 
             resolve(data);

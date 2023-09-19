@@ -254,7 +254,7 @@ describe("Test for *USER* --> CONTROLLER", () => {
     test("should return a token if user exists and password matchs", async () => {
       // Act
 
-      /* token format --> "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IktGWUMyTkJDSjFSZ0xlSDRDZm5FciIsInVzZXJuYW1lIjoiYWxiZXJ0aXRvTyIsInBhc3N3b3JkIjoiMTIzNDU2IiwiaWF0IjoxNjk0ODc4NTI0fQ.Q1NLo4y7Jy_03mq5bXKd4bAT3mc9-6tOpF0PLUd31lM" */
+      // token format --> "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IktGWUMyTkJDSjFSZ0xlSDRDZm5FciIsInVzZXJuYW1lIjoiYWxiZXJ0aXRvTyIsInBhc3N3b3JkIjoiMTIzNDU2IiwiaWF0IjoxNjk0ODc4NTI0fQ.Q1NLo4y7Jy_03mq5bXKd4bAT3mc9-6tOpF0PLUd31lM"
       await userService.register(userTemplate);
 
       const response = await request(app)
@@ -397,17 +397,17 @@ describe("Test for *USER* --> CONTROLLER", () => {
         `SELECT id FROM users WHERE email = '${desastreUser.email}'`
       );
 
-      const desastreId = desastreIdInArray[0];
+      const { id } = desastreIdInArray[0];
 
       return await request(app)
-        .put(`/api/v1/users/update/${desastreIdInArray}`)
+        .delete(`/api/v1/users/delete/${id}`)
         .set({ Authorization: `Bearer ${desastreToken}` })
         .expect(200)
         .then((res) => {
           expect(JSON.parse(res.text)).toEqual({
             error: false,
             status: 200,
-            message: "Your profile was updated succesfully",
+            message: "User deleted",
             body: SuccessfulQueryMessage.ALL_INFO_WAS_DELETE,
           });
         });

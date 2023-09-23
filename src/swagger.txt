@@ -25,17 +25,43 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User'
+              $ref: '#/components/schemas/UserRegistrationBody'
+            example:
+              username: "SuperUser"
+              email: "super_user@email.com"
+              password: "123456"
         required: true
       responses:
-        '200':
-          description: Successful operation
+        '201':
+          description: User was created.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
-        '404':
-          description: Bad request
+                $ref: '#/components/schemas/SuccessPostResponse'
+        '400':
+          description: User already exits.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: true
+                status: 400
+                message: "Username, email and password must be provided to register an user"
+          # If I have a very generic response, with a general message, I can directly reference trough "components/responses/", that at the sime time it's referring to an schema. I would just have to add a "description" in the "response" component to provide a little more context and that's it.
+          # $ref: '#/components/responses/InvalidRequestBody'
+        '401':
+          description: User already exits.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: true
+                status: 401
+                message:  "User already exists"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   /api/v1/users/login:
     post:
       tags:
@@ -139,4 +165,97 @@ components:
          type: string
          format: url
          example: "http://to_cool_image.com"
-
+   UserRegistrationBody:
+     type: object
+     properties:
+       username:
+         type: string
+         format: string
+         example: "John Doe"
+       email:
+         type: string
+         format: email
+         example: "John Doe"
+       password:
+         type: string
+         format: string
+         example: "securepassword1234"
+   SuccessResponse:
+      type: object
+      properties:
+        error:
+          type: boolean
+          description: Indicates whether an error occurred or not.
+          example: false
+        status:
+          type: integer
+          description: HTTP status code.
+          example: 200
+        message:
+          type: string
+          description: A message describing the response.
+          example: "This request was successfull, here is some relevant information about this request:"
+        body:
+          type: array
+          description: An array of objects that can vary depending on the specific request. For example, when doing request to getUsers you will receive and object with their email, username and avatar.
+          items:
+            type: object
+   SuccessPostResponse:
+      type: object
+      properties:
+        error:
+          type: boolean
+          description: Indicates whether an error occurred or not.
+          example: false
+        status:
+          type: integer
+          description: HTTP status code.
+          example: 201
+        message:
+          type: string
+          description: A message describing the response.
+          example: "This request was successfull, here is some relevant information about this request:"
+        body:
+          type: array
+          description: An array of objects that can vary depending on the specific request. For example, when doing request to getUsers you will receive and object with their email, username and avatar.
+          items:
+            type: object
+   ErrorResponse:
+     type: object
+     properties:
+       error:
+         type: boolean
+         description: Indicates whether an error occurred or not.
+       status:
+         type: integer
+         description: HTTP status code.
+         example: 500
+       message:
+         type: string
+         description: A message describing what's the cause of the error. It varies a lot depending on the endpoint called and the different bodies provided.
+         example: "Somewthing wrong ocurred, please try again."
+  responses:
+   ResourceCreated:
+     description: "The resource provided on the request was created. (Personalized message depending on endpoint called)"
+     content:
+      application/json:
+       schema:
+        $ref: "#/components/schemas/SuccessResponse"
+   InvalidRequestBody:
+     description: "Something about the request body sent wasn't provided or the properties didn't matcht the types required."
+     content:
+      application/json:
+       schema:
+        $ref: "#/components/schemas/ErrorResponse"
+   ResourceAlreadyExists:
+     description: "The resource you've tried to create (for example, a username with the same email you've provided) already exists and can't be created."
+     content:
+      application/json:
+       schema:
+        $ref: "#/components/schemas/ErrorResponse"
+   InternalServerError:
+     description: "There was an unexpected error during the request and couldn't perform the action."
+     content:
+      application/json:
+       schema:
+        $ref: "#/components/schemas/ErrorResponse"

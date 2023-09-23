@@ -25,24 +25,80 @@
     }
   ],
   "paths": {
-    "/api/v1/users": {
-      "get": {
+    "/api/v1/users/register": {
+      "post": {
+        "tags": ["Users"],
+        "summary": "Creates user with given body info.",
+        "description": "Creates user with given body info.",
+        "operationId": "registerUser",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserRegistrationBody"
+              },
+              "example": {
+                "username": "SuperUser",
+                "email": "super_user@email.com",
+                "password": "123456"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "User was created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessPostResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "User already exits.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": true,
+                  "status": 400,
+                  "message": "Username, email and password must be provided to register an user"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User already exits.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": true,
+                  "status": 401,
+                  "message": "User already exists"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/api/v1/users/login": {
+      "post": {
         "tags": ["Users"],
         "summary": "Get user by ID",
         "description": "Get user information by their ID.",
-        "operationId": "getUser",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ID of the user to retrieve.",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "example": "1"
-          }
-        ],
+        "operationId": "loginUser",
         "responses": {
           "200": {
             "description": "Successful operation",
@@ -58,44 +114,9 @@
             "description": "User not found"
           }
         }
-      },
-      "post": {
-        "tags": ["Users"],
-        "summary": "Create a new user",
-        "description": "Create a new user.",
-        "operationId": "createUser",
-        "requestBody": {
-          "description": "New user details.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/User"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": "User created successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/User"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request"
-          },
-          "500": {
-            "description": "Internal server error"
-          }
-        }
       }
     },
-    "/api/v1/users/{id}": {
+    "/api/v1/users/{userId}": {
       "get": {
         "tags": ["Users"],
         "summary": "Get user by ID",
@@ -103,7 +124,7 @@
         "operationId": "getUser",
         "parameters": [
           {
-            "name": "id",
+            "name": "userId",
             "in": "path",
             "description": "ID of the user to retrieve.",
             "required": true,
@@ -131,14 +152,14 @@
       },
       "put": {
         "tags": ["Users"],
-        "summary": "Update an existing user",
-        "description": "Update an existing user by ID.",
+        "summary": "Get user by ID",
+        "description": "Get user information by their ID.",
         "operationId": "updateUser",
         "parameters": [
           {
-            "name": "id",
+            "name": "userId",
             "in": "path",
-            "description": "ID of the user to update.",
+            "description": "ID of the user to retrieve.",
             "required": true,
             "schema": {
               "type": "string"
@@ -146,17 +167,6 @@
             "example": "1"
           }
         ],
-        "requestBody": {
-          "description": "Updated user details.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/User"
-              }
-            }
-          },
-          "required": true
-        },
         "responses": {
           "200": {
             "description": "Successful operation",
@@ -168,9 +178,6 @@
               }
             }
           },
-          "400": {
-            "description": "Bad request"
-          },
           "404": {
             "description": "User not found"
           }
@@ -178,14 +185,14 @@
       },
       "delete": {
         "tags": ["Users"],
-        "summary": "Delete a user by ID",
-        "description": "Delete a user by their ID.",
+        "summary": "Get user by ID",
+        "description": "Get user information by their ID.",
         "operationId": "deleteUser",
         "parameters": [
           {
-            "name": "id",
+            "name": "userId",
             "in": "path",
-            "description": "ID of the user to delete.",
+            "description": "ID of the user to retrieve.",
             "required": true,
             "schema": {
               "type": "string"
@@ -195,508 +202,17 @@
         ],
         "responses": {
           "200": {
-            "description": "User deleted successfully"
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
           },
           "404": {
             "description": "User not found"
-          }
-        }
-      }
-    },
-    "/api/v1/products": {
-      "get": {
-        "tags": ["Products"],
-        "summary": "Get a list of products",
-        "description": "Get a list of all products.",
-        "operationId": "getProducts",
-        "responses": {
-          "200": {
-            "description": "Successful operation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Product"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": ["Products"],
-        "summary": "Create a new product",
-        "description": "Create a new product.",
-        "operationId": "createProduct",
-        "requestBody": {
-          "description": "New product details.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Product"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": "Product created successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Product"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request"
-          },
-          "500": {
-            "description": "Internal server error"
-          }
-        }
-      }
-    },
-    "/api/v1/products/{id}": {
-      "get": {
-        "tags": ["Products"],
-        "summary": "Get product by ID",
-        "description": "Get product information by its ID.",
-        "operationId": "getProductById",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ID of the product to retrieve.",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "example": "1"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful operation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Product"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Product not found"
-          }
-        }
-      },
-      "put": {
-        "tags": ["Products"],
-        "summary": "Update an existing product",
-        "description": "Update an existing product by ID.",
-        "operationId": "updateProduct",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ID of the product to update.",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "example": "1"
-          }
-        ],
-        "requestBody": {
-          "description": "Updated product details.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Product"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful operation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Product"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request"
-          },
-          "404": {
-            "description": "Product not found"
-          }
-        }
-      },
-      "delete": {
-        "tags": ["Products"],
-        "summary": "Delete a product by ID",
-        "description": "Delete a product by its ID.",
-        "operationId": "deleteProduct",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ID of the product to delete.",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "example": "1"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Product deleted successfully"
-          },
-          "404": {
-            "description": "Product not found"
-          }
-        }
-      }
-    },
-    "/api/v1/categories": {
-      "get": {
-        "tags": ["Categories"],
-        "summary": "Get a list of products",
-        "description": "Get a list of all products.",
-        "operationId": "getProducts",
-        "responses": {
-          "200": {
-            "description": "Successful operation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Product"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": ["Categories"],
-        "summary": "Create a new product",
-        "description": "Create a new product.",
-        "operationId": "createProduct",
-        "requestBody": {
-          "description": "New product details.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Product"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": "Product created successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Product"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request"
-          },
-          "500": {
-            "description": "Internal server error"
-          }
-        }
-      }
-    },
-    "/api/v1/categories/{id}": {
-      "get": {
-        "tags": ["Categories"],
-        "summary": "Get product by ID",
-        "description": "Get product information by its ID.",
-        "operationId": "getProductById",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ID of the product to retrieve.",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "example": "1"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful operation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Product"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Product not found"
-          }
-        }
-      },
-      "put": {
-        "tags": ["Categories"],
-        "summary": "Update an existing product",
-        "description": "Update an existing product by ID.",
-        "operationId": "updateProduct",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ID of the product to update.",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "example": "1"
-          }
-        ],
-        "requestBody": {
-          "description": "Updated product details.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Product"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful operation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Product"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request"
-          },
-          "404": {
-            "description": "Product not found"
-          }
-        }
-      },
-      "delete": {
-        "tags": ["Categories"],
-        "summary": "Delete a product by ID",
-        "description": "Delete a product by its ID.",
-        "operationId": "deleteProduct",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ID of the product to delete.",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "example": "1"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Product deleted successfully"
-          },
-          "404": {
-            "description": "Product not found"
-          }
-        }
-      }
-    },
-    "/api/v1/orders": {
-      "get": {
-        "tags": ["Orders"],
-        "summary": "Get a list of products",
-        "description": "Get a list of all products.",
-        "operationId": "getProducts",
-        "responses": {
-          "200": {
-            "description": "Successful operation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Product"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": ["Orders"],
-        "summary": "Create a new product",
-        "description": "Create a new product.",
-        "operationId": "createProduct",
-        "requestBody": {
-          "description": "New product details.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Product"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": "Product created successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Product"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request"
-          },
-          "500": {
-            "description": "Internal server error"
-          }
-        }
-      }
-    },
-    "/api/v1/orders/{id}": {
-      "get": {
-        "tags": ["Orders"],
-        "summary": "Get product by ID",
-        "description": "Get product information by its ID.",
-        "operationId": "getProductById",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ID of the product to retrieve.",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "example": "1"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful operation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Product"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Product not found"
-          }
-        }
-      },
-      "put": {
-        "tags": ["Orders"],
-        "summary": "Update an existing product",
-        "description": "Update an existing product by ID.",
-        "operationId": "updateProduct",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ID of the product to update.",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "example": "1"
-          }
-        ],
-        "requestBody": {
-          "description": "Updated product details.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Product"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful operation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Product"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request"
-          },
-          "404": {
-            "description": "Product not found"
-          }
-        }
-      },
-      "delete": {
-        "tags": ["Orders"],
-        "summary": "Delete a product by ID",
-        "description": "Delete a product by its ID.",
-        "operationId": "deleteProduct",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ID of the product to delete.",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "example": "1"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Product deleted successfully"
-          },
-          "404": {
-            "description": "Product not found"
           }
         }
       }
@@ -707,160 +223,154 @@
       "User": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "string",
-            "example": "1"
-          },
           "username": {
             "type": "string",
-            "example": "theUser"
-          },
-          "firstName": {
-            "type": "string",
-            "example": "John"
-          },
-          "lastName": {
-            "type": "string",
-            "example": "James"
+            "format": "string",
+            "example": "John Doe"
           },
           "email": {
             "type": "string",
-            "example": "john@email.com"
+            "format": "email",
+            "example": "John Doe"
+          },
+          "avatar": {
+            "type": "string",
+            "format": "url",
+            "example": "http://to_cool_image.com"
+          }
+        }
+      },
+      "UserRegistrationBody": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "format": "string",
+            "example": "John Doe"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "John Doe"
           },
           "password": {
             "type": "string",
-            "example": "12345"
-          },
-          "phone": {
-            "type": "string",
-            "example": "12345"
-          },
-          "userStatus": {
-            "type": "integer",
-            "description": "User Status",
-            "format": "int32",
-            "example": 1
+            "format": "string",
+            "example": "securepassword1234"
           }
         }
       },
-      "Product": {
+      "SuccessResponse": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "string",
-            "example": "1"
-          },
-          "name": {
-            "type": "string",
-            "example": "Sample Product"
-          },
-          "description": {
-            "type": "string",
-            "example": "This is a sample product description."
-          },
-          "price": {
-            "type": "number",
-            "format": "float",
-            "example": 19.99
-          },
-          "quantity": {
-            "type": "integer",
-            "format": "int32",
-            "example": 10
-          },
-          "active": {
+          "error": {
             "type": "boolean",
-            "example": true
+            "description": "Indicates whether an error occurred or not.",
+            "example": false
           },
-          "created_at": {
+          "status": {
+            "type": "integer",
+            "description": "HTTP status code.",
+            "example": 200
+          },
+          "message": {
             "type": "string",
-            "format": "date-time",
-            "example": "2023-09-09T12:00:00Z"
+            "description": "A message describing the response.",
+            "example": "This request was successfull, here is some relevant information about this request:"
+          },
+          "body": {
+            "type": "array",
+            "description": "An array of objects that can vary depending on the specific request. For example, when doing request to getUsers you will receive and object with their email, username and avatar.",
+            "items": {
+              "type": "object"
+            }
           }
         }
       },
-      "Category": {
+      "SuccessPostResponse": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "string",
-            "example": "1"
-          },
-          "name": {
-            "type": "string",
-            "example": "Sample Product"
-          },
-          "description": {
-            "type": "string",
-            "example": "This is a sample product description."
-          },
-          "price": {
-            "type": "number",
-            "format": "float",
-            "example": 19.99
-          },
-          "quantity": {
-            "type": "integer",
-            "format": "int32",
-            "example": 10
-          },
-          "active": {
+          "error": {
             "type": "boolean",
-            "example": true
+            "description": "Indicates whether an error occurred or not.",
+            "example": false
           },
-          "created_at": {
+          "status": {
+            "type": "integer",
+            "description": "HTTP status code.",
+            "example": 201
+          },
+          "message": {
             "type": "string",
-            "format": "date-time",
-            "example": "2023-09-09T12:00:00Z"
+            "description": "A message describing the response.",
+            "example": "This request was successfull, here is some relevant information about this request:"
+          },
+          "body": {
+            "type": "array",
+            "description": "An array of objects that can vary depending on the specific request. For example, when doing request to getUsers you will receive and object with their email, username and avatar.",
+            "items": {
+              "type": "object"
+            }
           }
         }
       },
-      "Order": {
+      "ErrorResponse": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "string",
-            "example": "1"
-          },
-          "name": {
-            "type": "string",
-            "example": "Sample Product"
-          },
-          "description": {
-            "type": "string",
-            "example": "This is a sample product description."
-          },
-          "price": {
-            "type": "number",
-            "format": "float",
-            "example": 19.99
-          },
-          "quantity": {
-            "type": "integer",
-            "format": "int32",
-            "example": 10
-          },
-          "active": {
+          "error": {
             "type": "boolean",
-            "example": true
+            "description": "Indicates whether an error occurred or not."
           },
-          "created_at": {
+          "status": {
+            "type": "integer",
+            "description": "HTTP status code.",
+            "example": 500
+          },
+          "message": {
             "type": "string",
-            "format": "date-time",
-            "example": "2023-09-09T12:00:00Z"
+            "description": "A message describing what's the cause of the error. It varies a lot depending on the endpoint called and the different bodies provided.",
+            "example": "Somewthing wrong ocurred, please try again."
           }
         }
       }
     },
-    "securitySchemes": {
-      "petstore_auth": {
-        "type": "oauth2",
-        "flows": {
-          "implicit": {
-            "authorizationUrl": "https://petstore3.swagger.io/oauth/authorize",
-            "scopes": {
-              "write:pets": "modify pets in your account",
-              "read:pets": "read your pets"
+    "responses": {
+      "ResourceCreated": {
+        "description": "The resource provided on the request was created. (Personalized message depending on endpoint called)",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/SuccessResponse"
+            }
+          }
+        }
+      },
+      "InvalidRequestBody": {
+        "description": "Something about the request body sent wasn't provided or the properties didn't matcht the types required.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "ResourceAlreadyExists": {
+        "description": "The resource you've tried to create (for example, a username with the same email you've provided) already exists and can't be created.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "InternalServerError": {
+        "description": "There was an unexpected error during the request and couldn't perform the action.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
             }
           }
         }

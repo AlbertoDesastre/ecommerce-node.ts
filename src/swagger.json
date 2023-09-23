@@ -96,22 +96,113 @@
     "/api/v1/users/login": {
       "post": {
         "tags": ["Users"],
-        "summary": "Get user by ID",
-        "description": "Get user information by their ID.",
+        "summary": "Receive JWT Token after successfull login.",
+        "description": "Receive JWT Token after successfull login.",
         "operationId": "loginUser",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserRegistrationBody"
+              },
+              "example": {
+                "username": "SuperUser",
+                "email": "super_user@email.com",
+                "password": "123456"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
-            "description": "Successful operation",
+            "description": "User logged in.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/User"
+                  "$ref": "#/components/schemas/SuccessResponseWithStringBody"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Multiple reasons for a bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequest"
+                },
+                "examples": {
+                  "BadRequest_1": {
+                    "summary": "Username or email not provided.",
+                    "value": {
+                      "error": true,
+                      "status": 400,
+                      "message": "You can't login without providing an username or email"
+                    }
+                  },
+                  "BadRequest_2": {
+                    "summary": "Too many attributes.",
+                    "value": {
+                      "error": true,
+                      "status": 400,
+                      "message": "You can only do a login with a username or an email, but not both"
+                    }
+                  },
+                  "BadRequest_3": {
+                    "summary": "Password not provided.",
+                    "value": {
+                      "error": true,
+                      "status": 400,
+                      "message": "No password was provided"
+                    }
+                  }
                 }
               }
             }
           },
           "404": {
-            "description": "User not found"
+            "description": "User not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": true,
+                  "status": 404,
+                  "message": "This user doesn't exists."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/responses/InternalServerError"
+                },
+                "examples": {
+                  "PasswordDontMatch": {
+                    "summary": "Password do not match.",
+                    "value": {
+                      "error": true,
+                      "status": 500,
+                      "message": "Password do not match"
+                    }
+                  },
+                  "InternalError": {
+                    "summary": "Internal server error.",
+                    "value": {
+                      "error": true,
+                      "status": 500,
+                      "message": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -287,6 +378,31 @@
           }
         }
       },
+      "SuccessResponseWithStringBody": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "boolean",
+            "description": "Indicates whether an error occurred or not.",
+            "example": false
+          },
+          "status": {
+            "type": "integer",
+            "description": "HTTP status code.",
+            "example": 200
+          },
+          "message": {
+            "type": "string",
+            "description": "A message describing the response.",
+            "example": "This request was successfull, here is some relevant information about this request:"
+          },
+          "body": {
+            "type": "string",
+            "description": "A message about the operation or a token, in case of loggin an user.",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+          }
+        }
+      },
       "SuccessPostResponse": {
         "type": "object",
         "properties": {
@@ -319,7 +435,8 @@
         "properties": {
           "error": {
             "type": "boolean",
-            "description": "Indicates whether an error occurred or not."
+            "description": "Indicates whether an error occurred or not.",
+            "example": true
           },
           "status": {
             "type": "integer",
@@ -330,6 +447,26 @@
             "type": "string",
             "description": "A message describing what's the cause of the error. It varies a lot depending on the endpoint called and the different bodies provided.",
             "example": "Somewthing wrong ocurred, please try again."
+          }
+        }
+      },
+      "BadRequest": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "boolean",
+            "description": "Indicates whether an error occurred or not.",
+            "example": true
+          },
+          "status": {
+            "type": "integer",
+            "description": "HTTP status code.",
+            "example": 400
+          },
+          "message": {
+            "type": "string",
+            "description": "request.body didn't meet the criteriah for this endpoint.",
+            "example": "The attributes you must passed are X and Y and must have these types..."
           }
         }
       }

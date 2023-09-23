@@ -106,7 +106,7 @@ const login = (req: Request, res: Response) => {
         res,
         message: "Logged in successfully",
         data: token,
-        status: 201,
+        status: 200,
       });
     })
     .catch((err) => {

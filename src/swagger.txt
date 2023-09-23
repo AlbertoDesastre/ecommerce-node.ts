@@ -50,7 +50,7 @@ paths:
                 message: "Username, email and password must be provided to register an user"
           # If I have a very generic response, with a general message, I can directly reference trough "components/responses/", that at the sime time it's referring to an schema. I would just have to add a "description" in the "response" component to provide a little more context and that's it.
           # $ref: '#/components/responses/InvalidRequestBody'
-        '401':
+        '409':
           description: User already exits.
           content:
             application/json:
@@ -58,7 +58,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
                 error: true
-                status: 401
+                status: 409
                 message:  "User already exists"
         '500':
           $ref: '#/components/responses/InternalServerError'
@@ -154,7 +154,7 @@ paths:
           required: true
           schema:
             type: string
-          example: "1"
+          example: "1nt3io20_3"
       responses:
         '200':
           description: Successful operation
@@ -163,12 +163,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
         '404':
-          description: User not found
+          description: User not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundResponse'
     put:
       tags:
         - Users
-      summary: Get user by ID
-      description: Get user information by their ID.
+      summary: Update user providing and ID and a token.
+      security:
+        - bearerAuth: []
+      description: Update the user information, if that user is yours.
       operationId: updateUser
       parameters:
         - name: userId
@@ -184,19 +190,55 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
-        '404':
-          description: User not found
+                $ref: '#/components/schemas/SuccessResponseWithStringBody'
+              example:
+                error: false
+                status: 201
+                message: "Your profile was updated succesfully"
+                body: "The item you wanted to update was indeed updated."
+        '401':
+          description: Various errors might ocurr regarding authentication.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotAuthorized"
+        '500':
+          description: Various errors might ocurr.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/responses/InternalServerError"
+              examples:
+                InternalError_1:
+                  summary: User getting updated doesn't exists.
+                  value:
+                    error: true
+                    status: 500
+                    message: "The user you are trying to update doesn't exists"
+                InternalError_2:
+                  summary: User credentials don't match token info.
+                  value:
+                    error: true
+                    status: 500
+                    message: "You are not allowed to do this."
+                BadRequest_3:
+                  summary: Internal server error.
+                  value:
+                    error: true
+                    status: 500
+                    message: "Internal server error"
     delete:
       tags:
         - Users
-      summary: Get user by ID
-      description: Get user information by their ID.
+      summary: Delete user by ID
+      security:
+        - bearerAuth: []
+      description: Deleted user information based on ID provided.
       operationId: deleteUser
       parameters:
         - name: userId
           in: path
-          description: ID of the user to retrieve.
+          description: ID of the user to delete.
           required: true
           schema:
             type: string
@@ -207,9 +249,43 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/SuccessResponseWithStringBody'
+              example:
+                error: false
+                status: 201
+                message: "Your profile was deleted succesfully"
+                body: "All information was deleted"
         '404':
           description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundResponse'
+        '500':
+          description: Various errors might ocurr.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/responses/InternalServerError"
+              examples:
+                InternalError_1:
+                  summary: User getting updated doesn't exists.
+                  value:
+                    error: true
+                    status: 500
+                    message: "The user you are trying to update doesn't exists"
+                InternalError_2:
+                  summary: User credentials don't match token info.
+                  value:
+                    error: true
+                    status: 500
+                    message: "You are not allowed to do this."
+                BadRequest_3:
+                  summary: Internal server error.
+                  value:
+                    error: true
+                    status: 500
+                    message: "Internal server error"
 components:
   schemas:
    User:
@@ -331,9 +407,45 @@ components:
            type: string
            description: request.body didn't meet the criteriah for this endpoint.
            example: "The attributes you must passed are X and Y and must have these types..."
+   NotFoundResponse:
+       type: object
+       properties:
+         error:
+           type: boolean
+           description: Indicates whether an error occurred or not.
+           example: true
+         status:
+           type: integer
+           description: HTTP status code.
+           example: 404
+         message:
+           type: string
+           description: The resource you were searching for wasn't found.
+           example: "The resource X wasn't found or doesn't exists."
+   NotAuthorized:
+       type: object
+       properties:
+         error:
+           type: boolean
+           description: Indicates whether an error occurred or not.
+           example: true
+         status:
+           type: integer
+           description: HTTP status code.
+           example: 401
+         message:
+           type: string
+           description: You are not allowed to do this. Reasons may vary, such as invalid token, no token provided, credentials not matching with the token info, etc...
+           example: "This token or authorization was invalid."
   responses:
    ResourceCreated:
      description: The resource provided on the request was created. (Personalized message depending on endpoint called)
+     content:
+      application/json:
+       schema:
+        $ref: "#/components/schemas/SuccessResponse"
+   ResourceUpdated:
+     description: The resource provided on the request was updated.
      content:
       application/json:
        schema:
@@ -356,3 +468,8 @@ components:
       application/json:
        schema:
         $ref: "#/components/schemas/ErrorResponse"
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

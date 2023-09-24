@@ -127,11 +127,15 @@ class ProductController {
           res,
           message: "The product was updated",
           data: result,
-          status: 201,
+          status: 200,
         });
       })
       .catch((err: Error) => {
-        return errors({ res, message: err.message, status: 500 });
+        let statusCode = 500;
+        if (err.message === ErrorThrower.PRODUCT_NOT_FOUND) {
+          statusCode = 404;
+        }
+        return errors({ res, message: err.message, status: statusCode });
       });
   }
 

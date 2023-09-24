@@ -600,7 +600,7 @@
             }
           },
           "400": {
-            "description": "User already exits.",
+            "description": "request.body it's missing.",
             "content": {
               "application/json": {
                 "schema": {
@@ -611,6 +611,82 @@
           },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "put": {
+        "tags": ["Products"],
+        "summary": "Updates a single product based on it's id.",
+        "description": "Any attribute of the product can be updated.",
+        "operationId": "updateProduct",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ProductWithId"
+                },
+                "minItems": 1
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Product/s was updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/responses/ResourceUpdated"
+                },
+                "example": {
+                  "error": false,
+                  "status": 200,
+                  "message": "The product was updated",
+                  "body": "The item you wanted to update was indeed updated."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product was not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Various errors might ocurr.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/responses/InternalServerError"
+                },
+                "examples": {
+                  "InternalError_1": {
+                    "summary": "The product you tried to deactivate was already inactive and no update was made.",
+                    "value": {
+                      "error": true,
+                      "status": 500,
+                      "message": "No update was made to the product because it has the same state."
+                    }
+                  },
+                  "BadRequest_2": {
+                    "summary": "Internal server error.",
+                    "value": {
+                      "error": true,
+                      "status": 500,
+                      "message": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -989,6 +1065,51 @@
       "Product": {
         "type": "object",
         "properties": {
+          "category_id": {
+            "type": "integer",
+            "description": "The ID of the product's category.",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the product.",
+            "example": "iPhone 13 Pro"
+          },
+          "color": {
+            "type": "string",
+            "description": "The color of the product.",
+            "example": "Space Black"
+          },
+          "description": {
+            "type": "string",
+            "description": "A description of the product.",
+            "example": "The latest flagship smartphone from Apple."
+          },
+          "price": {
+            "type": "number",
+            "description": "The price of the product.",
+            "example": 127
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "The quantity of the product available.",
+            "example": 50
+          },
+          "image": {
+            "type": "string",
+            "description": "The URL of the product's image.",
+            "example": ""
+          }
+        }
+      },
+      "ProductWithId": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Product's ID.",
+            "example": 1
+          },
           "category_id": {
             "type": "integer",
             "description": "The ID of the product's category.",

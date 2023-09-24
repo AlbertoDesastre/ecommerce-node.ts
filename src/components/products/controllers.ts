@@ -34,7 +34,7 @@ class ProductController {
         });
       })
       .catch((err) => {
-        return res.status(500).json(err);
+        return errors({ res, message: err.message, status: 500 });
       });
   }
 
@@ -54,7 +54,7 @@ class ProductController {
       .catch((err: Error) => {
         let statusCode = 500;
         if (err.message === ErrorThrower.PRODUCT_NOT_FOUND) {
-          statusCode = 401;
+          statusCode = 404;
         }
         return errors({ res, message: err.message, status: statusCode });
       });
@@ -77,7 +77,7 @@ class ProductController {
       .catch((err: Error) => {
         let statusCode = 500;
         if (err.message === ErrorThrower.PRODUCT_NOT_FOUND) {
-          statusCode = 401;
+          statusCode = 404;
         }
         return errors({ res, message: err.message, status: statusCode });
       });
@@ -145,11 +145,15 @@ class ProductController {
           res,
           message: "Product deactivated",
           data: result,
-          status: 201,
+          status: 200,
         });
       })
       .catch((err: Error) => {
-        return errors({ res, message: err.message, status: 500 });
+        let statusCode = 500;
+        if (err.message === ErrorThrower.PRODUCT_NOT_FOUND) {
+          statusCode = 404;
+        }
+        return errors({ res, message: err.message, status: statusCode });
       });
   }
 }

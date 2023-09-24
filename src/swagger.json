@@ -13,15 +13,19 @@
   "tags": [
     {
       "name": "Users",
-      "description": "Everything about users.",
-      "externalDocs": {
-        "description": "Find out more",
-        "url": "http://swagger.io"
-      }
+      "description": "Everything about users."
     },
     {
       "name": "Products",
       "description": "Everything about products."
+    },
+    {
+      "name": "Category (of Products)",
+      "description": "Everything about product's categories."
+    },
+    {
+      "name": "Orders",
+      "description": "Everything about orders."
     }
   ],
   "paths": {
@@ -422,6 +426,522 @@
           }
         }
       }
+    },
+    "/api/v1/products/": {
+      "get": {
+        "tags": ["Products"],
+        "summary": "Get a personalized amount list of products.",
+        "description": "Get a personalized amount list of products.",
+        "operationId": "listProduct",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of products you want to receive in a request. If no limit is present by default it will return 15 products.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "example": 10
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Number of products you want to skip at the beginning of the list. If no offset it's provided the default value is 0.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "example": 5
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                },
+                "examples": {
+                  "Example_1": {
+                    "summary": "Limit = 3 and offset = 0.",
+                    "value": {
+                      "error": false,
+                      "status": 200,
+                      "message": "This product is available",
+                      "body": [
+                        {
+                          "category_id": 1,
+                          "name": "Product A",
+                          "color": "Red",
+                          "description": "Description of Product A",
+                          "price": 50,
+                          "quantity": 10,
+                          "image": "image_A.jpg"
+                        },
+                        {
+                          "category_id": 2,
+                          "name": "Product B",
+                          "color": "Blue",
+                          "description": "Description of Product B",
+                          "price": 60,
+                          "quantity": 5,
+                          "image": "image_B.jpg"
+                        },
+                        {
+                          "category_id": 3,
+                          "name": "Product C",
+                          "color": "Green",
+                          "description": "Description of Product C",
+                          "price": 70,
+                          "quantity": 20,
+                          "image": "image_C.jpg"
+                        }
+                      ]
+                    }
+                  },
+                  "Example_2": {
+                    "summary": "Limit = 3 and offset = 2.",
+                    "value": {
+                      "error": false,
+                      "status": 200,
+                      "message": "This product is available",
+                      "body": [
+                        {
+                          "category_id": 3,
+                          "name": "Product C",
+                          "color": "Green",
+                          "description": "Description of Product C",
+                          "price": 70,
+                          "quantity": 20,
+                          "image": "image_C.jpg"
+                        },
+                        {
+                          "category_id": 4,
+                          "name": "Product D",
+                          "color": "Yellow",
+                          "description": "Description of Product D",
+                          "price": 80,
+                          "quantity": 15,
+                          "image": "image_D.jpg"
+                        },
+                        {
+                          "category_id": 5,
+                          "name": "Product E",
+                          "color": "Purple",
+                          "description": "Description of Product E",
+                          "price": 90,
+                          "quantity": 25,
+                          "image": "image_E.jpg"
+                        }
+                      ]
+                    }
+                  },
+                  "Example_3": {
+                    "summary": "No limit or offset provided (15 products in ascending order by product's ID).",
+                    "value": {
+                      "error": false,
+                      "status": 200,
+                      "message": "This product is available",
+                      "body": []
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Products"],
+        "summary": "Creates a single or multiple products, or an array of products with given body info.",
+        "description": "Creates a product with given body info. Notice that the category of the product must exists prior to creating the product. Also, the product or products must be contained inside an array.",
+        "operationId": "createProduct",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Product"
+                },
+                "minItems": 1
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Product/s was created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessPostResponse"
+                },
+                "example": {
+                  "error": false,
+                  "status": 201,
+                  "message": "All product/s created",
+                  "body": "Every item/s provided were created."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "User already exits.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequest"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/api/v1/products/filter": {
+      "get": {
+        "tags": ["Products"],
+        "summary": "Get a list of products that meet the name, color or price provided in query params.",
+        "description": "Get a list of products that meet the name, color or price provided in query params.",
+        "operationId": "filterProduct",
+        "parameters": [
+          {
+            "name": "price",
+            "in": "query",
+            "description": "This will send you the products that have this price or lower.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1640
+          },
+          {
+            "name": "color",
+            "in": "query",
+            "description": "Products with certain colour will appear.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "black"
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "description": "Products containing this as part of it's name will be shown.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "example": "samsung"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                },
+                "examples": {
+                  "Example_by_price": {
+                    "summary": "Products with price equal to 60 or lower.",
+                    "value": {
+                      "error": false,
+                      "status": 200,
+                      "message": "Products available within the specified price range.",
+                      "body": [
+                        {
+                          "category_id": 1,
+                          "name": "Smartphone X",
+                          "color": "Black",
+                          "description": "A high-quality smartphone.",
+                          "price": 50,
+                          "quantity": 10,
+                          "image": "smartphone_x.jpg"
+                        },
+                        {
+                          "category_id": 2,
+                          "name": "Tablet Y",
+                          "color": "Blue",
+                          "description": "A versatile tablet.",
+                          "price": 60,
+                          "quantity": 5,
+                          "image": "tablet_y.jpg"
+                        }
+                      ]
+                    }
+                  },
+                  "Example_by_color": {
+                    "summary": "Products with color black.",
+                    "value": {
+                      "error": false,
+                      "status": 200,
+                      "message": "Products available in black color.",
+                      "body": [
+                        {
+                          "category_id": 1,
+                          "name": "Laptop Z",
+                          "color": "Black",
+                          "description": "A powerful black laptop.",
+                          "price": 43,
+                          "quantity": 10,
+                          "image": "laptop_z.jpg"
+                        },
+                        {
+                          "category_id": 2,
+                          "name": "Headphones A",
+                          "color": "Space Black",
+                          "description": "Premium headphones in space black.",
+                          "price": 200,
+                          "quantity": 5,
+                          "image": "headphones_a.jpg"
+                        }
+                      ]
+                    }
+                  },
+                  "Example_by_name": {
+                    "summary": "Products with names like 'samsung' in query parameters.",
+                    "value": {
+                      "error": false,
+                      "status": 200,
+                      "message": "Products with names containing 'samsung' are available.",
+                      "body": [
+                        {
+                          "category_id": 1,
+                          "name": "Samsung Galaxy S21",
+                          "color": "Black",
+                          "description": "The latest Samsung smartphone.",
+                          "price": 599,
+                          "quantity": 10,
+                          "image": "samsung_galaxy_s21.jpg"
+                        },
+                        {
+                          "category_id": 2,
+                          "name": "Samsung Galaxy Tab S7",
+                          "color": "Silver",
+                          "description": "A premium Samsung tablet.",
+                          "price": 499,
+                          "quantity": 15,
+                          "image": "samsung_galaxy_tab_s7.jpg"
+                        }
+                      ]
+                    }
+                  },
+                  "Example_by_multiple_criteria": {
+                    "summary": "Products meeting multiple criteria.",
+                    "value": {
+                      "error": false,
+                      "status": 200,
+                      "message": "Example of successful response 5",
+                      "body": [
+                        {
+                          "category_id": 1,
+                          "name": "Samsung Galaxy S21",
+                          "color": "Black",
+                          "description": "Description of Samsung Galaxy S21",
+                          "price": 599,
+                          "quantity": 10,
+                          "image": "samsung_galaxy_s21.jpg"
+                        },
+                        {
+                          "category_id": 2,
+                          "name": "Samsung 4K QLED TV",
+                          "color": "Black",
+                          "description": "Description of Samsung 4K QLED TV",
+                          "price": 899,
+                          "quantity": 5,
+                          "image": "samsung_4k_qled_tv.jpg"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/products/{productId}": {
+      "get": {
+        "tags": ["Products"],
+        "summary": "Get product by ID",
+        "description": "Get product information by their ID.",
+        "operationId": "getProduct",
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "description": "ID of the product to retrieve.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "1nt3io20_3"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                },
+                "example": {
+                  "error": false,
+                  "status": 200,
+                  "message": "This product is available",
+                  "body": [
+                    {
+                      "category_id": 1,
+                      "name": "Smartphone X",
+                      "color": "Black",
+                      "description": "A high-quality smartphone.",
+                      "price": 50,
+                      "quantity": 10,
+                      "image": "smartphone_x.jpg"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Products"],
+        "summary": "Deactivates a product so it can't be bought, by it's product ID (note that the product itself won't be deleted).",
+        "description": "Deactivates a product so it can't be bought, by it's product ID (note that the product itself won't be deleted).",
+        "operationId": "deactivateProduct",
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "description": "ID of the product to deactivate.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "1"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponseWithStringBody"
+                },
+                "example": {
+                  "error": false,
+                  "status": 200,
+                  "message": "Product deactivated",
+                  "body": "The item you wanted to update was indeed updated."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product was not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Various errors might ocurr.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/responses/InternalServerError"
+                },
+                "examples": {
+                  "InternalError_1": {
+                    "summary": "The product you tried to deactivate was already inactive and no update was made.",
+                    "value": {
+                      "error": true,
+                      "status": 500,
+                      "message": "No update was made to the product because it has the same state."
+                    }
+                  },
+                  "BadRequest_2": {
+                    "summary": "Internal server error.",
+                    "value": {
+                      "error": true,
+                      "status": 500,
+                      "message": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -463,6 +983,46 @@
             "type": "string",
             "format": "string",
             "example": "securepassword1234"
+          }
+        }
+      },
+      "Product": {
+        "type": "object",
+        "properties": {
+          "category_id": {
+            "type": "integer",
+            "description": "The ID of the product's category.",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the product.",
+            "example": "iPhone 13 Pro"
+          },
+          "color": {
+            "type": "string",
+            "description": "The color of the product.",
+            "example": "Space Black"
+          },
+          "description": {
+            "type": "string",
+            "description": "A description of the product.",
+            "example": "The latest flagship smartphone from Apple."
+          },
+          "price": {
+            "type": "number",
+            "description": "The price of the product.",
+            "example": 127
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "The quantity of the product available.",
+            "example": 50
+          },
+          "image": {
+            "type": "string",
+            "description": "The URL of the product's image.",
+            "example": ""
           }
         }
       },

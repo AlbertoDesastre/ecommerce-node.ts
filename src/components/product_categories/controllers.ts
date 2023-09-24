@@ -49,7 +49,7 @@ class CategoryController {
           res,
           message: "Category/ies available...",
           data: result,
-          status: 201,
+          status: 200,
         });
       })
       .catch((err: Error) => {
@@ -119,7 +119,7 @@ class CategoryController {
           res,
           message: "The category was updated",
           data: result,
-          status: 201,
+          status: 200,
         });
       })
       .catch((err: Error) => {
@@ -136,8 +136,8 @@ class CategoryController {
         return success({
           res,
           message: "Category deactivated",
-          data: result.message,
-          status: 201,
+          data: result,
+          status: 200,
         });
       })
       .catch((err: Error) => {

@@ -20,12 +20,12 @@
       "description": "Everything about products."
     },
     {
-      "name": "Category (of Products)",
-      "description": "Everything about product's categories."
-    },
-    {
       "name": "Orders",
       "description": "Everything about orders."
+    },
+    {
+      "name": "Category (of Products)",
+      "description": "Everything about product's categories."
     }
   ],
   "paths": {
@@ -855,7 +855,7 @@
             }
           },
           "404": {
-            "description": "User not found.",
+            "description": "Product not found.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1004,7 +1004,511 @@
                       "message": "No update was made to the product because it has the same state."
                     }
                   },
-                  "BadRequest_2": {
+                  "InternalError_2": {
+                    "summary": "Internal server error.",
+                    "value": {
+                      "error": true,
+                      "status": 500,
+                      "message": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/categories/": {
+      "get": {
+        "tags": ["Categories"],
+        "summary": "Get a personalized amount list of categories.",
+        "description": "Get a personalized amount list of categories.",
+        "operationId": "listCategory",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of categories you want to receive in a request. If no limit is present by default it will return 15 categories.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "example": 10
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Number of categories you want to skip at the beginning of the list. If no offset it's provided the default value is 0.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "example": 5
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                },
+                "examples": {
+                  "Example_1": {
+                    "summary": "Limit = 3 and offset = 0.",
+                    "value": {
+                      "error": false,
+                      "status": 200,
+                      "message": "This is the list of categories",
+                      "body": [
+                        {
+                          "id": 1,
+                          "name": "Smartphones",
+                          "description": "Mobile devices with advanced features.",
+                          "active": 1,
+                          "created_at": "2023-09-24T16:45:30.000Z"
+                        },
+                        {
+                          "id": 2,
+                          "name": "Laptops",
+                          "description": "Portable computers for work and entertainment.",
+                          "active": 1,
+                          "created_at": "2023-09-24T16:45:30.000Z"
+                        },
+                        {
+                          "id": 3,
+                          "name": "Gaming Consoles",
+                          "description": "Devices for playing video games.",
+                          "active": 1,
+                          "created_at": "2023-09-24T16:45:30.000Z"
+                        }
+                      ]
+                    }
+                  },
+                  "Example_2": {
+                    "summary": "Limit = 3 and offset = 2.",
+                    "value": {
+                      "error": false,
+                      "status": 200,
+                      "message": "This is the list of categories",
+                      "body": [
+                        {
+                          "id": 3,
+                          "name": "Gaming Consoles",
+                          "description": "Devices for playing video games.",
+                          "active": 1,
+                          "created_at": "2023-09-24T16:45:30.000Z"
+                        },
+                        {
+                          "id": 4,
+                          "name": "TVs",
+                          "description": "Televisions for immersive entertainment.",
+                          "active": 1,
+                          "created_at": "2023-09-24T16:45:30.000Z"
+                        },
+                        {
+                          "id": 5,
+                          "name": "Cameras",
+                          "description": "Devices for capturing photos and videos.",
+                          "active": 1,
+                          "created_at": "2023-09-24T16:45:30.000Z"
+                        }
+                      ]
+                    }
+                  },
+                  "Example_3": {
+                    "summary": "No limit or offset provided (15 products in ascending order by product's ID).",
+                    "value": {
+                      "error": false,
+                      "status": 200,
+                      "message": "This is the list of categories",
+                      "body": []
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Categories"],
+        "summary": "Creates a single or multiple categories with given body info.",
+        "description": "Creates category/s with given body info. The category or categories must be contained inside an array.",
+        "operationId": "createCategory",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ProductCategory"
+                },
+                "minItems": 1
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Category/s was created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessPostResponse"
+                },
+                "example": {
+                  "error": false,
+                  "status": 201,
+                  "message": "All product/s created",
+                  "body": "Every item/s provided were created."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "request.body it's missing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequest"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "put": {
+        "tags": ["Categories"],
+        "summary": "Updates a single product based on it's id.",
+        "description": "Any attribute of the category can be updated.",
+        "operationId": "updateCategorie",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductCategory"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Category/s was updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/responses/ResourceUpdated"
+                },
+                "example": {
+                  "error": false,
+                  "status": 200,
+                  "message": "The category was updated",
+                  "body": "The item you wanted to update was indeed updated."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequest"
+                },
+                "example": {
+                  "error": false,
+                  "status": 400,
+                  "message": "You didn't provide a body"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Category was not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Various errors might ocurr.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/responses/InternalServerError"
+                },
+                "examples": {
+                  "InternalError_1": {
+                    "summary": "The category doesn't exists.",
+                    "value": {
+                      "error": true,
+                      "status": 500,
+                      "message": "The category you are searching for doesn't exists."
+                    }
+                  },
+                  "InternalError_2": {
+                    "summary": "No update was made.",
+                    "value": {
+                      "error": true,
+                      "status": 500,
+                      "message": "No update was made to the category because it has the same state."
+                    }
+                  },
+                  "InternalError_3": {
+                    "summary": "Internal server error.",
+                    "value": {
+                      "error": true,
+                      "status": 500,
+                      "message": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/categories/filter": {
+      "get": {
+        "tags": ["Categories"],
+        "summary": "Get a list of categories that meet the name provided in query params.",
+        "description": "Get a list of categories that meet the name provided in query params.",
+        "operationId": "filterCategory",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "This will send you the categories that have name.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "laptop"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                },
+                "examples": {
+                  "Example_by_name": {
+                    "summary": "Categories with name like \"Smartphones\".",
+                    "value": {
+                      "error": false,
+                      "status": 200,
+                      "message": "Category/ies available...",
+                      "body": [
+                        {
+                          "id": 1,
+                          "name": "Smartphones",
+                          "description": "Mobile devices with advanced features.",
+                          "active": 1,
+                          "created_at": "2023-09-24T10:57:28.000Z"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequest"
+                },
+                "example": {
+                  "error": true,
+                  "status": 400,
+                  "message": "Name of the category must be provided in order to filter"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Category not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/categories/{categoryId}": {
+      "get": {
+        "tags": ["Categories"],
+        "summary": "Get category by ID",
+        "description": "Get category information by their ID.",
+        "operationId": "getCategories",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "in": "path",
+            "description": "ID of the category to retrieve.",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductCategory"
+                },
+                "example": {
+                  "error": false,
+                  "status": 200,
+                  "message": "This category is available",
+                  "body": [
+                    {
+                      "id": 2,
+                      "name": "Laptops",
+                      "description": "Portable computers for work and entertainment.",
+                      "created_at": "2023-09-24T10:57:28.000Z"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Category not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Categories"],
+        "summary": "Deactivates a category by it's category ID (note that the category itself won't be deleted).",
+        "description": "Deactivates a category by it's category ID (note that the category itself won't be deleted).",
+        "operationId": "deactivateCategory",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "in": "path",
+            "description": "ID of the product to deactivate.",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponseWithStringBody"
+                },
+                "example": {
+                  "error": false,
+                  "status": 200,
+                  "message": "Category deactivated",
+                  "body": "Category deactivated"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product was not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Various errors might ocurr.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/responses/InternalServerError"
+                },
+                "examples": {
+                  "InternalError_1": {
+                    "summary": "The product you tried to deactivate was already inactive and no update was made.",
+                    "value": {
+                      "error": true,
+                      "status": 500,
+                      "message": "No update was made to the product because it has the same state."
+                    }
+                  },
+                  "InternalError_2": {
+                    "summary": "Category doesn't exists.",
+                    "value": {
+                      "error": true,
+                      "status": 500,
+                      "message": "The category you are searching for doesn't exists."
+                    }
+                  },
+                  "InternalError_3": {
                     "summary": "Internal server error.",
                     "value": {
                       "error": true,
@@ -1915,6 +2419,28 @@
               "delivered"
             ],
             "example": "received"
+          }
+        }
+      },
+      "ProductCategory": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "Smartphones"
+          },
+          "description": {
+            "type": "string",
+            "example": "Mobile devices with advanced features."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2023-09-24T10:57:28.000Z"
           }
         }
       },

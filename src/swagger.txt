@@ -475,8 +475,6 @@ paths:
                     error: true
                     status: 500
                     message: "Internal server error"
-
-   # añadir aqui método put
   /api/v1/products/filter:
     get:
       tags:
@@ -668,8 +666,8 @@ paths:
           description: ID of the product to deactivate.
           required: true
           schema:
-            type: string
-          example: "1"
+            type: integer
+          example: 1
       responses:
         '200':
           description: Successful operation
@@ -708,6 +706,426 @@ paths:
                     status: 500
                     message: "Internal server error"
   # ORDERS
+  /api/v1/orders/{orderId}:
+    get:
+      tags:
+        - Orders
+      summary: Get order by ID
+      description: Get order information by their ID.
+      operationId: getOrder
+      parameters:
+        - name: orderId
+          in: path
+          description: ID of the order to retrieve.
+          required: true
+          schema:
+            type: integer
+          example: 1
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+              example:
+               error: false
+               status: 200
+               message: "This order is available"
+               body:
+                - id: 1
+                  user_id: "abcd"
+                  total_amount:  2499.97
+                  status: "received"
+                  modified_at: "2023-05-03T22:00:00.000Z"
+                  created_at: "2023-05-03T22:00:00.000Z"
+        '404':
+          description: User not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/orders/:
+    get:
+      tags:
+        - Orders
+      summary: Get a personalized amount list of products.
+      description: Get a personalized amount list of products.
+      operationId: listOrders
+      parameters:
+        - name: userId
+          in: query
+          description: Retrieves every order a specific consumer has.
+          required: false
+          schema:
+            type: string
+          example: "fsib&31_2A"
+      responses:
+        '200':
+          description: Provides all the orders this user has, and every product (or "OrderItem") included in each order.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              example:
+                error: false
+                status: 200
+                message: "Succesfull call, here are the results."
+                body:
+                  - id: 3
+                    user_id: "abcde"
+                    total_amount: 799.98
+                    status: "preparing"
+                    created_at: "Sun, 24 Sep 2023 10:57:28 GMT"
+                    products:
+                      - order_item_id: 5
+                        name: "Samsung QLED 4K TV"
+                        color: "Titan Gray"
+                        quantity: 1
+                        subtotal: 1299.99
+                      - order_item_id: 6
+                        name: "Canon EOS R5"
+                        color: "Black"
+                        quantity: 1
+                        subtotal: 249.99
+                  - id: 4
+                    user_id: "abcde"
+                    total_amount: 849.98
+                    status: "shipping"
+                    created_at: "Sun, 24 Sep 2023 10:57:28 GMT"
+                    products:
+                      - order_item_id: 7
+                        name: "Apple MacBook Air"
+                        color: "Silver"
+                        quantity: 1
+                        subtotal: 999.99
+                      - order_item_id: 8
+                        name: "Sony WH-1000XM4"
+                        color: "Silver"
+                        quantity: 1
+                        subtotal: 99.99
+        '404':
+          description: User's orders weren't found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+        - Orders
+      summary: Creates a single order multiple products.
+      description: Creates a single order multiple products. Notice that the total_amount of the order has to be calculated on the client side, adding up all the individual cost of all the products contained in the order.
+      requestBody:
+        content:
+          application/json:
+            schema:
+             type: array
+             items:
+              $ref: '#/components/schemas/OrderCreationModel'
+             minItems: 1
+            example:
+                user_id: "wbwei231A"
+                total_amount: 3000
+                products:
+                  - order_item_id: 1
+                    product_id: 1
+                    quantity: 1
+                    subtotal: 1000
+                  - order_item_id: 2
+                    product_id: 2
+                    quantity: 1
+                    subtotal: 1500
+                  - order_item_id: 3
+                    product_id: 3
+                    quantity: 1
+                    subtotal: 500
+        required: true
+      responses:
+        '201':
+          description: Order was created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessPostResponse'
+              example:
+               error: false
+               status: 201
+               message: "Order created"
+               body: "All order's items were assigned to order ${orderId}"
+        '400':
+          description: request.body it's missing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+              examples:
+                BadRequest_1:
+                  summary: user_id wasn't provided
+                  value:
+                    error: true
+                    status: 400
+                    message: "An user id and the total amount of the order is needed to create it."
+                BadRequest_2:
+                  summary: No product associated to order.
+                  value:
+                    error: true
+                    status: 400
+                    message: "There must be at least one product to create an order."
+                BadRequest_3:
+                  summary: user_id wasn't provided
+                  value:
+                    error: true
+                    status: 400
+                    message: "The 'order_id' property must exist and  be null."
+                BadRequest_4:
+                  summary: No product associated to order.
+                  value:
+                    error: true
+                    status: 400
+                    message: "There must be at least one product to create an order."
+        '500':
+          description: request.body it's missing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/InternalServerError'
+              examples:
+                InternalError_1:
+                  summary: User doesn't exists.
+                  value:
+                    error: true
+                    status: 500
+                    message: "You can't create an order to an user that doesn't exists."
+                InternalError_2:
+                  summary: Order couldn't be created.
+                  value:
+                    error: true
+                    status: 500
+                    message: "Failed to create the order."
+                InternalError_3:
+                  summary: Order items couldn't be created.
+                  value:
+                    error: true
+                    status: 500
+                    message:  "Something wrong ocurred when creating the order's item/s."
+    put:
+      tags:
+        - Orders
+      summary: Updates an order status.
+      description: Updates an order status. The only thing that can be updated from orders are their status.
+      operationId: updateOrder
+      requestBody:
+        content:
+          application/json:
+            schema:
+             $ref: "#/components/schemas/OrderStatusChange"
+        required: true
+      responses:
+        '200':
+          description: Product/s was updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/ResourceUpdated'
+              example:
+                error: false
+                status: 200
+                message: "The product was updated"
+                body: "The item you wanted to update was indeed updated."
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+              examples:
+               BadRequest_1:
+                summary: Not enough data provided.
+                value:
+                  error: true
+                  status: 400
+                  message: "You didn't provide enough data to update the order"
+               BadRequest_2:
+                summary: Status provided it's incorrect.
+                value:
+                  error: true
+                  status: 400
+                  message: "Invalid order status"
+        '404':
+          description: Order was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundResponse'
+        '500':
+          description: Various errors might ocurr.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/responses/InternalServerError"
+              examples:
+                InternalError_1:
+                  summary: Order doesn't exist.
+                  value:
+                    error: true
+                    status: 500
+                    message: "No order was found"
+                BadRequest_2:
+                  summary: Internal server error.
+                  value:
+                    error: true
+                    status: 500
+                    message: "Internal server error"
+  /api/v1/orders/filter:
+    get:
+      tags:
+        - Orders
+      summary: Get a list of products that meet the name, color or price provided in query params.
+      description: Get a list of products that meet the name, color or price provided in query params.
+      operationId: filterOrders
+      parameters:
+        - name: productName
+          in: query
+          description: This will send you the orders that contain this product's name.
+          required: true
+          schema:
+            type: integer
+          example: 'Samsung'
+        - name: itemCreatedAt
+          in: query
+          description: Orders than contain a product created in a specific date will be shown. The format required is 'YYYY-MM-DD'
+          required: false
+          schema:
+            type: string
+          example: "2023-05-05"
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderWithProducts'
+              examples:
+                Example_by_name:
+                  summary: Products with name like Samsung.
+                  value:
+                    error: false
+                    status: 200
+                    message: "Order/s available..."
+                    body:
+                      - id: 6
+                        user_id: "abcdf"
+                        total_amount: 599.99
+                        status: "payment_pending"
+                        created_at: "Sun, 24 Sep 2023 10:57:28 GMT"
+                        products:
+                          - order_item_id: 12
+                            name: "Samsung Galaxy Watch 4"
+                            color: "Phantom Black"
+                            quantity: 1
+                            subtotal: 299.99
+                      - id: 2
+                        user_id: "abcd"
+                        total_amount: 2499.97
+                        status: "received"
+                        created_at: "Sun, 24 Sep 2023 10:57:28 GMT"
+                        products:
+                          - order_item_id: 3
+                            name: "Samsung Galaxy S21 Ultra"
+                            color: "Phantom Black"
+                            quantity: 1
+                            subtotal: 1199.99
+                Example_by_itemCreationDate:
+                  summary: Order item's created on a specific date.
+                  value:
+                    error: false
+                    status: 200
+                    message: "Order/s available..."
+                    body:
+                      - id: 3
+                        user_id: "abcde"
+                        total_amount: 799.98
+                        status: "preparing"
+                        created_at: "Sun, 24 Sep 2023 10:57:28 GMT"
+                        products:
+                          - order_item_id: 5
+                            name: "Samsung QLED 4K TV"
+                            color: "Titan Gray"
+                            quantity: 1
+                            subtotal: 1299.99
+                Example_by_multiple_criteria:
+                  summary: Products meeting multiple criteria.
+                  value:
+                    error: false
+                    status: 200
+                    message: "Order/s available..."
+                    body:
+                      - id: 6
+                        user_id: "abcdf"
+                        total_amount: 599.99
+                        status: "payment_pending"
+                        created_at: "Sun, 24 Sep 2023 10:57:28 GMT"
+                        products:
+                          - order_item_id: 12
+                            name: "Samsung Galaxy Watch 4"
+                            color: "Phantom Black"
+                            quantity: 1
+                            subtotal: 299.99
+                      - id: 3
+                        user_id: "abcde"
+                        total_amount: 799.98
+                        status: "preparing"
+                        created_at: "Sun, 24 Sep 2023 10:57:28 GMT"
+                        products:
+                          - order_item_id: 5
+                            name: "Samsung QLED 4K TV"
+                            color: "Titan Gray"
+                            quantity: 1
+                            subtotal: 1299.99
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                Example_missing_properties:
+                  summary: Missing 'productName' and 'itemCreatedAt' properties in query params.
+                  value:
+                    error: true
+                    status: 400
+                    message: "You must provide either 'productName' or 'itemCreatedAt' properties in query params to perform this action."
+
+                Example_invalid_date_format:
+                  summary: Invalid date format in 'itemCreatedAt' query param.
+                  value:
+                    error: true
+                    status: 400
+                    message: "Invalid date format. Please use the format 'YYYY-MM-DD'."
+        '404':
+          description: There are no orders with the name or creation date specified.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 components:
   schemas:
    User:
@@ -806,6 +1224,119 @@ components:
           type: string
           description: The URL of the product's image.
           example: ""
+   Order:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        user_id:
+          type: string
+          example: "abcd"
+        total_amount:
+          type: number
+          example: 3199.97
+        status:
+          type: string
+          enum:
+           - 'payment_pending'
+           - 'received'
+           - 'preparing'
+           - 'shipping'
+           - 'delivered'
+           - 'cancelled'
+        modified_at:
+          type: string
+          format: date-time
+          example: "2023-04-30T22:00:00.000Z"
+        created_at:
+          type: string
+          format: date-time
+          example: "2023-09-24T10:57:28.000Z"
+   OrderItem:
+      type: object
+      properties:
+        order_item_id:
+          type: integer
+        name:
+          type: string
+        color:
+          type: string
+        quantity:
+          type: integer
+        subtotal:
+          type: number
+   OrderWithProducts:
+        type: object
+        properties:
+          id:
+            type: integer
+            example: 1
+          user_id:
+            type: string
+            example: "abcd"
+          total_amount:
+            type: number
+            example: 3199.97
+          status:
+            type: string
+            enum:
+             - 'payment_pending'
+             - 'received'
+             - 'preparing'
+             - 'shipping'
+             - 'delivered'
+          created_at:
+            type: string
+            format: date-time
+            example: "Sun, 24 Sep 2023 10:57:28 GMT"
+          products:
+            type: array
+            items:
+              $ref: '#/components/schemas/OrderItem'
+   OrderItemCreationModel:
+      type: object
+      properties:
+        order_id:
+          type: integer
+          example: 1
+        product_id:
+          type: integer
+          example: 1
+        quantity:
+          type: integer
+          example: 1
+        subtotal:
+          type: number
+          example: 3000
+   OrderCreationModel:
+        type: object
+        properties:
+          user_id:
+            type: string
+            example: "wbwei231A"
+          total_amount:
+            type: integer
+            example: 3000
+          products:
+            type: array
+            items:
+             $ref: '#/components/schemas/OrderItemCreationModel'
+   OrderStatusChange:
+        type: object
+        properties:
+          order_id:
+            type: string
+            example: 3
+          status:
+            type: string
+            enum:
+             - 'payment_pending'
+             - 'received'
+             - 'preparing'
+             - 'shipping'
+             - 'delivered'
+            example: 'received'
    SuccessResponse:
       type: object
       properties:

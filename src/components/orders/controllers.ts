@@ -97,7 +97,7 @@ class OrderController {
       .catch((err: MysqlError) => {
         let statusCode;
         if (err.message === ErrorThrower.ORDER_NOT_FOUND) {
-          statusCode = 400;
+          statusCode = 404;
         } else {
           statusCode = 500;
         }

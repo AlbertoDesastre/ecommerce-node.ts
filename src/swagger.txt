@@ -1,0 +1,873 @@
+openapi: 3.0.3
+info:
+  title: My API Documentation
+  description: My API description goes here.
+  version: 1.0.0
+servers:
+  - url: https://localhost
+tags:
+  - name: Users
+    description: Everything about users.
+  - name: Products
+    description: Everything about products.
+  - name: Category (of Products)
+    description: Everything about product's categories.
+  - name: Orders
+    description: Everything about orders.
+paths:
+  /api/v1/users/register:
+    post:
+      tags:
+        - Users
+      summary: Creates user with given body info.
+      description: Creates user with given body info.
+      operationId: registerUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationBody'
+            example:
+              username: "SuperUser"
+              email: "super_user@email.com"
+              password: "123456"
+        required: true
+      responses:
+        '201':
+          description: User was created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessPostResponse'
+        '400':
+          description: User already exits.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: true
+                status: 400
+                message: "Username, email and password must be provided to register an user"
+          # If I have a very generic response, with a general message, I can directly reference trough "components/responses/", that at the sime time it's referring to an schema. I would just have to add a "description" in the "response" component to provide a little more context and that's it.
+          # $ref: '#/components/responses/InvalidRequestBody'
+        '409':
+          description: User already exits.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: true
+                status: 409
+                message:  "User already exists"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/users/login:
+    post:
+      tags:
+        - Users
+      summary: Receive JWT Token after successfull login.
+      description: Receive JWT Token after successfull login.
+      operationId: loginUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationBody'
+            example:
+              username: "SuperUser"
+              email: "super_user@email.com"
+              password: "123456"
+        required: true
+      responses:
+        '200':
+          description: User logged in.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponseWithStringBody'
+        '400':
+         description: Multiple reasons for a bad request.
+         content:
+          application/json:
+            schema:
+               $ref: '#/components/schemas/BadRequest'
+            examples:
+              BadRequest_1:
+                summary: Username or email not provided.
+                value:
+                  error: true
+                  status: 400
+                  message: "You can't login without providing an username or email"
+              BadRequest_2:
+                summary: Too many attributes.
+                value:
+                  error: true
+                  status: 400
+                  message: "You can only do a login with a username or an email, but not both"
+              BadRequest_3:
+                summary: Password not provided.
+                value:
+                  error: true
+                  status: 400
+                  message: "No password was provided"
+        '404':
+         description: User not found.
+         content:
+          application/json:
+            schema:
+               $ref: '#/components/schemas/ErrorResponse'
+            example:
+              error: true
+              status: 404
+              message: "This user doesn't exists."
+        '500':
+         description: Unexpected error.
+         content:
+          application/json:
+            schema:
+               $ref: '#/components/responses/InternalServerError'
+            examples:
+              PasswordDontMatch:
+                summary: Password do not match.
+                value:
+                  error: true
+                  status: 500
+                  message:  "Password do not match"
+              InternalError:
+                summary: Internal server error.
+                value:
+                  error: true
+                  status: 500
+                  message:  "Internal server error"
+  /api/v1/users/{userId}:
+    get:
+      tags:
+        - Users
+      summary: Get user by ID
+      description: Get user information by their ID.
+      operationId: getUser
+      parameters:
+        - name: userId
+          in: path
+          description: ID of the user to retrieve.
+          required: true
+          schema:
+            type: string
+          example: "1nt3io20_3"
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundResponse'
+    put:
+      tags:
+        - Users
+      summary: Update user providing and ID and a token.
+      security:
+        - bearerAuth: []
+      description: Update the user information, if that user is yours.
+      operationId: updateUser
+      parameters:
+        - name: userId
+          in: path
+          description: ID of the user to retrieve.
+          required: true
+          schema:
+            type: string
+          example: "1"
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponseWithStringBody'
+              example:
+                error: false
+                status: 201
+                message: "Your profile was updated succesfully"
+                body: "The item you wanted to update was indeed updated."
+        '401':
+          description: Various errors might ocurr regarding authentication.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotAuthorized"
+        '500':
+          description: Various errors might ocurr.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/responses/InternalServerError"
+              examples:
+                InternalError_1:
+                  summary: User getting updated doesn't exists.
+                  value:
+                    error: true
+                    status: 500
+                    message: "The user you are trying to update doesn't exists"
+                InternalError_2:
+                  summary: User credentials don't match token info.
+                  value:
+                    error: true
+                    status: 500
+                    message: "You are not allowed to do this."
+                BadRequest_3:
+                  summary: Internal server error.
+                  value:
+                    error: true
+                    status: 500
+                    message: "Internal server error"
+    delete:
+      tags:
+        - Users
+      summary: Delete user by ID
+      security:
+        - bearerAuth: []
+      description: Deleted user information based on ID provided.
+      operationId: deleteUser
+      parameters:
+        - name: userId
+          in: path
+          description: ID of the user to delete.
+          required: true
+          schema:
+            type: string
+          example: "1"
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponseWithStringBody'
+              example:
+                error: false
+                status: 201
+                message: "Your profile was deleted succesfully"
+                body: "All information was deleted"
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundResponse'
+        '500':
+          description: Various errors might ocurr.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/responses/InternalServerError"
+              examples:
+                InternalError_1:
+                  summary: User getting updated doesn't exists.
+                  value:
+                    error: true
+                    status: 500
+                    message: "The user you are trying to update doesn't exists"
+                InternalError_2:
+                  summary: User credentials don't match token info.
+                  value:
+                    error: true
+                    status: 500
+                    message: "You are not allowed to do this."
+                BadRequest_3:
+                  summary: Internal server error.
+                  value:
+                    error: true
+                    status: 500
+                    message: "Internal server error"
+  # AQUI EMPIEZA PRODUCTS
+  /api/v1/products/:
+    get:
+      tags:
+        - Products
+      summary: Get a personalized amount list of products.
+      description: Get a personalized amount list of products.
+      operationId: listProduct
+      parameters:
+        - name: limit
+          in: query
+          description: Number of products you want to receive in a request. If no limit is present by default it will return 15 products.
+          required: false
+          schema:
+            type: integer
+          example: 10
+        - name: offset
+          in: query
+          description: Number of products you want to skip at the beginning of the list. If no offset it's provided the default value is 0.
+          required: false
+          schema:
+            type: integer
+          example: 5
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              examples:
+                Example_1:
+                  summary: Limit = 3 and offset = 0.
+                  value:
+                    error: false
+                    status: 200
+                    message: "This product is available"
+                    body:
+                      - category_id: 1
+                        name: "Product A"
+                        color: "Red"
+                        description: "Description of Product A"
+                        price: 50
+                        quantity: 10
+                        image: "image_A.jpg"
+                      - category_id: 2
+                        name: "Product B"
+                        color: "Blue"
+                        description: "Description of Product B"
+                        price: 60
+                        quantity: 5
+                        image: "image_B.jpg"
+                      - category_id: 3
+                        name: "Product C"
+                        color: "Green"
+                        description: "Description of Product C"
+                        price: 70
+                        quantity: 20
+                        image: "image_C.jpg"
+                Example_2:
+                  summary: Limit = 3 and offset = 2.
+                  value:
+                    error: false
+                    status: 200
+                    message: "This product is available"
+                    body:
+                      - category_id: 3
+                        name: "Product C"
+                        color: "Green"
+                        description: "Description of Product C"
+                        price: 70
+                        quantity: 20
+                        image: "image_C.jpg"
+                      - category_id: 4
+                        name: "Product D"
+                        color: "Yellow"
+                        description: "Description of Product D"
+                        price: 80
+                        quantity: 15
+                        image: "image_D.jpg"
+                      - category_id: 5
+                        name: "Product E"
+                        color: "Purple"
+                        description: "Description of Product E"
+                        price: 90
+                        quantity: 25
+                        image: "image_E.jpg"
+                Example_3:
+                  summary: No limit or offset provided (15 products in ascending order by product's ID).
+                  value:
+                    error: false
+                    status: 200
+                    message: "This product is available"
+                    body: []
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+        - Products
+      summary: Creates a single or multiple products, or an array of products with given body info.
+      description: Creates a product with given body info. Notice that the category of the product must exists prior to creating the product. Also, the product or products must be contained inside an array.
+      operationId: createProduct
+      requestBody:
+        content:
+          application/json:
+            schema:
+             type: array
+             items:
+              $ref: '#/components/schemas/Product'
+             minItems: 1
+        required: true
+      responses:
+        '201':
+          description: Product/s was created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessPostResponse'
+              example:
+               error: false
+               status: 201
+               message: "All product/s created"
+               body: "Every item/s provided were created."
+        '400':
+          description: User already exits.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+   # añadir aqui método put
+  /api/v1/products/filter:
+    get:
+      tags:
+        - Products
+      summary: Get a list of products that meet the name, color or price provided in query params.
+      description: Get a list of products that meet the name, color or price provided in query params.
+      operationId: filterProduct
+      parameters:
+        - name: price
+          in: query
+          description: This will send you the products that have this price or lower.
+          required: false
+          schema:
+            type: integer
+          example: 1640
+        - name: color
+          in: query
+          description: Products with certain colour will appear.
+          required: false
+          schema:
+            type: string
+          example: "black"
+        - name: name
+          in: query
+          description: Products containing this as part of it's name will be shown.
+          required: false
+          schema:
+            type: integer
+          example: "samsung"
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              examples:
+               Example_by_price:
+                  summary: Products with price equal to 60 or lower.
+                  value:
+                    error: false
+                    status: 200
+                    message: "Products available within the specified price range."
+                    body:
+                      - category_id: 1
+                        name: "Smartphone X"
+                        color: "Black"
+                        description: "A high-quality smartphone."
+                        price: 50
+                        quantity: 10
+                        image: "smartphone_x.jpg"
+                      - category_id: 2
+                        name: "Tablet Y"
+                        color: "Blue"
+                        description: "A versatile tablet."
+                        price: 60
+                        quantity: 5
+                        image: "tablet_y.jpg"
+               Example_by_color:
+                  summary: Products with color black.
+                  value:
+                    error: false
+                    status: 200
+                    message: "Products available in black color."
+                    body:
+                      - category_id: 1
+                        name: "Laptop Z"
+                        color: "Black"
+                        description: "A powerful black laptop."
+                        price: 43
+                        quantity: 10
+                        image: "laptop_z.jpg"
+                      - category_id: 2
+                        name: "Headphones A"
+                        color: "Space Black"
+                        description: "Premium headphones in space black."
+                        price: 200
+                        quantity: 5
+                        image: "headphones_a.jpg"
+               Example_by_name:
+                  summary: Products with names like 'samsung' in query parameters.
+                  value:
+                    error: false
+                    status: 200
+                    message: "Products with names containing 'samsung' are available."
+                    body:
+                      - category_id: 1
+                        name: "Samsung Galaxy S21"
+                        color: "Black"
+                        description: "The latest Samsung smartphone."
+                        price: 599
+                        quantity: 10
+                        image: "samsung_galaxy_s21.jpg"
+                      - category_id: 2
+                        name: "Samsung Galaxy Tab S7"
+                        color: "Silver"
+                        description: "A premium Samsung tablet."
+                        price: 499
+                        quantity: 15
+                        image: "samsung_galaxy_tab_s7.jpg"
+               Example_by_multiple_criteria:
+                  summary: Products meeting multiple criteria.
+                  value:
+                    error: false
+                    status: 200
+                    message: "Example of successful response 5"
+                    body:
+                      - category_id: 1
+                        name: "Samsung Galaxy S21"
+                        color: "Black"
+                        description: "Description of Samsung Galaxy S21"
+                        price: 599
+                        quantity: 10
+                        image: "samsung_galaxy_s21.jpg"
+                      - category_id: 2
+                        name: "Samsung 4K QLED TV"
+                        color: "Black"
+                        description: "Description of Samsung 4K QLED TV"
+                        price: 899
+                        quantity: 5
+                        image: "samsung_4k_qled_tv.jpg"
+        '404':
+          description: User not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/products/{productId}:
+    get:
+      tags:
+        - Products
+      summary: Get product by ID
+      description: Get product information by their ID.
+      operationId: getProduct
+      parameters:
+        - name: productId
+          in: path
+          description: ID of the product to retrieve.
+          required: true
+          schema:
+            type: string
+          example: "1nt3io20_3"
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              example:
+               error: false
+               status: 200
+               message: "This product is available"
+               body:
+                - category_id: 1
+                  name: "Smartphone X"
+                  color: "Black"
+                  description: "A high-quality smartphone."
+                  price: 50
+                  quantity: 10
+                  image: "smartphone_x.jpg"
+        '404':
+          description: User not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+        - Products
+      summary: Deactivates a product so it can't be bought, by it's product ID (note that the product itself won't be deleted).
+      description: Deactivates a product so it can't be bought, by it's product ID (note that the product itself won't be deleted).
+      operationId: deactivateProduct
+      parameters:
+        - name: productId
+          in: path
+          description: ID of the product to deactivate.
+          required: true
+          schema:
+            type: string
+          example: "1"
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponseWithStringBody'
+              example:
+                error: false
+                status: 200
+                message: "Product deactivated"
+                body: "The item you wanted to update was indeed updated."
+        '404':
+          description: Product was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundResponse'
+        '500':
+          description: Various errors might ocurr.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/responses/InternalServerError"
+              examples:
+                InternalError_1:
+                  summary: The product you tried to deactivate was already inactive and no update was made.
+                  value:
+                    error: true
+                    status: 500
+                    message: "No update was made to the product because it has the same state."
+                BadRequest_2:
+                  summary: Internal server error.
+                  value:
+                    error: true
+                    status: 500
+                    message: "Internal server error"
+components:
+  schemas:
+   User:
+     type: object
+     properties:
+       username:
+         type: string
+         format: string
+         example: "John Doe"
+       email:
+         type: string
+         format: email
+         example: "John Doe"
+       avatar:
+         type: string
+         format: url
+         example: "http://to_cool_image.com"
+   UserRegistrationBody:
+     type: object
+     properties:
+       username:
+         type: string
+         format: string
+         example: "John Doe"
+       email:
+         type: string
+         format: email
+         example: "John Doe"
+       password:
+         type: string
+         format: string
+         example: "securepassword1234"
+   Product:
+      type: object
+      properties:
+        category_id:
+          type: integer
+          description: The ID of the product's category.
+          example: 1
+        name:
+          type: string
+          description: The name of the product.
+          example: "iPhone 13 Pro"
+        color:
+          type: string
+          description: The color of the product.
+          example: "Space Black"
+        description:
+          type: string
+          description: A description of the product.
+          example: "The latest flagship smartphone from Apple."
+        price:
+          type: number
+          description: The price of the product.
+          example: 127
+        quantity:
+          type: integer
+          description: The quantity of the product available.
+          example: 50
+        image:
+          type: string
+          description: The URL of the product's image.
+          example: ""
+   SuccessResponse:
+      type: object
+      properties:
+        error:
+          type: boolean
+          description: Indicates whether an error occurred or not.
+          example: false
+        status:
+          type: integer
+          description: HTTP status code.
+          example: 200
+        message:
+          type: string
+          description: A message describing the response.
+          example: "This request was successfull, here is some relevant information about this request:"
+        body:
+          type: array
+          description: An array of objects that can vary depending on the specific request. For example, when doing request to getUsers you will receive and object with their email, username and avatar.
+          items:
+            type: object
+   SuccessResponseWithStringBody:
+      type: object
+      properties:
+        error:
+          type: boolean
+          description: Indicates whether an error occurred or not.
+          example: false
+        status:
+          type: integer
+          description: HTTP status code.
+          example: 200
+        message:
+          type: string
+          description: A message describing the response.
+          example: "This request was successfull, here is some relevant information about this request:"
+        body:
+          type: string
+          description: A message about the operation or a token, in case of loggin an user.
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+   SuccessPostResponse:
+      type: object
+      properties:
+        error:
+          type: boolean
+          description: Indicates whether an error occurred or not.
+          example: false
+        status:
+          type: integer
+          description: HTTP status code.
+          example: 201
+        message:
+          type: string
+          description: A message describing the response.
+          example: "This request was successfull, here is some relevant information about this request:"
+        body:
+          type: array
+          description: An array of objects that can vary depending on the specific request. For example, when doing request to getUsers you will receive and object with their email, username and avatar.
+          items:
+            type: object
+   ErrorResponse:
+     type: object
+     properties:
+       error:
+         type: boolean
+         description: Indicates whether an error occurred or not.
+         example: true
+       status:
+         type: integer
+         description: HTTP status code.
+         example: 500
+       message:
+         type: string
+         description: A message describing what's the cause of the error. It varies a lot depending on the endpoint called and the different bodies provided.
+         example: "Somewthing wrong ocurred, please try again."
+   BadRequest:
+       type: object
+       properties:
+         error:
+           type: boolean
+           description: Indicates whether an error occurred or not.
+           example: true
+         status:
+           type: integer
+           description: HTTP status code.
+           example: 400
+         message:
+           type: string
+           description: request.body didn't meet the criteriah for this endpoint.
+           example: "The attributes you must passed are X and Y and must have these types..."
+   NotFoundResponse:
+       type: object
+       properties:
+         error:
+           type: boolean
+           description: Indicates whether an error occurred or not.
+           example: true
+         status:
+           type: integer
+           description: HTTP status code.
+           example: 404
+         message:
+           type: string
+           description: The resource you were searching for wasn't found.
+           example: "The resource X wasn't found or doesn't exists."
+   NotAuthorized:
+       type: object
+       properties:
+         error:
+           type: boolean
+           description: Indicates whether an error occurred or not.
+           example: true
+         status:
+           type: integer
+           description: HTTP status code.
+           example: 401
+         message:
+           type: string
+           description: You are not allowed to do this. Reasons may vary, such as invalid token, no token provided, credentials not matching with the token info, etc...
+           example: "This token or authorization was invalid."
+  responses:
+   ResourceCreated:
+     description: The resource provided on the request was created. (Personalized message depending on endpoint called)
+     content:
+      application/json:
+       schema:
+        $ref: "#/components/schemas/SuccessResponse"
+   ResourceUpdated:
+     description: The resource provided on the request was updated.
+     content:
+      application/json:
+       schema:
+        $ref: "#/components/schemas/SuccessResponse"
+   InvalidRequestBody:
+     description: Something about the request body sent wasn't provided or the properties didn't matcht the types required.
+     content:
+      application/json:
+       schema:
+        $ref: "#/components/schemas/ErrorResponse"
+   ResourceAlreadyExists:
+     description: The resource you've tried to create (for example, a username with the same email you've provided) already exists and can't be created.
+     content:
+      application/json:
+       schema:
+        $ref: "#/components/schemas/ErrorResponse"
+   InternalServerError:
+     description: There was an unexpected error during the request and couldn't perform the action.
+     content:
+      application/json:
+       schema:
+        $ref: "#/components/schemas/ErrorResponse"
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

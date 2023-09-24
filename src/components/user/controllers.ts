@@ -64,7 +64,7 @@ const register = (req: Request, res: Response) => {
     .catch((err) => {
       let statusCode: number;
       if (err === ErrorThrower.USER_ALREADY_EXISTS) {
-        statusCode = 401;
+        statusCode = 409;
       } else {
         statusCode = 500;
       }
@@ -106,7 +106,7 @@ const login = (req: Request, res: Response) => {
         res,
         message: "Logged in successfully",
         data: token,
-        status: 201,
+        status: 200,
       });
     })
     .catch((err) => {

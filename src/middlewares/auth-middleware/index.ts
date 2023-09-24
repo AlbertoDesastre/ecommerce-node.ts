@@ -20,10 +20,12 @@ class AuthMiddleware {
 
       if (!decodedToken) {
         error = new Error(ErrorThrower.INVALID_TOKEN);
-        error.statusCode = 400;
+        error.statusCode = 401;
       }
 
       if (decodedToken.id !== req.params.id) {
+        console.log(decodedToken.id, req.params.id);
+        // here, an error must be thrown, otherwise it will still reach out the DB operations in the current flow and won't be able to send what was the real Error
         throw new Error(ErrorThrower.NOT_ALLOWED);
       }
 
@@ -39,11 +41,11 @@ class AuthMiddleware {
 
     if (!token) {
       error = new Error(ErrorThrower.TOKEN_NOT_FOUND);
-      error.statusCode = 400;
+      error.statusCode = 401;
       next(error);
     } else if (!token.startsWith("Bearer ")) {
       error = new Error(ErrorThrower.TOKEN_WRONG_FORMAT);
-      error.statusCode = 400;
+      error.statusCode = 401;
       next(error);
     }
   }

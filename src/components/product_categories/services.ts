@@ -93,7 +93,13 @@ class CategoryService {
       id,
     });
 
-    return result;
+    if (result.message === MysqlErrorThrower.ITEM_WASNT_FOUND)
+      throw new Error(ErrorThrower.CATEGORY_NOT_FOUND);
+
+    if (result.message === MysqlErrorThrower.NO_UPDATE_WAS_MADE)
+      throw new Error(ErrorThrower.CATEGORY_REMAIN_THE_SAME);
+
+    return SuccessfulQueryMessage.ITEM_WAS_UPDATED;
   }
 }
 

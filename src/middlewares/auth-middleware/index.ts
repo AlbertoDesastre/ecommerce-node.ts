@@ -24,7 +24,7 @@ class AuthMiddleware {
       }
 
       if (decodedToken.id !== req.params.id) {
-        console.log(decodedToken.id, req.params.id);
+        /*   console.log(decodedToken.id, req.params.id); */
         // here, an error must be thrown, otherwise it will still reach out the DB operations in the current flow and won't be able to send what was the real Error
         throw new Error(ErrorThrower.NOT_ALLOWED);
       }

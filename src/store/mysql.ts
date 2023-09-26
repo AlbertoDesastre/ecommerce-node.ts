@@ -279,7 +279,7 @@ function handleConnection(): ConnectionMethods {
         pool.query(
           `DELETE FROM ${table} WHERE id = ${id}`,
           (err: MysqlError | null, data: MysqlQueryResult) => {
-            console.log(`DELETE FROM ${table} WHERE id = ${id}`);
+            /*  console.log(`DELETE FROM ${table} WHERE id = ${id}`); */
             if (err) return reject(err);
 
             resolve(data);

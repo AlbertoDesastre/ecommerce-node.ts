@@ -21,7 +21,7 @@ const get = (req: Request, res: Response) => {
         res,
         message: "Here is the user's information:",
         data: result,
-        status: 201,
+        status: 200,
       });
     })
     .catch((err: Error) => {

@@ -177,6 +177,7 @@ class OrderService {
     return Object.values(OrderStatus).includes(status as OrderStatus);
   }
 
+  // this could have been named "setFormatOrders"
   formatOrders(ordersWithItems: OrderWithProductsInfo[]): FormattedOrders[] {
     // Map is an object that it's build with a pair of key-values. Each key is unique and cannot be find twice in the same Map.
     // The content of a key can be updated or overwritten. This is wonderful for grouping order_items by a same order_id.

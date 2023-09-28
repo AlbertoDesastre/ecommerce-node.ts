@@ -81,4 +81,60 @@ const productCategoriesReadyToCreate = [
   [12, "Home Appliances", "Electronic devices for household tasks.", 1],
   [13, "Fitness Trackers", "Devices for monitoring health and fitness.", 1],
 ];
-export { productCategories, productCategoriesReadyToCreate };
+
+const productsReadyToCreate = [
+  [
+    "iPhone 13 Pro",
+    "The latest flagship smartphone from Apple.",
+    1099.99,
+    50,
+    1,
+    "Space Gray",
+  ],
+  [
+    "Samsung Galaxy S21 Ultra",
+    "Premium Android phone with top-of-the-line features.",
+    1199.99,
+    100,
+    1,
+    "Phantom Black",
+  ],
+  [
+    "Sony PlayStation 5",
+    "Next-generation gaming console with stunning graphics.",
+    499.99,
+    75,
+    3,
+    "Jet Black",
+  ],
+  [
+    "Microsoft Xbox Series X",
+    "Powerful gaming console with backward compatibility.",
+    499.99,
+    60,
+    3,
+    "Robot White",
+  ],
+  [
+    "Samsung QLED 4K TV",
+    "High-quality smart TV with vibrant colors and impressive resolution.",
+    1299.99,
+    40,
+    4,
+    "Titan Gray",
+  ],
+  [
+    "Apple MacBook Air",
+    "Lightweight and powerful laptop for everyday use.",
+    999.99,
+    80,
+    2,
+    "Silver",
+  ],
+];
+
+export {
+  productCategories,
+  productCategoriesReadyToCreate,
+  productsReadyToCreate,
+};

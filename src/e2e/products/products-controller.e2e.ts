@@ -5,11 +5,15 @@ import http from "http";
 import * as mysqlStore from "../../store/mysql";
 import { ConnectionMethods } from "../../store/types";
 import { app } from "../../app";
-import { TableColumns } from "../../components/product_categories/models";
+import { TableColumns as CategoryTableColumns } from "../../components/product_categories/models";
+import { TableColumns as ProductTableColumns } from "../../components/products/models";
 import { SuccessfulQueryMessage } from "../../store/types";
 
 import { ProductService } from "../../components/products/services";
-import { productCategoriesReadyToCreate } from "../exampleData";
+import {
+  productCategoriesReadyToCreate,
+  productsReadyToCreate,
+} from "../exampleData";
 import { ErrorThrower } from "../../components/products/types";
 
 describe("Test for *PRODUCTS* --> CONTROLLER", () => {
@@ -26,22 +30,25 @@ describe("Test for *PRODUCTS* --> CONTROLLER", () => {
     // I create the categories in order to create all the products necessary
     await connection.create({
       table: "categories",
-      tableColumns: TableColumns.CATEGORIES_POST_VALUES_WITH_ID,
+      tableColumns: CategoryTableColumns.CATEGORIES_POST_VALUES_WITH_ID,
       arrayOfData: productCategoriesReadyToCreate,
+    });
+
+    await connection.create({
+      table: "products",
+      tableColumns: ProductTableColumns.PRODUCTS_POST_VALUES_FOR_TEST,
+      arrayOfData: productsReadyToCreate,
     });
 
     // console.log(await connection.personalizedQuery(`SELECT * FROM categories`));
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
     await connection.eliminate({ table: "order_items" });
     await connection.eliminate({ table: "orders" });
     await connection.eliminate({ table: "products" });
-    server.close();
-  });
-
-  afterAll(async () => {
     await connection.eliminate({ table: "categories" });
+    server.close();
   });
   /* E2E, PENDING TO ADD THE FOLLOWING...
     Test Case: Limit and Offset at Database Boundaries
@@ -52,41 +59,16 @@ describe("Test for *PRODUCTS* --> CONTROLLER", () => {
    */
 
   describe("test for [GET] /api/v1/products/", () => {
+    let productId: any;
+
     // Arrange
-    beforeEach(async () => {
-      const products = await connection.create({
-        table: "products",
-        tableColumns:
-          "(category_id, name, description, price, quantity, image)",
-        arrayOfData: [
-          [
-            1,
-            "Nintendo Switch",
-            "Versatile gaming console for both handheld and TV gaming.",
-            127,
-            90,
-            "",
-          ],
-          [
-            2,
-            "Apple MacBook Pro",
-            "Powerful and elegant laptop for professional use.",
-            1799,
-            45,
-            "",
-          ],
-          [
-            3,
-            "Sony Alpha 7 III",
-            "Full-frame mirrorless camera with high-speed performance.",
-            2199,
-            30,
-            "",
-          ],
-        ],
-      });
-      //
-      //
+    beforeAll(async () => {
+      // Notice a product of the sample array looks like this:
+      // ["iPhone 13 Pro", "The latest flagship smartphone from Apple.", 1099.99, 50, 1, "Space Gray"
+
+      productId = await connection.personalizedQuery(
+        `SELECT id FROM products WHERE name = '${productsReadyToCreate[0][0]}'`
+      );
     });
 
     test("should return an array with some products", async () => {
@@ -98,13 +80,11 @@ describe("Test for *PRODUCTS* --> CONTROLLER", () => {
           const responseBody = JSON.parse(response.text);
 
           //Assert
-          expect(responseBody.body.length).toEqual(3);
+          expect(responseBody.body.length).toBeGreaterThan(3);
         });
     });
-  });
 
-  /*   describe('"test for [GET] (/api/v1/products/:userId -- GET) "', () => {
-    test("should throw error if user doesn't exists ", async () => {
+    test("should throw error if product doesn't exists ", async () => {
       // register it's omitted
       const fakeId = "210491dd2mf3@";
 
@@ -115,27 +95,34 @@ describe("Test for *PRODUCTS* --> CONTROLLER", () => {
           expect(JSON.parse(res.text)).toEqual({
             error: true,
             status: 404,
-            body: null,
+            body: ErrorThrower.PRODUCT_NOT_FOUND,
           });
         });
     });
 
-    test("should get user information if it exists on DB", async () => {
-      // await productService.create(product);
+    test("should get product information if it exists on DB", async () => {
+      const [name, description, price, quantity, category_id, color] =
+        productsReadyToCreate[0];
+      const { id } = productId[0];
 
+      console.log(productId);
       await request(app)
-        .get(`/api/v1/products/`)
+        .get(`/api/v1/products/${id}`)
         .expect(200)
         .then((res) => {
           expect(JSON.parse(res.text)).toEqual({
             error: false,
             status: 200,
-            message: "Here is the user's information:",
+            message: "This product is available",
             body: [
               {
-                username: null,
-                email: null,
-                avatar: null,
+                category_id,
+                name,
+                color,
+                description,
+                price,
+                quantity,
+                image: "",
               },
             ],
           });
@@ -143,6 +130,7 @@ describe("Test for *PRODUCTS* --> CONTROLLER", () => {
     });
   });
 
+  /*
   describe("test for [REGISTER] (/api/v1/products/register -- POST) ", () => {
     // Arrange
     beforeEach(async () => {});

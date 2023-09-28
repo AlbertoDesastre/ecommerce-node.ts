@@ -71,7 +71,7 @@ class ProductController {
           res,
           message: "This product is available",
           data: result,
-          status: 201,
+          status: 200,
         });
       })
       .catch((err: Error) => {

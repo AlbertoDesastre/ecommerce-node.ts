@@ -22,6 +22,18 @@ describe("Test for *PRODUCTS* --> CONTROLLER", () => {
   let connection: ConnectionMethods;
   let productService = new ProductService();
 
+  const expectedProductShape = {
+    category_id: expect.any(Number),
+    name: expect.any(String),
+    description: expect.any(String),
+    color: expect.any(String),
+    price: expect.any(Number),
+    quantity: expect.any(Number),
+    image: expect.any(String),
+    active: expect.any(Number),
+    created_at: expect.any(String),
+  };
+
   beforeAll(async () => {
     expressApp = app;
     server = app.listen(3002);
@@ -34,6 +46,7 @@ describe("Test for *PRODUCTS* --> CONTROLLER", () => {
       arrayOfData: productCategoriesReadyToCreate,
     });
 
+    // Important! This array has a length of 19!
     await connection.create({
       table: "products",
       tableColumns: ProductTableColumns.PRODUCTS_POST_VALUES_FOR_TEST,
@@ -58,7 +71,7 @@ describe("Test for *PRODUCTS* --> CONTROLLER", () => {
     Ensure that the function properly handles cases where "limit" and "offset" are greater than the total quantity of products.
    */
 
-  describe("test for [GET] /api/v1/products/", () => {
+  describe("test for [GET] (/api/v1/products/:productId -- GET) ", () => {
     let productId: any;
 
     // Arrange
@@ -105,7 +118,6 @@ describe("Test for *PRODUCTS* --> CONTROLLER", () => {
         productsReadyToCreate[0];
       const { id } = productId[0];
 
-      console.log(productId);
       await request(app)
         .get(`/api/v1/products/${id}`)
         .expect(200)
@@ -128,6 +140,130 @@ describe("Test for *PRODUCTS* --> CONTROLLER", () => {
           });
         });
     });
+  });
+
+  describe("test for [LIST] (/api/v1/products/:productId -- GET) ", () => {
+    // Arrange
+    beforeAll(() => {});
+
+    test("should return up to 15 products if no limit or offset it's passed", async () => {
+      //Act
+      return await request(app)
+        .get("/api/v1/products/")
+        .expect(200)
+        .then((response: request.Response) => {
+          expect(JSON.parse(response.text)).toEqual({
+            error: false,
+            status: 200,
+            message: "This is the list of products",
+            body: expect.arrayContaining([
+              expect.objectContaining(expectedProductShape),
+            ]),
+          });
+
+          expect(JSON.parse(response.text).body.length).toEqual(15);
+        });
+    });
+
+    test("should return up to 15 products and skip the first 2 if offset = 2 it's provided", async () => {
+      //Act
+      return await request(app)
+        .get(`/api/v1/products/?limit=${15}&offset=${2}`)
+        .expect(200)
+        .then((response: request.Response) => {
+          expect(JSON.parse(response.text)).toEqual({
+            error: false,
+            status: 200,
+            message: "This is the list of products",
+            body: expect.arrayContaining([
+              expect.objectContaining(expectedProductShape),
+            ]),
+          });
+
+          let responseBody = JSON.parse(response.text).body;
+
+          expect(responseBody.length).toEqual(15);
+          // simulate the offset effect by skipping the first 2 elements of the example products array.
+          expect(responseBody[0].name).toEqual(
+            "Sony PlayStation 5" // the playstation is on position 2 of the example data
+          );
+          expect(responseBody[responseBody.length - 1].name).toEqual(
+            "Microsoft Surface Pro 7" // Microsoft Surface Pro 7 is on position 17 of the example data
+          );
+        });
+    });
+
+    test("should return 5 products, and skip the first 2 if limit=5 & offset = 2 ", async () => {
+      //Act
+      return await request(app)
+        .get(`/api/v1/products/?limit=${5}&offset=${2}`)
+        .expect(200)
+        .then((response: request.Response) => {
+          expect(JSON.parse(response.text)).toEqual({
+            error: false,
+            status: 200,
+            message: "This is the list of products",
+            body: expect.arrayContaining([
+              expect.objectContaining(expectedProductShape),
+            ]),
+          });
+
+          let responseBody = JSON.parse(response.text).body;
+
+          expect(responseBody.length).toEqual(5);
+          // simulate the offset effect by skipping the first 2 elements of the example products array.
+          expect(responseBody[0].name).toEqual(
+            "Sony PlayStation 5" // the playstation is on position 2 of the example data
+          );
+          expect(responseBody[responseBody.length - 1].name).toEqual(
+            "Canon EOS R5" // "Canon EOS R5" is on position 7 of the example data
+          );
+        });
+    });
+
+    /*     test("should throw error if product doesn't exists ", async () => {
+      // register it's omitted
+      const fakeId = "210491dd2mf3@";
+
+      await request(app)
+        .get(`/api/v1/products/${fakeId}`)
+        .expect(404)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 404,
+            body: ErrorThrower.PRODUCT_NOT_FOUND,
+          });
+        });
+    });
+
+    test("should get product information if it exists on DB", async () => {
+      const [name, description, price, quantity, category_id, color] =
+        productsReadyToCreate[0];
+      const { id } = productId[0];
+
+      await request(app)
+        .get(`/api/v1/products/${id}`)
+        .expect(200)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: false,
+            status: 200,
+            message: "This product is available",
+            body: [
+              {
+                category_id,
+                name,
+                color,
+                description,
+                price,
+                quantity,
+                image: "",
+              },
+            ],
+          });
+        });
+    }); */
   });
 
   /*

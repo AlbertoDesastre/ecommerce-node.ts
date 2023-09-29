@@ -266,6 +266,68 @@ describe("Test for *PRODUCTS* --> CONTROLLER", () => {
     }); */
   });
 
+  describe("test for [CREATE] (/api/v1/products/register -- POST) ", () => {
+    // Arrange
+    beforeEach(async () => {});
+    afterEach(async () => {
+      connection.eliminate({ table: "users" });
+    });
+
+    test("should return 400 if body wasn't provided", async () => {
+      // Act
+      return await request(app)
+        .post("/api/v1/products/")
+        .send([])
+        .expect(400)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 400,
+            body: "You didn't provide a body",
+          });
+        });
+    });
+
+    test("should return 201 if products are successfully created", async () => {
+      const productsToCreate = [
+        {
+          category_id: 1,
+          name: "Product 1",
+          description: "Product description 1",
+          price: 100,
+          quantity: 10,
+          color: "Red",
+        },
+        {
+          category_id: 2,
+          name: "Product 2",
+          description: "Product description 2",
+          price: 200,
+          quantity: 20,
+          color: "Blue",
+        },
+      ];
+
+      return await request(app)
+        .post("/api/v1/products/")
+        .send(productsToCreate)
+        .expect(201)
+        .then(async (res) => {
+          const result: any = await connection.personalizedQuery(
+            `SELECT id FROM products WHERE name IN ("${productsToCreate[0].name}", "${productsToCreate[1].name}" ) `
+          );
+          expect(JSON.parse(res.text)).toEqual({
+            error: false,
+            status: 201,
+            message: "All product/s created",
+            body: "Every item/s provided were created.",
+          });
+
+          expect(result.length).toEqual(2);
+        });
+    });
+  });
+
   /*
   describe("test for [REGISTER] (/api/v1/products/register -- POST) ", () => {
     // Arrange

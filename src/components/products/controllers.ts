@@ -17,6 +17,7 @@ class ProductController {
     this.productService = new ProductService();
   }
 
+  // test done
   list(req: Request, res: Response) {
     /* limit = number of maximum rows the DB should bring
        offset = where should the data start loading. For example, if offset is set to 10, it will start bring data from 10 and onwards */
@@ -37,7 +38,7 @@ class ProductController {
         return errors({ res, message: err.message, status: 500 });
       });
   }
-
+  // test done
   filterBy(req: Request, res: Response) {
     const { name, price, color } = req.query as FilterQueries;
 
@@ -48,7 +49,7 @@ class ProductController {
           res,
           message: "Product/s available...",
           data: result,
-          status: 201,
+          status: 200,
         });
       })
       .catch((err: Error) => {
@@ -59,7 +60,7 @@ class ProductController {
         return errors({ res, message: err.message, status: statusCode });
       });
   }
-
+  // test done
   getOne(req: Request, res: Response) {
     /* REMINDER! What comes from params it's always a string */
     const { id } = req.params;
@@ -82,7 +83,7 @@ class ProductController {
         return errors({ res, message: err.message, status: statusCode });
       });
   }
-
+  // test done
   create(req: Request, res: Response) {
     const arrayOfProducts: Product[] = req.body;
 

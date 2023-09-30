@@ -78,7 +78,6 @@ describe("Test for *PRODUCTS* --> CONTROLLER", () => {
     beforeAll(async () => {
       // Notice a product of the sample array looks like this:
       // ["iPhone 13 Pro", "The latest flagship smartphone from Apple.", 1099.99, 50, 1, "Space Gray"
-
       productId = await connection.personalizedQuery(
         `SELECT id FROM products WHERE name = '${productsReadyToCreate[0][0]}'`
       );
@@ -143,9 +142,6 @@ describe("Test for *PRODUCTS* --> CONTROLLER", () => {
   });
 
   describe("test for [LIST] (/api/v1/products/:productId -- GET) ", () => {
-    // Arrange
-    beforeAll(() => {});
-
     test("should return up to 15 products if no limit or offset it's passed", async () => {
       //Act
       return await request(app)
@@ -266,13 +262,56 @@ describe("Test for *PRODUCTS* --> CONTROLLER", () => {
     }); */
   });
 
-  describe("test for [CREATE] (/api/v1/products/register -- POST) ", () => {
-    // Arrange
-    beforeEach(async () => {});
-    afterEach(async () => {
-      connection.eliminate({ table: "users" });
+  describe("test for [FILTER-BY] (/api/v1/products/register -- GET) ", () => {
+    test("should return 404 if none of the filters matchs any product", async () => {
+      // Act
+      return await request(app)
+        .get(`/api/v1/products/filter?price=40221&color=black&name=XFEnmdwlE`)
+        .expect(404)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 404,
+            body: "No product was found",
+          });
+        });
     });
 
+    test("should return 200 if product match the filters provided", async () => {
+      // this information is taken from the sample products provided in this same file, in position 0
+      let product = {
+        price: 1200,
+        color: "gray",
+        name: "iPhone",
+      };
+
+      return await request(app)
+        .get(
+          `/api/v1/products/filter?price=${product.price}&color=${product.color}&name=${product.name}`
+        )
+        .expect(200)
+        .then(async (res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: false,
+            status: 200,
+            message: "Product/s available...",
+            body: [
+              {
+                category_id: 1,
+                color: "Space Gray",
+                description: "The latest flagship smartphone from Apple.",
+                image: "",
+                name: "iPhone 13 Pro",
+                price: 1099.99,
+                quantity: 50,
+              },
+            ],
+          });
+        });
+    });
+  });
+
+  describe("test for [CREATE] (/api/v1/products/register -- POST) ", () => {
     test("should return 400 if body wasn't provided", async () => {
       // Act
       return await request(app)
@@ -327,7 +366,6 @@ describe("Test for *PRODUCTS* --> CONTROLLER", () => {
         });
     });
   });
-
   /*
   describe("test for [REGISTER] (/api/v1/products/register -- POST) ", () => {
     // Arrange

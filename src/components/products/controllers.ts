@@ -113,10 +113,14 @@ class ProductController {
   update(req: Request, res: Response) {
     const product: Product = req.body;
 
-    if (Object.keys(product).length === 0) {
+    if (
+      !product ||
+      Array.isArray(product) ||
+      Object.keys(product).length === 0
+    ) {
       return errors({
         res,
-        message: "You didn't provide a body",
+        message: "Invalid product data provided",
         status: 400,
       });
     }

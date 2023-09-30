@@ -63,13 +63,6 @@ describe("Test for *PRODUCTS* --> CONTROLLER", () => {
     await connection.eliminate({ table: "categories" });
     server.close();
   });
-  /* E2E, PENDING TO ADD THE FOLLOWING...
-    Test Case: Limit and Offset at Database Boundaries
-    Verify that the function correctly handles cases where "limit" and "offset" values provided are at the boundaries of the database.
-
-    Test Case: Limit and Offset Exceeding Product Quantity
-    Ensure that the function properly handles cases where "limit" and "offset" are greater than the total quantity of products.
-   */
 
   describe("test for [GET] (/api/v1/products/:productId -- GET) ", () => {
     let productId: any;
@@ -216,50 +209,6 @@ describe("Test for *PRODUCTS* --> CONTROLLER", () => {
           );
         });
     });
-
-    /*     test("should throw error if product doesn't exists ", async () => {
-      // register it's omitted
-      const fakeId = "210491dd2mf3@";
-
-      await request(app)
-        .get(`/api/v1/products/${fakeId}`)
-        .expect(404)
-        .then((res) => {
-          expect(JSON.parse(res.text)).toEqual({
-            error: true,
-            status: 404,
-            body: ErrorThrower.PRODUCT_NOT_FOUND,
-          });
-        });
-    });
-
-    test("should get product information if it exists on DB", async () => {
-      const [name, description, price, quantity, category_id, color] =
-        productsReadyToCreate[0];
-      const { id } = productId[0];
-
-      await request(app)
-        .get(`/api/v1/products/${id}`)
-        .expect(200)
-        .then((res) => {
-          expect(JSON.parse(res.text)).toEqual({
-            error: false,
-            status: 200,
-            message: "This product is available",
-            body: [
-              {
-                category_id,
-                name,
-                color,
-                description,
-                price,
-                quantity,
-                image: "",
-              },
-            ],
-          });
-        });
-    }); */
   });
 
   describe("test for [FILTER-BY] (/api/v1/products/filter -- GET) ", () => {
@@ -363,6 +312,150 @@ describe("Test for *PRODUCTS* --> CONTROLLER", () => {
           });
 
           expect(result.length).toEqual(2);
+        });
+    });
+  });
+
+  describe("test for [UPDATE] (/api/v1/products/ -- PUT) ", () => {
+    afterEach(async () => {
+      await connection.eliminate({ table: "products" });
+      await connection.create({
+        table: "products",
+        tableColumns: ProductTableColumns.PRODUCTS_POST_VALUES_FOR_TEST,
+        arrayOfData: productsReadyToCreate,
+      });
+    });
+
+    test("should return 400 if an array it's passed as body", async () => {
+      // Act
+      return await request(app)
+        .put("/api/v1/products/")
+        .send([])
+        .expect(400)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 400,
+            body: "Invalid product data provided",
+          });
+        });
+    });
+
+    test("should return 400 if an empty object it's provided", async () => {
+      // Act
+      return await request(app)
+        .put("/api/v1/products/")
+        .send({})
+        .expect(400)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 400,
+            body: "Invalid product data provided",
+          });
+        });
+    });
+
+    test("should return 404 if product wasn't found", async () => {
+      // Act
+      return await request(app)
+        .put("/api/v1/products/")
+        .send({
+          id: 53286520,
+          category_id: 5,
+          name: "Samsung 2",
+          description: "Object just updated",
+          price: 1,
+          quantity: 50,
+          image: "https://example.com/samsung_2.jpg",
+        })
+        .expect(404)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 404,
+            body: "No product was found",
+          });
+        });
+    });
+
+    test("should return 200 if product is successfully updated", async () => {
+      // Notice a product of the sample array looks like this:
+      // ["iPhone 13 Pro", "The latest flagship smartphone from Apple.", 1099.99, 50, 1, "Space Gray"
+      const productId: any = await connection.personalizedQuery(
+        `SELECT id FROM products WHERE name = '${productsReadyToCreate[0][0]}'`
+      );
+      const idToUpdate = productId[0].id;
+
+      return await request(app)
+        .put("/api/v1/products/")
+        .send({
+          id: idToUpdate,
+          category_id: 5,
+          name: "Samsung 2",
+          description: "Object just updated",
+          price: 1,
+          quantity: 50,
+          image: "https://example.com/samsung_2.jpg",
+        })
+        .expect(200)
+        .then(async (res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: false,
+            status: 200,
+            message: "The product was updated",
+            body: "The item you wanted to update was indeed updated.",
+          });
+        });
+    });
+
+    test("should return 500 if product didn't change it's state", async () => {
+      const productId: any = await connection.personalizedQuery(
+        `SELECT id FROM products WHERE name = '${productsReadyToCreate[0][0]}'`
+      );
+
+      const idToUpdate = productId[0].id;
+
+      // we update succesfully a product for the first time
+      await request(app)
+        .put("/api/v1/products/")
+        .send({
+          id: idToUpdate,
+          category_id: 5,
+          name: "Samsung 2",
+          description: "Object just updated",
+          price: 1,
+          quantity: 50,
+          image: "https://example.com/samsung_2.jpg",
+        })
+        .expect(200)
+        .then(async (res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: false,
+            status: 200,
+            message: "The product was updated",
+            body: "The item you wanted to update was indeed updated.",
+          });
+        });
+      // we try to update the product with the exact same info for a second time
+      return await request(app)
+        .put("/api/v1/products/")
+        .send({
+          id: idToUpdate,
+          category_id: 5,
+          name: "Samsung 2",
+          description: "Object just updated",
+          price: 1,
+          quantity: 50,
+          image: "https://example.com/samsung_2.jpg",
+        })
+        .expect(500)
+        .then(async (res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 500,
+            body: "No update was made to the product because it has the same state.",
+          });
         });
     });
   });

@@ -83,7 +83,7 @@ describe("Test for *ORDERS* --> CONTROLLER", () => {
 
     userId = userIdInArray[0].id;
 
-    /*     await connection.create({
+    /*     await connection.createe({
       table: "orders",
       tableColumns: OrderTableColumns.ORDER_POST_VALUES,
       arrayOfData: productsReadyToCreate,

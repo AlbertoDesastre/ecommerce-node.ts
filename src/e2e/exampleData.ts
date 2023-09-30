@@ -237,8 +237,13 @@ const productsReadyToCreate = [
   ],
 ];
 
+const ordersReadyToCreate: any = [];
+
+const orderItemsReadyToCreate: any = [];
 export {
   productCategories,
   productCategoriesReadyToCreate,
   productsReadyToCreate,
+  ordersReadyToCreate,
+  orderItemsReadyToCreate,
 };

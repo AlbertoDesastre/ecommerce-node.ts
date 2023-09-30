@@ -27,7 +27,6 @@ class OrderService {
   // An alternative would be to do directly the JOIN query and if it's length = 0 just send an error message, but this message would not be as personalized.
   // I wouldn't be able to tell if it's because if there is no user or there were no orders
 
-  // done
   async list({ userId }: { userId: string }) {
     const doesUserExist = await this.connection.getOne({
       table: "users",
@@ -51,7 +50,6 @@ class OrderService {
     return this.formatOrders(result);
   }
 
-  // done
   async filterBy({ productName, itemCreatedAt }: FilterQueries) {
     let conditionsElements: string[] = [];
     let conditions = "";
@@ -80,7 +78,6 @@ class OrderService {
     return this.formatOrders(result as OrderWithProductsInfo[]);
   }
 
-  // done
   async getOne(id: string): Promise<OrderModel[] | MysqlError> {
     const result = await this.connection.getOne({
       table: "orders",
@@ -96,7 +93,6 @@ class OrderService {
     return result as OrderModel[];
   }
 
-  // done
   async create(order: OrderPostRequestModel) {
     const { user_id, total_amount, products } = order;
 
@@ -125,6 +121,10 @@ class OrderService {
       return Object.values(order_item);
     });
 
+    /*     console.log(
+      "Asi se presenta el array de objetos de la orden --> ",
+      orderItemsArray
+    ); */
     const result = await this.connection.create({
       table: "order_items",
       tableColumns: TableColumns.ORDER_ITEMS_POST_VALUES,
@@ -137,7 +137,6 @@ class OrderService {
     return orderCreatedResult.insertId;
   }
 
-  // done
   async updateStatus({ id, status }: { id: string; status: OrderStatus }) {
     const orderId = id.toString();
 

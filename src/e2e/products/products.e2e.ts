@@ -7,9 +7,7 @@ import { ConnectionMethods } from "../../store/types";
 import { app } from "../../app";
 import { TableColumns as CategoryTableColumns } from "../../components/product_categories/models";
 import { TableColumns as ProductTableColumns } from "../../components/products/models";
-import { SuccessfulQueryMessage } from "../../store/types";
 
-import { ProductService } from "../../components/products/services";
 import {
   productCategoriesReadyToCreate,
   productsReadyToCreate,
@@ -20,7 +18,6 @@ describe("Test for *PRODUCTS* --> CONTROLLER", () => {
   let expressApp: Express;
   let server: http.Server;
   let connection: ConnectionMethods;
-  let productService = new ProductService();
 
   const expectedProductShape = {
     category_id: expect.any(Number),

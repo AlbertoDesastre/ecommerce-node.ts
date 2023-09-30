@@ -80,7 +80,6 @@ class OrderController {
       });
   }
 
-  //done
   getOne(req: Request, res: Response) {
     const { orderId } = req.params;
 
@@ -105,33 +104,41 @@ class OrderController {
         return errors({ res, message: err.message, status: statusCode });
       });
   }
-  //done
+
   create(req: Request, res: Response) {
     const order: OrderPostRequestModel = req.body;
 
-    if (!order.user_id || !order.total_amount)
+    if (!order.user_id || !order.total_amount) {
       return errors({
         res,
         message:
           "An user id and the total amount of the order is needed to create it.",
         status: 400,
       });
+    }
 
-    if (!order.products || order.products.length === 0)
+    if (!order.products || order.products.length === 0) {
       return errors({
         res,
         message: "There must be at least one product to create an order.",
         status: 400,
       });
+    }
 
-    const invalidProducts = order.products.filter(
-      (product) => product.order_id !== null
-    );
+    const invalidProducts = order.products.filter((product) => {
+      return (
+        product.order_id !== null ||
+        product.product_id === undefined ||
+        product.quantity === undefined ||
+        product.subtotal === undefined
+      );
+    });
 
     if (invalidProducts.length > 0) {
       return errors({
         res,
-        message: "The 'order_id' property must exist and  be null.",
+        message:
+          "One of the properties you've passed in products array doesn't match the required model",
         status: 400,
       });
     }
@@ -151,7 +158,6 @@ class OrderController {
       });
   }
 
-  // maybe I should put an authentication part for the orders too
   updateStatus(req: Request, res: Response) {
     const { id, status } = req.body;
 

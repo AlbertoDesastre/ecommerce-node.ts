@@ -38,13 +38,13 @@ describe("Test for *USER* --> CONTROLLER", () => {
     password: "12345",
   };
 
-  describe('"test for [GET] (/api/v1/users/register/:userId -- GET) "', () => {
+  describe('"test for [GET] (/api/v1/users/:userId -- GET) "', () => {
     test("should throw error if user doesn't exists ", async () => {
       // register it's omitted
       const fakeId = "210491dd2mf3@";
 
       await request(app)
-        .get(`/api/v1/users/get/${fakeId}`)
+        .get(`/api/v1/users/${fakeId}`)
         .expect(404)
         .then((res) => {
           expect(JSON.parse(res.text)).toEqual({
@@ -61,15 +61,23 @@ describe("Test for *USER* --> CONTROLLER", () => {
       const userId: any = await connection.personalizedQuery(
         `SELECT id FROM users WHERE email = '${userTemplate.email}'`
       );
+      const { id } = userId[0];
 
       await request(app)
-        .get(`/api/v1/users/get/${userId}`)
-        .expect(404)
+        .get(`/api/v1/users/${id}`)
+        .expect(200)
         .then((res) => {
           expect(JSON.parse(res.text)).toEqual({
-            error: true,
-            status: 404,
-            body: ErrorThrower.USER_DOESNT_EXISTS,
+            error: false,
+            status: 200,
+            message: "Here is the user's information:",
+            body: [
+              {
+                username: userTemplate.username,
+                email: userTemplate.email,
+                avatar: null,
+              },
+            ],
           });
         });
     });
@@ -139,11 +147,11 @@ describe("Test for *USER* --> CONTROLLER", () => {
       return await request(app)
         .post("/api/v1/users/register")
         .send(userTemplate)
-        .expect(401)
+        .expect(409)
         .then((res) => {
           expect(JSON.parse(res.text)).toEqual({
             error: true,
-            status: 401,
+            status: 409,
             body: ErrorThrower.USER_ALREADY_EXISTS,
           });
         });
@@ -263,12 +271,12 @@ describe("Test for *USER* --> CONTROLLER", () => {
           username: userTemplate.username,
           password: userTemplate.password,
         })
-        .expect(201);
+        .expect(200);
 
       const responseBody = JSON.parse(response.text);
 
       expect(responseBody.error).toBe(false);
-      expect(responseBody.status).toBe(201);
+      expect(responseBody.status).toBe(200);
       expect(responseBody.message).toBe("Logged in successfully");
       expect(responseBody.body).toBeDefined();
 
@@ -309,14 +317,14 @@ describe("Test for *USER* --> CONTROLLER", () => {
     test("should return 400 if no token was provided", async () => {
       // Act
       return await request(app)
-        .put(`/api/v1/users/update/${userId}`)
+        .put(`/api/v1/users/${userId}`)
         .set({ Authorization: "" }) // pass empty string as an Authorization
         .send(userTemplate)
-        .expect(400)
+        .expect(401)
         .then((res) => {
           expect(JSON.parse(res.text)).toEqual({
             error: true,
-            status: 400,
+            status: 401,
             body: AuthErrorThrower.TOKEN_NOT_FOUND,
           });
         });
@@ -325,14 +333,14 @@ describe("Test for *USER* --> CONTROLLER", () => {
     test("should return 400 if token was provided with wrong format", async () => {
       // Act
       return await request(app)
-        .put(`/api/v1/users/update/${userId}`)
+        .put(`/api/v1/users/${userId}`)
         .set({ Authorization: `GWBIOG ${token}` })
         .send(userTemplate)
-        .expect(400)
+        .expect(401)
         .then((res) => {
           expect(JSON.parse(res.text)).toEqual({
             error: true,
-            status: 400,
+            status: 401,
             body: AuthErrorThrower.TOKEN_WRONG_FORMAT,
           });
         });
@@ -350,7 +358,7 @@ describe("Test for *USER* --> CONTROLLER", () => {
 
       // Act
       return await request(app)
-        .put(`/api/v1/users/update/${userId}`) // this is the id from the TemplateUser, not Desastre's User
+        .put(`/api/v1/users/${userId}`) // this is the id from the TemplateUser, not Desastre's User
         .set({ Authorization: `Bearer ${desastreToken}` })
         .send(desastreUser)
         .expect(500)
@@ -365,7 +373,7 @@ describe("Test for *USER* --> CONTROLLER", () => {
 
     test("should return 201 if user is updated successfully", async () => {
       return await request(app)
-        .put(`/api/v1/users/update/${userId}`)
+        .put(`/api/v1/users/${userId}`)
         .set({ Authorization: `Bearer ${token}` })
         .send(userGettingUpdated)
         .expect(201)
@@ -380,7 +388,7 @@ describe("Test for *USER* --> CONTROLLER", () => {
     });
   });
 
-  describe("test for [DELETE] (/api/v1/users/:id -- PUT)", () => {
+  describe("test for [DELETE] (/api/v1/users/:id -- DELETE)", () => {
     test("should return 200 if user information it's deleted", async () => {
       // pending to create orders and order items for this user to delete all info
       // also pending to manage cases where user doesn't have any orders yet and those deletions have to be omiited
@@ -400,7 +408,7 @@ describe("Test for *USER* --> CONTROLLER", () => {
       const { id } = desastreIdInArray[0];
 
       return await request(app)
-        .delete(`/api/v1/users/delete/${id}`)
+        .delete(`/api/v1/users/${id}`)
         .set({ Authorization: `Bearer ${desastreToken}` })
         .expect(200)
         .then((res) => {

@@ -15,6 +15,7 @@ import {
   productsReadyToCreate,
   orderItemsReadyToCreate,
   ordersReadyToCreate,
+  productsReadyToCreateWithIds,
 } from "../exampleData";
 import { ErrorThrower } from "../../components/products/types";
 
@@ -57,45 +58,35 @@ describe("Test for *ORDERS* --> CONTROLLER", () => {
       tableColumns: CategoryTableColumns.CATEGORIES_POST_VALUES_WITH_ID,
       arrayOfData: productCategoriesReadyToCreate,
     });
-
     // Important! This array has a length of 19!
     await connection.create({
       table: "products",
-      tableColumns: ProductTableColumns.PRODUCTS_POST_VALUES_FOR_TEST,
-      arrayOfData: productsReadyToCreate,
+      tableColumns: ProductTableColumns.PRODUCTS_POST_VALUES_WITH_IDS_FOR_TEST,
+      arrayOfData: productsReadyToCreateWithIds,
     });
-
-    const productIdInArray: any = await connection.personalizedQuery(
-      `SELECT id FROM products WHERE name = '${productsReadyToCreate[0][0]}'`
-    );
-
-    productId = productIdInArray[0].id;
-
     await connection.create({
       table: "users",
       tableColumns: UserTableColumns.USERS_POST_VALUES,
       arrayOfData: [userInfo],
     });
-
     const userIdInArray: any = await connection.personalizedQuery(
       `SELECT id FROM users WHERE username = '${userInfo[1]}'`
     );
 
     userId = userIdInArray[0].id;
 
-    /*     await connection.createe({
+    await connection.create({
       table: "orders",
-      tableColumns: OrderTableColumns.ORDER_POST_VALUES,
-      arrayOfData: productsReadyToCreate,
+      tableColumns: "(user_id, total_amount, id)",
+      arrayOfData: ordersReadyToCreate,
     });
-
     await connection.create({
       table: "order_items",
-      tableColumns: ProductTableColumns.PRODUCTS_POST_VALUES_FOR_TEST,
-      arrayOfData: productsReadyToCreate,
-    }); */
+      tableColumns: OrderTableColumns.ORDER_ITEMS_POST_VALUES,
+      arrayOfData: orderItemsReadyToCreate,
+    });
 
-    // console.log(await connection.personalizedQuery(`SELECT * FROM categories`));
+    // console.log(await connection.personalizedQuery(`SELECT * FROM orders`));
   });
 
   afterAll(async () => {
@@ -107,7 +98,68 @@ describe("Test for *ORDERS* --> CONTROLLER", () => {
     server.close();
   });
 
+  describe("test for [GET] (/api/v1/orders/:ordertId -- GET) ", () => {
+    let productId: any;
+
+    // Arrange
+    beforeAll(async () => {
+      // Notice a product of the sample array looks like this:
+      // [1, "iPhone 13 Pro", "The latest flagship smartphone from Apple.", 1099.99, 50, 1, "Space Gray"
+      productId = await connection.personalizedQuery(
+        `SELECT id FROM products WHERE name = '${productsReadyToCreateWithIds[0][1]}'`
+      );
+    });
+
+    test("should return and order, if order_id exists", async () => {
+      //Act
+      return await request(app)
+        .get("/api/v1/orders/1")
+        .expect(200)
+        .then((res: request.Response) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: false,
+            status: 200,
+            message: "This order is available",
+            // this belongs to the very first order on 'ordersReadyToCreate' array
+            body: [
+              {
+                created_at: expect.any(String),
+                id: 1,
+                modified_at: expect.any(String),
+                status: "payment_pending",
+                total_amount: 500,
+                user_id: "user_id_1234",
+              },
+            ],
+          });
+        });
+    });
+
+    test("should throw error 404 if no order was not found", async () => {
+      await request(app)
+        .get(`/api/v1/orders/1290r1hngi34`)
+        .expect(404)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 404,
+            body: "No order was found",
+          });
+        });
+    });
+  });
+
   describe("test for [CREATE] (/api/v1/orders/ -- POST) ", () => {
+    let productId: any;
+
+    beforeAll(async () => {
+      const productIdInArray: any = await connection.personalizedQuery(
+        `SELECT id FROM products WHERE name = '${productsReadyToCreate[0][0]}'`
+      );
+
+      productId = productIdInArray[0].id;
+    });
+
     test("should return 400 if user_id is missing", async () => {
       return await request(app)
         .post("/api/v1/orders/")
@@ -258,74 +310,4 @@ describe("Test for *ORDERS* --> CONTROLLER", () => {
         });
     });
   });
-
-  /*   describe("test for [GET] (/api/v1/orders/:ordertId -- GET) ", () => {
-    let productId: any;
-
-    // Arrange
-    beforeAll(async () => {
-      // Notice a product of the sample array looks like this:
-      // ["iPhone 13 Pro", "The latest flagship smartphone from Apple.", 1099.99, 50, 1, "Space Gray"
-      productId = await connection.personalizedQuery(
-        `SELECT id FROM products WHERE name = '${productsReadyToCreate[0][0]}'`
-      );
-    });
-
-    test("should return an array with some products", async () => {
-      //Act
-      return await request(app)
-        .get("/api/v1/products/")
-        .expect(200)
-        .then((response: request.Response) => {
-          const responseBody = JSON.parse(response.text);
-
-          //Assert
-          expect(responseBody.body.length).toBeGreaterThan(3);
-        });
-    });
-
-    test("should throw error if product doesn't exists ", async () => {
-      // register it's omitted
-      const fakeId = "210491dd2mf3@";
-
-      await request(app)
-        .get(`/api/v1/products/${fakeId}`)
-        .expect(404)
-        .then((res) => {
-          expect(JSON.parse(res.text)).toEqual({
-            error: true,
-            status: 404,
-            body: ErrorThrower.PRODUCT_NOT_FOUND,
-          });
-        });
-    });
-
-    test("should get product information if it exists on DB", async () => {
-      const [name, description, price, quantity, category_id, color] =
-        productsReadyToCreate[0];
-      const { id } = productId[0];
-
-      await request(app)
-        .get(`/api/v1/products/${id}`)
-        .expect(200)
-        .then((res) => {
-          expect(JSON.parse(res.text)).toEqual({
-            error: false,
-            status: 200,
-            message: "This product is available",
-            body: [
-              {
-                category_id,
-                name,
-                color,
-                description,
-                price,
-                quantity,
-                image: "",
-              },
-            ],
-          });
-        });
-    });
-  }); */
 });

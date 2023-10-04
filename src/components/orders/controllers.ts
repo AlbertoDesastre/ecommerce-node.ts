@@ -90,7 +90,7 @@ class OrderController {
           res,
           message: "This order is available",
           data: result as OrderModel[],
-          status: 201,
+          status: 200,
         });
       })
       .catch((err: MysqlError) => {

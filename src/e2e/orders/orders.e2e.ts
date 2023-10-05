@@ -24,7 +24,7 @@ describe("Test for *ORDERS* --> CONTROLLER", () => {
   let server: http.Server;
   let connection: ConnectionMethods;
   // variables used for doing tests down there
-  let userId: any;
+  let usersId: any;
   let productId: any;
 
   const expectedOrderShape = {
@@ -36,10 +36,36 @@ describe("Test for *ORDERS* --> CONTROLLER", () => {
     created_at: expect.any(String),
   };
 
+  const expectedOrderWithItemsShape = {
+    created_at: expect.any(String),
+    id: expect.any(Number),
+    products: expect.arrayContaining([
+      expect.objectContaining({
+        color: expect.any(String),
+        name: expect.any(String),
+        order_item_id: expect.any(Number),
+        quantity: expect.any(Number),
+        subtotal: expect.any(Number),
+      }),
+    ]),
+    status: expect.any(String),
+    total_amount: expect.any(Number),
+    user_id: expect.any(String),
+  };
+
   const userInfo = [
     "user_id_1234",
     "test",
     "test@mail.com",
+    "password123",
+    "",
+    "2023-05-05",
+  ];
+
+  const userWithoutOrdersInfo = [
+    "user_orderless",
+    "orderless",
+    "orderless@mail.com",
     "password123",
     "",
     "2023-05-05",
@@ -67,13 +93,13 @@ describe("Test for *ORDERS* --> CONTROLLER", () => {
     await connection.create({
       table: "users",
       tableColumns: UserTableColumns.USERS_POST_VALUES,
-      arrayOfData: [userInfo],
+      arrayOfData: [userInfo, userWithoutOrdersInfo],
     });
-    const userIdInArray: any = await connection.personalizedQuery(
-      `SELECT id FROM users WHERE username = '${userInfo[1]}'`
-    );
 
-    userId = userIdInArray[0].id;
+    usersId = {
+      normalUser: "user_id_1234",
+      orderlessUser: "user_orderless",
+    };
 
     await connection.create({
       table: "orders",
@@ -98,18 +124,7 @@ describe("Test for *ORDERS* --> CONTROLLER", () => {
     server.close();
   });
 
-  describe("test for [GET] (/api/v1/orders/:ordertId -- GET) ", () => {
-    let productId: any;
-
-    // Arrange
-    beforeAll(async () => {
-      // Notice a product of the sample array looks like this:
-      // [1, "iPhone 13 Pro", "The latest flagship smartphone from Apple.", 1099.99, 50, 1, "Space Gray"
-      productId = await connection.personalizedQuery(
-        `SELECT id FROM products WHERE name = '${productsReadyToCreateWithIds[0][1]}'`
-      );
-    });
-
+  describe("test for [GET] (/api/v1/orders/:orderId -- GET) ", () => {
     test("should return and order, if order_id exists", async () => {
       //Act
       return await request(app)
@@ -137,7 +152,7 @@ describe("Test for *ORDERS* --> CONTROLLER", () => {
 
     test("should throw error 404 if no order was not found", async () => {
       await request(app)
-        .get(`/api/v1/orders/1290r1hngi34`)
+        .get(`/api/v1/orders/9217590`)
         .expect(404)
         .then((res) => {
           expect(JSON.parse(res.text)).toEqual({
@@ -145,6 +160,54 @@ describe("Test for *ORDERS* --> CONTROLLER", () => {
             status: 404,
             body: "No order was found",
           });
+        });
+    });
+  });
+
+  describe("test for [LIST] (/api/v1/orders/ -- GET) ", () => {
+    test("should throw error 404 if the user searched doesn't exists", async () => {
+      await request(app)
+        .get(`/api/v1/orders/?userId=1290r1hngi34`)
+        .expect(404)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 404,
+            body: "This consumer doesn't exists and therefore it doesn't have any orders.",
+          });
+        });
+    });
+
+    test("should throw status 200 if the user exist but doesn't have any orders", async () => {
+      await request(app)
+        .get(`/api/v1/orders/?userId=${usersId.orderlessUser}`)
+        .expect(200)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: false,
+            status: 200,
+            message: "Succesfull call, here are the results.",
+            body: "This user doesn't have any orders.",
+          });
+        });
+    });
+
+    test("should return status 200 and order, if order_id exists", async () => {
+      return await request(app)
+        .get(`/api/v1/orders/?userId=${usersId.normalUser}`)
+        .expect(200)
+        .then((res: request.Response) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: false,
+            status: 200,
+            message: "Succesfull call, here are the results.",
+            // this belongs to the very first order on 'ordersReadyToCreate' array
+            body: expect.arrayContaining([
+              expect.objectContaining(expectedOrderWithItemsShape),
+            ]),
+          });
+
+          expect(JSON.parse(res.text).body.length).toBeGreaterThan(1);
         });
     });
   });
@@ -279,7 +342,7 @@ describe("Test for *ORDERS* --> CONTROLLER", () => {
 
     test("should return 201 if order fulfills all the criteriah to be created", async () => {
       const orderToCreate = {
-        user_id: userId,
+        user_id: usersId.normalUser,
         total_amount: 100,
         products: [
           {

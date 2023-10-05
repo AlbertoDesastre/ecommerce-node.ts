@@ -35,8 +35,9 @@ class OrderService {
       addExtraQuotesToId: true,
     });
 
-    if (Array.isArray(doesUserExist) && doesUserExist.length === 0)
-      return ErrorThrower.USER_DOESNT_EXISTS;
+    if (Array.isArray(doesUserExist) && doesUserExist.length === 0) {
+      throw new Error(ErrorThrower.USER_DOESNT_EXISTS);
+    }
 
     const result = (await this.connection.personalizedQuery(
       OrdersQueries.GET_ORDERS_AND_ORDER_ITEMS_WHERE_USER_ID +

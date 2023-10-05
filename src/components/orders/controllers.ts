@@ -17,6 +17,7 @@ class OrderController {
     this.orderService = new OrderService();
   }
 
+  // test done
   list(req: Request, res: Response) {
     const { userId } = req.query as { userId: string };
 
@@ -38,7 +39,14 @@ class OrderController {
         });
       })
       .catch((err: MysqlError) => {
-        return errors({ res, message: err.message, status: 500 });
+        let statusCode;
+        if (err.message === ErrorThrower.USER_DOESNT_EXISTS) {
+          statusCode = 404;
+        } else {
+          statusCode = 500;
+        }
+
+        return errors({ res, message: err.message, status: statusCode });
       });
   }
 
@@ -80,6 +88,7 @@ class OrderController {
       });
   }
 
+  // test done
   getOne(req: Request, res: Response) {
     const { orderId } = req.params;
 
@@ -105,6 +114,7 @@ class OrderController {
       });
   }
 
+  // test done
   create(req: Request, res: Response) {
     const order: OrderPostRequestModel = req.body;
 

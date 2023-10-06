@@ -72,8 +72,10 @@ class OrderService {
         OrdersQueries.ORDER_BY_ORDERS_DATE
     )) as MysqlError;
 
-    if (Array.isArray(result) && result.length === 0)
-      return ErrorThrower.ORDER_ITEM_DOESNT_EXISTS_WITH_THESE_PARAMS;
+    if (Array.isArray(result) && result.length === 0) {
+      throw new Error(ErrorThrower.ORDER_ITEM_DOESNT_EXISTS_WITH_THESE_PARAMS);
+    }
+
     if (!Array.isArray(result)) throw new Error(result.message);
 
     return this.formatOrders(result as OrderWithProductsInfo[]);

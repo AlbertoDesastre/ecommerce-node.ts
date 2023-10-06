@@ -1,6 +1,7 @@
 import request from "supertest";
 import { Express } from "express";
 import http from "http";
+import { format } from "date-fns";
 
 import * as mysqlStore from "../../store/mysql";
 import { ConnectionMethods } from "../../store/types";
@@ -15,18 +16,18 @@ import {
   productsReadyToCreate,
   orderItemsReadyToCreate,
   ordersReadyToCreate,
+  productsReadyToCreateWithIds,
 } from "../exampleData";
-import { ErrorThrower } from "../../components/products/types";
 
 describe("Test for *ORDERS* --> CONTROLLER", () => {
   let expressApp: Express;
   let server: http.Server;
   let connection: ConnectionMethods;
   // variables used for doing tests down there
-  let userId: any;
+  let usersId: any;
   let productId: any;
 
-  const expectedOrderShape = {
+  /*   const expectedOrderShape = {
     id: expect.any(Number),
     user_id: expect.any(String),
     total_amount: expect.any(Number),
@@ -34,11 +35,37 @@ describe("Test for *ORDERS* --> CONTROLLER", () => {
     modified_at: expect.any(String),
     created_at: expect.any(String),
   };
+ */
+  const expectedOrderWithItemsShape = {
+    created_at: expect.any(String),
+    id: expect.any(Number),
+    products: expect.arrayContaining([
+      expect.objectContaining({
+        color: expect.any(String),
+        name: expect.any(String),
+        order_item_id: expect.any(Number),
+        quantity: expect.any(Number),
+        subtotal: expect.any(Number),
+      }),
+    ]),
+    status: expect.any(String),
+    total_amount: expect.any(Number),
+    user_id: expect.any(String),
+  };
 
   const userInfo = [
     "user_id_1234",
     "test",
     "test@mail.com",
+    "password123",
+    "",
+    "2023-05-05",
+  ];
+
+  const userWithoutOrdersInfo = [
+    "user_orderless",
+    "orderless",
+    "orderless@mail.com",
     "password123",
     "",
     "2023-05-05",
@@ -57,45 +84,33 @@ describe("Test for *ORDERS* --> CONTROLLER", () => {
       tableColumns: CategoryTableColumns.CATEGORIES_POST_VALUES_WITH_ID,
       arrayOfData: productCategoriesReadyToCreate,
     });
-
     // Important! This array has a length of 19!
     await connection.create({
       table: "products",
-      tableColumns: ProductTableColumns.PRODUCTS_POST_VALUES_FOR_TEST,
-      arrayOfData: productsReadyToCreate,
+      tableColumns: ProductTableColumns.PRODUCTS_POST_VALUES_WITH_IDS_FOR_TEST,
+      arrayOfData: productsReadyToCreateWithIds,
     });
-
-    const productIdInArray: any = await connection.personalizedQuery(
-      `SELECT id FROM products WHERE name = '${productsReadyToCreate[0][0]}'`
-    );
-
-    productId = productIdInArray[0].id;
-
     await connection.create({
       table: "users",
       tableColumns: UserTableColumns.USERS_POST_VALUES,
-      arrayOfData: [userInfo],
+      arrayOfData: [userInfo, userWithoutOrdersInfo],
     });
-
-    const userIdInArray: any = await connection.personalizedQuery(
-      `SELECT id FROM users WHERE username = '${userInfo[1]}'`
-    );
-
-    userId = userIdInArray[0].id;
-
-    /*     await connection.createe({
+    await connection.create({
       table: "orders",
-      tableColumns: OrderTableColumns.ORDER_POST_VALUES,
-      arrayOfData: productsReadyToCreate,
+      tableColumns: "(user_id, total_amount, id)",
+      arrayOfData: ordersReadyToCreate,
     });
-
     await connection.create({
       table: "order_items",
-      tableColumns: ProductTableColumns.PRODUCTS_POST_VALUES_FOR_TEST,
-      arrayOfData: productsReadyToCreate,
-    }); */
+      tableColumns: OrderTableColumns.ORDER_ITEMS_POST_VALUES,
+      arrayOfData: orderItemsReadyToCreate,
+    });
 
-    // console.log(await connection.personalizedQuery(`SELECT * FROM categories`));
+    usersId = {
+      normalUser: "user_id_1234",
+      orderlessUser: "user_orderless",
+    };
+    // console.log(await connection.personalizedQuery(`SELECT * FROM orders`));
   });
 
   afterAll(async () => {
@@ -107,7 +122,200 @@ describe("Test for *ORDERS* --> CONTROLLER", () => {
     server.close();
   });
 
+  describe("test for [GET] (/api/v1/orders/:orderId -- GET) ", () => {
+    test("should return and order, if order_id exists", async () => {
+      //Act
+      return await request(app)
+        .get("/api/v1/orders/1")
+        .expect(200)
+        .then((res: request.Response) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: false,
+            status: 200,
+            message: "This order is available",
+            // this belongs to the very first order on 'ordersReadyToCreate' array
+            body: [
+              {
+                created_at: expect.any(String),
+                id: 1,
+                modified_at: expect.any(String),
+                status: "payment_pending",
+                total_amount: 500,
+                user_id: "user_id_1234",
+              },
+            ],
+          });
+        });
+    });
+
+    test("should throw error 404 if no order was not found", async () => {
+      await request(app)
+        .get(`/api/v1/orders/9217590`)
+        .expect(404)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 404,
+            body: "No order was found",
+          });
+        });
+    });
+  });
+
+  describe("test for [LIST] (/api/v1/orders/ -- GET) ", () => {
+    test("should throw error 404 if the user searched doesn't exists", async () => {
+      await request(app)
+        .get(`/api/v1/orders/?userId=1290r1hngi34`)
+        .expect(404)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 404,
+            body: "This consumer doesn't exists and therefore it doesn't have any orders.",
+          });
+        });
+    });
+
+    test("should throw status 200 if the user exist but doesn't have any orders", async () => {
+      await request(app)
+        .get(`/api/v1/orders/?userId=${usersId.orderlessUser}`)
+        .expect(200)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: false,
+            status: 200,
+            message: "Succesfull call, here are the results.",
+            body: "This user doesn't have any orders.",
+          });
+        });
+    });
+
+    test("should return status 200 and order, if order_id exists", async () => {
+      return await request(app)
+        .get(`/api/v1/orders/?userId=${usersId.normalUser}`)
+        .expect(200)
+        .then((res: request.Response) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: false,
+            status: 200,
+            message: "Succesfull call, here are the results.",
+            // this belongs to the very first order on 'ordersReadyToCreate' array
+            body: expect.arrayContaining([
+              expect.objectContaining(expectedOrderWithItemsShape),
+            ]),
+          });
+
+          expect(JSON.parse(res.text).body.length).toBeGreaterThan(1);
+        });
+    });
+  });
+
+  describe("test for [FILTER] (/api/v1/orders/filter -- GET) ", () => {
+    test("should throw 404 if no order contains the product with certain NAME", async () => {
+      await request(app)
+        .get(`/api/v1/orders/filter?productName=NGEWNGWLÑÑL34`)
+        .expect(404)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 404,
+            body: "There are no orders with the name or creation date specified.",
+          });
+        });
+    });
+
+    test("should throw 400 there are no query params for this call", async () => {
+      await request(app)
+        .get(`/api/v1/orders/filter?creationDate=2002-05-05`)
+        .expect(400)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 400,
+            body: "You must provide either 'productName' or 'itemCreatedAt' properties in query params to perform this action.",
+          });
+        });
+    });
+
+    test("should throw 400 if 'itemCreatedAt' has wrong format", async () => {
+      await request(app)
+        .get(`/api/v1/orders/filter?itemCreatedAt=2000/05/05`)
+        .expect(400)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 400,
+            body: "Invalid date format. Please use the format 'YYYY-MM-DD'.",
+          });
+        });
+    });
+
+    test("should throw 404 if no order contains the product with certain ITEM CREATED AT", async () => {
+      await request(app)
+        .get(`/api/v1/orders/filter?itemCreatedAt=2002-05-05`)
+        .expect(404)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 404,
+            body: "There are no orders with the name or creation date specified.",
+          });
+        });
+    });
+
+    test("should bring status 200 and an iPhone order if the product exists in an order", async () => {
+      await request(app)
+        .get(`/api/v1/orders/filter?productName=${productsReadyToCreate[0][0]}`) // this corresponds to "iPhone 13 Pro"
+        .expect(200)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: false,
+            status: 200,
+            message: "Order/s available...",
+            body: expect.arrayContaining([
+              expect.objectContaining(expectedOrderWithItemsShape),
+            ]),
+          });
+
+          expect(JSON.parse(res.text).body.length).toEqual(1);
+          expect(JSON.parse(res.text).body[0].products[0].name).toEqual(
+            "iPhone 13 Pro"
+          );
+        });
+    });
+
+    test("should bring status 200 and some orders if ITEM CREATED AT match with the products", async () => {
+      const today = format(new Date(), "yyyy-MM-dd");
+
+      await request(app)
+        .get(`/api/v1/orders/filter?itemCreatedAt=${today}`)
+        .expect(200)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: false,
+            status: 200,
+            message: "Order/s available...",
+            body: expect.arrayContaining([
+              expect.objectContaining(expectedOrderWithItemsShape),
+            ]),
+          });
+
+          expect(JSON.parse(res.text).body.length).toBeGreaterThan(3);
+        });
+    });
+  });
+
   describe("test for [CREATE] (/api/v1/orders/ -- POST) ", () => {
+    let productId: any;
+
+    beforeAll(async () => {
+      const productIdInArray: any = await connection.personalizedQuery(
+        `SELECT id FROM products WHERE name = '${productsReadyToCreate[0][0]}'`
+      );
+
+      productId = productIdInArray[0].id;
+    });
+
     test("should return 400 if user_id is missing", async () => {
       return await request(app)
         .post("/api/v1/orders/")
@@ -227,7 +435,7 @@ describe("Test for *ORDERS* --> CONTROLLER", () => {
 
     test("should return 201 if order fulfills all the criteriah to be created", async () => {
       const orderToCreate = {
-        user_id: userId,
+        user_id: usersId.normalUser,
         total_amount: 100,
         products: [
           {
@@ -258,74 +466,4 @@ describe("Test for *ORDERS* --> CONTROLLER", () => {
         });
     });
   });
-
-  /*   describe("test for [GET] (/api/v1/orders/:ordertId -- GET) ", () => {
-    let productId: any;
-
-    // Arrange
-    beforeAll(async () => {
-      // Notice a product of the sample array looks like this:
-      // ["iPhone 13 Pro", "The latest flagship smartphone from Apple.", 1099.99, 50, 1, "Space Gray"
-      productId = await connection.personalizedQuery(
-        `SELECT id FROM products WHERE name = '${productsReadyToCreate[0][0]}'`
-      );
-    });
-
-    test("should return an array with some products", async () => {
-      //Act
-      return await request(app)
-        .get("/api/v1/products/")
-        .expect(200)
-        .then((response: request.Response) => {
-          const responseBody = JSON.parse(response.text);
-
-          //Assert
-          expect(responseBody.body.length).toBeGreaterThan(3);
-        });
-    });
-
-    test("should throw error if product doesn't exists ", async () => {
-      // register it's omitted
-      const fakeId = "210491dd2mf3@";
-
-      await request(app)
-        .get(`/api/v1/products/${fakeId}`)
-        .expect(404)
-        .then((res) => {
-          expect(JSON.parse(res.text)).toEqual({
-            error: true,
-            status: 404,
-            body: ErrorThrower.PRODUCT_NOT_FOUND,
-          });
-        });
-    });
-
-    test("should get product information if it exists on DB", async () => {
-      const [name, description, price, quantity, category_id, color] =
-        productsReadyToCreate[0];
-      const { id } = productId[0];
-
-      await request(app)
-        .get(`/api/v1/products/${id}`)
-        .expect(200)
-        .then((res) => {
-          expect(JSON.parse(res.text)).toEqual({
-            error: false,
-            status: 200,
-            message: "This product is available",
-            body: [
-              {
-                category_id,
-                name,
-                color,
-                description,
-                price,
-                quantity,
-                image: "",
-              },
-            ],
-          });
-        });
-    });
-  }); */
 });

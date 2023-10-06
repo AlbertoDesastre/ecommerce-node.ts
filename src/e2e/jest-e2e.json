@@ -1,7 +1,7 @@
 {
   "moduleFileExtensions": ["ts", "js"],
   "preset": "ts-jest",
-  "rootDir": ".",
+  "rootDir": "../",
   "testEnvironment": "node",
   "testRegex": ".e2e.ts$",
   "verbose": true

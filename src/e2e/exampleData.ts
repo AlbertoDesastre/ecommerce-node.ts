@@ -82,6 +82,8 @@ const productCategoriesReadyToCreate = [
   [13, "Fitness Trackers", "Devices for monitoring health and fitness.", 1],
 ];
 
+// the order is: name, description, price, quantity, active (boolean), colour
+
 const productsReadyToCreate = [
   [
     "iPhone 13 Pro",
@@ -237,13 +239,208 @@ const productsReadyToCreate = [
   ],
 ];
 
-const ordersReadyToCreate: any = [];
+// the order is: product_id, name, description, price, quantity, active (boolean), colour
+const productsReadyToCreateWithIds = [
+  [
+    1,
+    "iPhone 13 Pro",
+    "The latest flagship smartphone from Apple.",
+    1099.99,
+    50,
+    1,
+    "Space Gray",
+  ],
+  [
+    2,
+    "Samsung Galaxy S21 Ultra",
+    "Premium Android phone with top-of-the-line features.",
+    1199.99,
+    100,
+    1,
+    "Phantom Black",
+  ],
+  [
+    3,
+    "Sony PlayStation 5",
+    "Next-generation gaming console with stunning graphics.",
+    499.99,
+    75,
+    3,
+    "Jet Black",
+  ],
+  [
+    4,
+    "Microsoft Xbox Series X",
+    "Powerful gaming console with backward compatibility.",
+    499.99,
+    60,
+    3,
+    "Robot White",
+  ],
+  [
+    5,
+    "Samsung QLED 4K TV",
+    "High-quality smart TV with vibrant colors and impressive resolution.",
+    1299.99,
+    40,
+    4,
+    "Titan Gray",
+  ],
+  [
+    6,
+    "Apple MacBook Air",
+    "Lightweight and powerful laptop for everyday use.",
+    999.99,
+    80,
+    2,
+    "Silver",
+  ],
+  [
+    7,
+    "Canon EOS R5",
+    "Professional mirrorless camera with exceptional image quality.",
+    3799.99,
+    20,
+    5,
+    "Black",
+  ],
+  [
+    8,
+    "Sony WH-1000XM4",
+    "Premium noise-canceling headphones with immersive sound.",
+    349.99,
+    100,
+    6,
+    "Silver",
+  ],
+  [
+    9,
+    "DJI Mavic Air 2",
+    "Compact and powerful drone for capturing stunning aerial footage.",
+    799.99,
+    30,
+    7,
+    "Arctic White",
+  ],
+  [
+    10,
+    "Bose QuietComfort 35 II",
+    "Wireless headphones with excellent noise cancellation.",
+    299.99,
+    150,
+    6,
+    "Black",
+  ],
+  [
+    11,
+    "Nintendo Switch",
+    "Versatile gaming console for both handheld and TV gaming.",
+    299.99,
+    90,
+    3,
+    "Neon Red/Neon Blue",
+  ],
+  [
+    12,
+    "Samsung Galaxy Watch 4",
+    "Smartwatch with advanced health and fitness tracking features.",
+    299.99,
+    50,
+    8,
+    "Phantom Black",
+  ],
+  [
+    13,
+    "LG OLED 4K TV",
+    "Premium OLED TV with deep blacks and rich colors.",
+    1999.99,
+    30,
+    4,
+    "Ceramic Black",
+  ],
+  [
+    14,
+    "Fitbit Charge 4",
+    "Fitness tracker with built-in GPS and heart rate monitoring.",
+    149.99,
+    200,
+    9,
+    "Black",
+  ],
+  [
+    15,
+    "Bose SoundLink Revolve+",
+    "Portable Bluetooth speaker with 360-degree sound.",
+    299.99,
+    80,
+    10,
+    "Lux Gray",
+  ],
+  [
+    16,
+    "Google Nest Hub",
+    "Smart display with voice control for managing your smart home.",
+    99.99,
+    120,
+    11,
+    "Chalk",
+  ],
+  [
+    17,
+    "Microsoft Surface Pro 7",
+    "Versatile 2-in-1 laptop and tablet for productivity.",
+    1299.99,
+    70,
+    2,
+    "Platinum",
+  ],
+  [
+    18,
+    "GoPro HERO9 Black",
+    "Action camera with 5K video recording and advanced stabilization.",
+    449.99,
+    50,
+    5,
+    "Black",
+  ],
+  [
+    19,
+    "Amazon Echo Dot",
+    "Smart speaker with Alexa voice assistant for hands-free control.",
+    49.99,
+    250,
+    11,
+    "Charcoal",
+  ],
+];
 
-const orderItemsReadyToCreate: any = [];
+// this array contain, in this order --> user_id, total_amount of the order, order_id
+const ordersReadyToCreate: any = [
+  ["user_id_1234", 500.0, 1],
+  ["user_id_1234", 1200.0, 2],
+  ["user_id_1234", 300.0, 3],
+  ["user_id_1234", 2400.0, 4],
+  ["user_id_1234", 200.0, 5],
+];
+
+// this array contain, in this order --> order_id, product_id, quantity, subtotal
+const orderItemsReadyToCreate: any = [
+  [1, 1, 50, 500.0],
+  [2, 2, 10, 600.0],
+  [2, 3, 20, 600.0],
+  [3, 4, 5, 150.0],
+  [3, 5, 5, 150.0],
+  [4, 6, 15, 1200.0],
+  [4, 7, 5, 1200.0],
+  [5, 8, 4, 100.0],
+  [5, 9, 6, 100.0],
+];
+
 export {
   productCategories,
   productCategoriesReadyToCreate,
   productsReadyToCreate,
+  productsReadyToCreateWithIds,
   ordersReadyToCreate,
   orderItemsReadyToCreate,
 };

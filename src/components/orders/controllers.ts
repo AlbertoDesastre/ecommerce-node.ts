@@ -17,6 +17,7 @@ class OrderController {
     this.orderService = new OrderService();
   }
 
+  // test done
   list(req: Request, res: Response) {
     const { userId } = req.query as { userId: string };
 
@@ -38,7 +39,14 @@ class OrderController {
         });
       })
       .catch((err: MysqlError) => {
-        return errors({ res, message: err.message, status: 500 });
+        let statusCode;
+        if (err.message === ErrorThrower.USER_DOESNT_EXISTS) {
+          statusCode = 404;
+        } else {
+          statusCode = 500;
+        }
+
+        return errors({ res, message: err.message, status: statusCode });
       });
   }
 
@@ -72,14 +80,25 @@ class OrderController {
           res,
           message: "Order/s available...",
           data: result,
-          status: 201,
+          status: 200,
         });
       })
       .catch((err: MysqlError) => {
-        return errors({ res, message: err.message, status: 500 });
+        let statusCode;
+        if (
+          err.message ===
+          ErrorThrower.ORDER_ITEM_DOESNT_EXISTS_WITH_THESE_PARAMS
+        ) {
+          statusCode = 404;
+        } else {
+          statusCode = 500;
+        }
+
+        return errors({ res, message: err.message, status: statusCode });
       });
   }
 
+  // test done
   getOne(req: Request, res: Response) {
     const { orderId } = req.params;
 
@@ -90,7 +109,7 @@ class OrderController {
           res,
           message: "This order is available",
           data: result as OrderModel[],
-          status: 201,
+          status: 200,
         });
       })
       .catch((err: MysqlError) => {
@@ -105,6 +124,7 @@ class OrderController {
       });
   }
 
+  // test done
   create(req: Request, res: Response) {
     const order: OrderPostRequestModel = req.body;
 

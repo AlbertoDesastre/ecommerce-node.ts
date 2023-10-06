@@ -50,6 +50,7 @@ class OrderController {
       });
   }
 
+  // test done
   filterBy(req: Request, res: Response) {
     const { productName, itemCreatedAt } = req.query as FilterQueries;
 
@@ -208,7 +209,14 @@ class OrderController {
         });
       })
       .catch((err: MysqlError) => {
-        return errors({ res, message: err.message, status: 500 });
+        let statusCode;
+        if (err.message === ErrorThrower.ORDER_NOT_FOUND) {
+          statusCode = 404;
+        } else {
+          statusCode = 500;
+        }
+
+        return errors({ res, message: err.message, status: statusCode });
       });
   }
 }

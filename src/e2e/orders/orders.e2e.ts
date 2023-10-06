@@ -9,7 +9,10 @@ import { app } from "../../app";
 import { TableColumns as CategoryTableColumns } from "../../components/product_categories/models";
 import { TableColumns as ProductTableColumns } from "../../components/products/models";
 import { TableColumns as UserTableColumns } from "../../components/user/models";
-import { TableColumns as OrderTableColumns } from "../../components/orders/models";
+import {
+  OrderStatus,
+  TableColumns as OrderTableColumns,
+} from "../../components/orders/models";
 
 import {
   productCategoriesReadyToCreate,
@@ -462,6 +465,77 @@ describe("Test for *ORDERS* --> CONTROLLER", () => {
             error: false,
             status: 201,
             message: "Order created",
+          });
+        });
+    });
+  });
+
+  describe("Test for [UPDATE STATUS] (/api/v1/orders/ -- PUT) ", () => {
+    test("should return 400 if body is incomplete", async () => {
+      // Act
+      return await request(app)
+        .put("/api/v1/orders/")
+        .send({})
+        .expect(400)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 400,
+            body: "You didn't provide enough data to update the order",
+          });
+        });
+    });
+
+    test("should return 400 if status is invalid", async () => {
+      // Act
+      return await request(app)
+        .put("/api/v1/orders/")
+        .send({
+          id: 1,
+          status: "invalid_status",
+        })
+        .expect(400)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 400,
+            body: "Invalid order status",
+          });
+        });
+    });
+
+    test("should throw 404 if no order with this id exists", async () => {
+      await request(app)
+        .put(`/api/v1/orders/`)
+        .send({
+          id: 218957128,
+          status: OrderStatus.DELIVERED, // equals: "delivered". This is one of the many examples of valid status
+        })
+        .expect(404)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 404,
+            body: "No order was found",
+          });
+        });
+    });
+
+    test("should return 201 if order status is updated successfully", async () => {
+      // Act
+      return await request(app)
+        .put("/api/v1/orders/")
+        .send({
+          id: 1,
+          status: OrderStatus.CANCELLED, // equals: "cancelled". This is one of the many examples of valid status
+        })
+        .expect(201)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: false,
+            status: 201,
+            message: "The order was updated",
+            body: "The order now has 'cancelled' status",
           });
         });
     });

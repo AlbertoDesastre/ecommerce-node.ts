@@ -6,7 +6,7 @@
   "scripts": {
     "build": "rimraf dist && npx tsc",
     "e2e": "jest --config ./src/e2e/jest-e2e.json --verbose --forceExit --runInBand ",
-    "e2e:coverage": "jest --config ./src/e2e/jest-e2e.json  --coverage --forceExit",
+    "e2e:coverage": "jest --config ./src/e2e/jest-e2e.json --verbose --runInBand --coverage --forceExit",
     "preserve": "npm run build ",
     "serve": "concurrently \"npx tsc -w\"  \"nodemon dist/index.js\"",
     "start": "node dist/index.js",

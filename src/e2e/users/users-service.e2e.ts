@@ -1,4 +1,3 @@
-import request from "supertest";
 import { Express } from "express";
 import http from "http";
 import { app } from "../../app";
@@ -7,7 +6,6 @@ import { ConnectionMethods } from "../../store/types";
 import * as userService from "../../components/user/services";
 import { BasicUser, TableColumns } from "../../components/user/models";
 import { ErrorThrower } from "../../components/user/types";
-import { rejects } from "assert";
 
 describe("Test for *USER* --> SERVICE", () => {
   let expressApp: Express;

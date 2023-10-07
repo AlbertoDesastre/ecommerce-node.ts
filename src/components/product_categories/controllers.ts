@@ -5,6 +5,7 @@ import { CategoryService } from "./services";
 import { success, errors } from "../../network";
 import { FilterQueries } from "./types";
 import { Category } from "./models";
+import { ErrorThrower } from "./types";
 
 class CategoryController {
   private categoryService;
@@ -53,7 +54,11 @@ class CategoryController {
         });
       })
       .catch((err: Error) => {
-        return errors({ res, message: err.message, status: 500 });
+        let statusCode = 500;
+        if (err.message === ErrorThrower.CATEGORY_NOT_FOUND) {
+          statusCode = 404;
+        }
+        return errors({ res, message: err.message, status: statusCode });
       });
   }
 
@@ -67,14 +72,19 @@ class CategoryController {
           res,
           message: "This category is available",
           data: result,
-          status: 201,
+          status: 200,
         });
       })
       .catch((err: Error) => {
-        return errors({ res, message: err.message, status: 500 });
+        let statusCode = 500;
+        if (err.message === ErrorThrower.CATEGORY_NOT_FOUND) {
+          statusCode = 404;
+        }
+        return errors({ res, message: err.message, status: statusCode });
       });
   }
 
+  // test done
   create(req: Request, res: Response) {
     const arrayOfCategories: Category[] = req.body;
 
@@ -123,7 +133,11 @@ class CategoryController {
         });
       })
       .catch((err: Error) => {
-        return errors({ res, message: err.message, status: 500 });
+        let statusCode = 500;
+        if (err.message === ErrorThrower.CATEGORY_NOT_FOUND) {
+          statusCode = 404;
+        }
+        return errors({ res, message: err.message, status: statusCode });
       });
   }
 
@@ -141,7 +155,11 @@ class CategoryController {
         });
       })
       .catch((err: Error) => {
-        return errors({ res, message: err.message, status: 500 });
+        let statusCode = 500;
+        if (err.message === ErrorThrower.CATEGORY_NOT_FOUND) {
+          statusCode = 404;
+        }
+        return errors({ res, message: err.message, status: statusCode });
       });
   }
 }

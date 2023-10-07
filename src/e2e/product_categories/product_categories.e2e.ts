@@ -178,6 +178,61 @@ describe("Test for *CATEGORIES* --> CONTROLLER", () => {
     });
   });
 
+  describe("test for [FILTER-BY] (/api/v1/categories/filter -- GET) ", () => {
+    beforeAll(async () => {
+      await connection.create({
+        table: "categories",
+        tableColumns: CategoryTableColumns.CATEGORIES_POST_VALUES_WITH_ID,
+        arrayOfData: [productCategoriesReadyToCreate[14]], // this is equal to [1, "Smartphones", "Mobile devices with advanced features.", 1]
+      });
+    });
+
+    afterAll(async () => {
+      await connection.eliminate({ table: "categories" });
+    });
+
+    test("should return 404 if none of the filters matchs any category", async () => {
+      // Act
+      return await request(app)
+        .get(`/api/v1/categories/filter?name=misteryffffff`)
+        .expect(404)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 404,
+            body: "The category you are searching for doesn't exists.",
+          });
+        });
+    });
+
+    test("should return 200 if category match the filters provided", async () => {
+      // this information is taken from the sample products provided in this same file, in position 0
+      let category = {
+        name: "Mistery",
+      };
+
+      return await request(app)
+        .get(`/api/v1/categories/filter?name=${category.name}`)
+        .expect(200)
+        .then(async (res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: false,
+            status: 200,
+            message: "Category/ies available...",
+            body: [
+              {
+                id: 15,
+                name: "Mistery",
+                description: "Secrets and mystic knowledge.",
+                created_at: expect.any(String),
+                active: 1,
+              },
+            ],
+          });
+        });
+    });
+  });
+
   describe("test for [CREATE] (/api/v1/categories/ -- POST) ", () => {
     test("should return 400 if body wasn't provided", async () => {
       // Act

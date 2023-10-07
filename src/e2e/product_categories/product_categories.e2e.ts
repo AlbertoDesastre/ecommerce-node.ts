@@ -206,7 +206,7 @@ describe("Test for *CATEGORIES* --> CONTROLLER", () => {
     });
 
     test("should return 200 if category match the filters provided", async () => {
-      // this information is taken from the sample products provided in this same file, in position 0
+      // this information is taken from the sample categories provided in this same file, in position 0
       let category = {
         name: "Mistery",
       };
@@ -286,6 +286,132 @@ describe("Test for *CATEGORIES* --> CONTROLLER", () => {
 
           expect(result.length).toEqual(3);
           expect(result[0].name).toEqual(productCategories[0].name);
+        });
+    });
+  });
+
+  describe("test for [UPDATE] (/api/v1/categories/ -- PUT) ", () => {
+    let categoryIdInArray: any;
+    let categoryId: any;
+
+    beforeEach(async () => {
+      await connection.create({
+        table: "categories",
+        tableColumns: CategoryTableColumns.CATEGORIES_POST_VALUES_WITH_ID,
+        arrayOfData: [productCategoriesReadyToCreate[0]], // this is equal to [1, "Smartphones", "Mobile devices with advanced features.", 1]
+      });
+
+      categoryIdInArray = await connection.personalizedQuery(
+        `SELECT id, name FROM categories WHERE name = '${productCategoriesReadyToCreate[0][1]}'`
+      );
+      categoryId = categoryIdInArray[0].id;
+    });
+
+    afterEach(async () => {
+      await connection.eliminate({ table: "categories" });
+    });
+
+    test("should return 400 if an array it's passed as body", async () => {
+      // Act
+      return await request(app)
+        .put("/api/v1/categories/")
+        .send([])
+        .expect(400)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 400,
+            body: "You didn't provide a body",
+          });
+        });
+    });
+
+    test("should return 400 if an empty object it's provided", async () => {
+      // Act
+      return await request(app)
+        .put("/api/v1/categories/")
+        .send({})
+        .expect(400)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 400,
+            body: "You didn't provide a body",
+          });
+        });
+    });
+
+    test("should return 404 if category wasn't found", async () => {
+      // Act
+      return await request(app)
+        .put("/api/v1/categories/")
+        .send({
+          id: 999999999,
+          name: "Furniture",
+          description: "Furniture and furniture",
+        })
+        .expect(404)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 404,
+            body: "The category you are searching for doesn't exists.",
+          });
+        });
+    });
+
+    test("should return 200 if category is successfully updated", async () => {
+      return await request(app)
+        .put("/api/v1/categories/")
+        .send({
+          id: categoryId,
+          name: "Furniture",
+          description: "Furniture and furniture",
+        })
+        .expect(200)
+        .then(async (res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: false,
+            status: 200,
+            message: "The category was updated",
+            body: "The item you wanted to update was indeed updated.",
+          });
+        });
+    });
+
+    test("should return 500 if category didn't change it's state", async () => {
+      // we update succesfully a category for the first time
+      await request(app)
+        .put("/api/v1/categories/")
+        .send({
+          id: categoryId,
+          name: "Furniture",
+          description: "Furniture and furniture",
+        })
+        .expect(200)
+        .then(async (res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: false,
+            status: 200,
+            message: "The category was updated",
+            body: "The item you wanted to update was indeed updated.",
+          });
+        });
+      // we try to update the category with the exact same info for a second time
+      return await request(app)
+        .put("/api/v1/categories/")
+        .send({
+          id: categoryId,
+          name: "Furniture",
+          description: "Furniture and furniture",
+        })
+        .expect(500)
+        .then(async (res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 500,
+            body: "No update was made to the category because it has the same state.",
+          });
         });
     });
   });

@@ -81,6 +81,13 @@ const productCategoriesReadyToCreate = [
   [11, "Wearable Tech", "Technological devices worn on the body.", 1],
   [12, "Home Appliances", "Electronic devices for household tasks.", 1],
   [13, "Fitness Trackers", "Devices for monitoring health and fitness.", 1],
+  [
+    14,
+    "Unknown category",
+    "Where the products with no clear category ends up.",
+    1,
+  ],
+  [15, "Mistery", "Secrets and mystic knowledge.", 1],
 ];
 
 // the order is: name, description, price, quantity, active (boolean), colour

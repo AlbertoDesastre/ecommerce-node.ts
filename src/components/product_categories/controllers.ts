@@ -147,7 +147,11 @@ class CategoryController {
         });
       })
       .catch((err: Error) => {
-        return errors({ res, message: err.message, status: 500 });
+        let statusCode = 500;
+        if (err.message === ErrorThrower.CATEGORY_NOT_FOUND) {
+          statusCode = 404;
+        }
+        return errors({ res, message: err.message, status: statusCode });
       });
   }
 }

@@ -234,4 +234,58 @@ describe("Test for *CATEGORIES* --> CONTROLLER", () => {
         });
     });
   });
+
+  describe("test for [DEACTIVATE] (/api/v1/categories/:categoryId -- DELETE) ", () => {
+    beforeAll(async () => {
+      await connection.create({
+        table: "categories",
+        tableColumns: CategoryTableColumns.CATEGORIES_POST_VALUES_WITH_ID,
+        arrayOfData: [productCategoriesReadyToCreate[0]],
+      });
+    });
+    afterAll(async () => {
+      await connection.eliminate({ table: "categories" });
+    });
+
+    test("should return a 404 status code if the category wasn't found", async () => {
+      return await request(app)
+        .delete(`/api/v1/categories/9999`)
+        .expect(404)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 404,
+            body: "The category you are searching for doesn't exists.",
+          });
+        });
+    });
+
+    test("should deactivate a category and return a 200 status code", async () => {
+      return await request(app)
+        .delete(`/api/v1/categories/1`)
+        .expect(200)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: false,
+            status: 200,
+            message: "Category deactivated",
+            body: "The item you wanted to update was indeed updated.",
+          });
+        });
+    });
+
+    // notice that this test depends on the state of the previous one, since it's trying to deactivate an already deactivated category
+    test("should return a 500 status code if the category wasn't updated", async () => {
+      return await request(app)
+        .delete(`/api/v1/categories/1`)
+        .expect(500)
+        .then((res) => {
+          expect(JSON.parse(res.text)).toEqual({
+            error: true,
+            status: 500,
+            body: "No update was made to the category because it has the same state.",
+          });
+        });
+    });
+  });
 });

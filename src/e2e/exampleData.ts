@@ -66,6 +66,7 @@ const productCategories = [
   },
 ];
 
+// the order is: id, name, description, active (boolean)
 const productCategoriesReadyToCreate = [
   [1, "Smartphones", "Mobile devices with advanced features.", 1],
   [2, "Laptops", "Portable computers for work and entertainment.", 1],
@@ -83,7 +84,6 @@ const productCategoriesReadyToCreate = [
 ];
 
 // the order is: name, description, price, quantity, active (boolean), colour
-
 const productsReadyToCreate = [
   [
     "iPhone 13 Pro",

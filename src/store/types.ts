@@ -96,6 +96,7 @@ type ConnectionMethods = {
   }: FilterByParams) => Promise<Object[] | MysqlError>;
   create: ({
     table,
+    tableColumns,
     arrayOfData,
   }: CreateParams) => Promise<MysqlQueryResult | MysqlError>;
   update: ({

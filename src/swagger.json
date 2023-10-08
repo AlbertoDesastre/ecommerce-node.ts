@@ -24,7 +24,7 @@
       "description": "Everything about orders."
     },
     {
-      "name": "Category (of Products)",
+      "name": "Categories",
       "description": "Everything about product's categories."
     }
   ],
@@ -600,7 +600,7 @@
             }
           },
           "400": {
-            "description": "request.body it's missing.",
+            "description": "Invalid product data provided.",
             "content": {
               "application/json": {
                 "schema": {
@@ -646,6 +646,16 @@
                   "status": 200,
                   "message": "The product was updated",
                   "body": "The item you wanted to update was indeed updated."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "request.body it's missing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequest"
                 }
               }
             }
@@ -1791,6 +1801,14 @@
                       "error": true,
                       "status": 400,
                       "message": "There must be at least one product to create an order."
+                    }
+                  },
+                  "BadRequest_5": {
+                    "summary": "No product associated to order.",
+                    "value": {
+                      "error": true,
+                      "status": 400,
+                      "message": "One of the properties you've passed in products array doesn't match the required model"
                     }
                   }
                 }

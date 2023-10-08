@@ -1,5 +1,7 @@
 import "dotenv/config";
 import express, { Request, Response, NextFunction } from "express";
+import swaggerUi from "swagger-ui-express";
+import swaggerDocs from "./swagger.json";
 import { routerApi } from "./components/index";
 import { errors } from "./network";
 
@@ -16,8 +18,9 @@ routerApi(app);
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   // console.error(err);
-
   return errors({ res, message: err.message, status: err.statusCode });
 });
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 export { app };

@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
-  title: My API Documentation
-  description: My API description goes here.
+  title: eCommerce API
+  description: All the resources, routes, funcionalities and what you can expect work with in an eCommerce site.
   version: 1.0.0
 servers:
   - url: https://localhost
